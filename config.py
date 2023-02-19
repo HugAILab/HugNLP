@@ -93,6 +93,47 @@ class ModelArguments:
         metadata={'help': 'do_lower_case'}
     )
 
+    use_pe: bool = field(
+        default=False,
+        metadata={
+            "help": "Whether to use parameter-efficient settings. If true, that means freezing the parameters of the backbone, and only"
+            "tune the new initialized modules (e.g., adapter, prefix, ptuning, etc.)"
+        }
+    )
+
+    adapter_choice: str = field(
+        default="LiST",
+        metadata={"help": "The choice of adapter, list, lora, houlsby."},
+    )
+    adapter_dim: int = field(
+        default=128,
+        metadata={"help": "The hidden size of adapter. default is 128."},
+    )
+    pre_seq_len: int = field(
+        default=4,
+        metadata={
+            "help": "The length of prompt"
+        }
+    )
+    prefix_projection: bool = field(
+        default=False,
+        metadata={
+            "help": "Apply a two-layer MLP head over the prefix embeddings"
+        }
+    ) 
+    prefix_hidden_size: int = field(
+        default=512,
+        metadata={
+            "help": "The hidden size of the MLP projection head in Prefix Encoder if prefix projection is used"
+        }
+    )
+    hidden_dropout_prob: float = field(
+        default=0.1,
+        metadata={
+            "help": "The dropout probability used in the models"
+        }
+    )
+
     def __post_init__(self):
         if self.config_overrides is not None and (self.config_name is not None or self.model_name_or_path is not None):
             raise ValueError(

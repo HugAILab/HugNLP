@@ -8,10 +8,10 @@ from processors.benchmark.cluemrc.chid_mlm import ChidMLMProcessor
 from processors.benchmark.cluemrc.c3 import C3Processor
 from processors.benchmark.cluemrc.chid import ChidTagProcessor
 from processors.benchmark.cluemrc.cmrc2018 import CMRCProcessor, CMRCGPProcessor
-from processors.benchmark.cluemrc.data_process import CLUEMRCProcessor
-from processors.benchmark.clue.data_process import CLUEProcessor, TnewsEFLProcessor, CSLEFLProcessor
-from processors.benchmark.cluener.data_process import CLUENERProcessor
-from processors.benchmark.fewclue.data_process import InstructionMRCForFewCLUEProcessor
+from processors.benchmark.cluemrc.data_processor import CLUEMRCProcessor
+from processors.benchmark.clue.data_processor import CLUEProcessor, TnewsEFLProcessor, CSLEFLProcessor
+from processors.benchmark.cluener.data_processor import CLUENERProcessor
+from processors.benchmark.fewclue.data_processor import InstructionMRCForFewCLUEProcessor
 # pre-training language model
 from processors.pretraining.mlm.data_processor import MLMTextLineProcessor
 # from processor.pretraining.mlm.data_processor import MLMGroupProcessor, MLMFromDisk, MLMLineByLineProcessor, WWMFromDisk

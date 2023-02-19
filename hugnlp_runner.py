@@ -22,6 +22,7 @@ from config import ModelArguments, DataTrainingArguments, TrainingArguments
 from callback.mlflow import MLflowCallback
 from tools.runner_utils.log_util import init_logger
 from models import MODEL_CLASSES, TOKENIZER_CLASSES
+from tools.runner_utils.conifg_extensive import config_extensive
 import logging
 
 logger = logging.getLogger(__name__)
@@ -106,6 +107,10 @@ def main():
             logger.info(f"Overriding config: {model_args.config_overrides}")
             config.update_from_string(model_args.config_overrides)
             logger.info(f"New config: {config}")
+    
+    # add other config
+    config = config_extensive(config, model_args)
+
 
     tokenizer_kwargs = {
         "cache_dir": model_args.cache_dir,

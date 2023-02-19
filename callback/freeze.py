@@ -3,6 +3,7 @@
 # @Author  : JianingWang
 # @File    : freeze.py
 from transformers import TrainerCallback, TrainingArguments, TrainerState, TrainerControl
+from tools.model_utils.parameter_freeze import ParameterFreeze
 import logging
 
 logger = logging.getLogger(__name__)
