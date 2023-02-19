@@ -7,84 +7,11 @@ import torch
 import os.path
 import numpy as np
 from dataclasses import dataclass
-from typing import Optional
 from collections import defaultdict
-from transformers import PreTrainedTokenizerBase
 from processors.ProcessorBase import CLSProcessor
 from processors.benchmark.clue.clue_processor import clue_processors, clue_output_modes
 from metrics import datatype2metrics
-
-@dataclass
-class DataCollator:
-    tokenizer: PreTrainedTokenizerBase
-    max_length: Optional[int] = 512
-    pad_to_multiple_of: Optional[int] = None
-    pad_to_max_length: Optional[bool] = None
-    is_segment_spans: Optional[bool] = False
-
-    def __call__(self, features):
-        # Tokenize
-        # is_train = features[0]['is_train'] > 0
-        batch = []
-        for f in features:
-            batch.append({'input_ids': f['input_ids'],
-                          'token_type_ids': f['token_type_ids'],
-                          'attention_mask': f['attention_mask']})
-        batch = self.tokenizer.pad(
-            batch,
-            padding='max_length',  # 为了index不出错直接Padding到max length，如果用longest，后面的np.unravel_index也要改
-            max_length=self.max_length,
-            return_tensors="pt"
-        ) # {'input_ids': [xxx], xxx}
-        batch["labels"] = torch.Tensor([f['label'] for f in features]).long()
-        # add by wjn: 获得每个example每个segment的区间
-        if self.is_segment_spans:
-            segment_spans = list()
-            token_type_ids = batch["token_type_ids"]
-            for token_type_id in token_type_ids:
-                if torch.sum(token_type_id) == 0: # 说明只有一个segment
-                    break
-                seg1_start = 1
-                seg1_end = -1
-                seg2_start = -1
-                seg2_end = -1
-                for ei, token_type in enumerate(token_type_id):
-                    if token_type == 1 and seg1_end == -1:
-                        seg1_end = ei - 2
-                        seg2_start = ei
-                        continue
-                    if token_type == 0 and seg1_end != -1:
-                        seg2_end = ei - 2
-                        break
-                segment_spans.append([seg1_start, seg1_end, seg2_start, seg2_end])
-            if len(segment_spans) != 0:
-                batch['segment_spans'] = torch.Tensor(segment_spans).long()
-        # # 针对wsc任务，其有两个区间
-        # if "span" in features[0].keys():
-        #     spans = list()
-        #     for feature_id, feature in enumerate(features):
-        #         s1, e1, s2, e2 = feature['span']
-        #         offset = feature['offset_mapping']
-        #         position_map = {}
-        #         # sep_id = batch['input_ids'][feature_id].index(self.tokenizer.sep_token_id)
-        #         for i, (m, n) in enumerate(offset):
-        #             # if i < sep_id:
-        #             #     continue
-        #             for k in range(m, n + 1):
-        #                 position_map[k] = i
-        #         # print("*"*20)
-        #         # print(s1, e1, s2, e2)
-        #         # print("position_map=", position_map)
-        #         span = [0, 0, 0, 0]
-        #         if s1 >= 0 and e1 >= 0:
-        #             span[0], span[1] = position_map[s1], position_map[e1]
-        #         if s2 >= 0 and e2 >= 0:
-        #             span[2], span[3] = position_map[s2], position_map[e2]
-        #         # print("span=", span)
-        #         spans.append(span)
-        #     spans = torch.Tensor(spans).long()
-        #     batch["span"] = spans
-        return batch
+from processors.benchmark.clue.data_collator import DataCollator
 
 
 def sofmax(logits):

@@ -12,7 +12,7 @@ data_path=/wjn/nlp_task_datasets/CLUEdatasets # nas A100
 
 
 #### task name
-task_name_=clue
+TASK_NAME=clue
 
 #### clue task
 #clue_task=wsc
@@ -32,7 +32,8 @@ clue_task=tnews
 #### task_type
 #task_type_=fusion_siamese
 #task_type_=autocls
-task_type_=classification
+# TASK_TYPE=classification
+TASK_TYPE=head_prefix_cls
 
 #### inference model path
 #path=/wjn/nlp_runner/outputs/clue/ocnli/chinese-macbert-large/chinese-macbert-large/
@@ -44,7 +45,7 @@ if [ "$clue_task" = "wsc" ]; then
   eval_step=50
   wr_step=50
   lr=3e-05
-  task_type_=clue_wsc
+  TASK_TYPE=clue_wsc
   rm -rf /root/.cache/huggingface/datasets/clue/cache_"$task_name_"_"$clue_task"_validation.arrow
   rm -rf /root/.cache/huggingface/datasets/clue/cache_"$task_name_"_"$clue_task"_test.arrow
 
@@ -130,7 +131,7 @@ fi
 #rm -rf /root/.cache/huggingface/datasets/clue/cache_"$task_name_"_"$clue_task"_train.arrow
 
 
-export CUDA_VISIBLE_DEVICES=0,2
+export CUDA_VISIBLE_DEVICES=0,1
 python -m torch.distributed.launch --nproc_per_node=2 --master_port=6014 hugnlp_runner.py \
   --model_name_or_path=$path \
   --data_dir=$data_path/$clue_task \
@@ -155,8 +156,8 @@ python -m torch.distributed.launch --nproc_per_node=2 --master_port=6014 hugnlp_
   --warmup_steps=$wr_step \
   --load_best_model_at_end \
   --report_to=none \
-  --task_name=$task_name_ \
-  --task_type=$task_type_ \
+  --task_name=$TASK_NAME \
+  --task_type=$TASK_TYPE \
   --model_type=bert \
   --metric_for_best_model=acc \
   --pad_to_max_length=True \
@@ -166,4 +167,4 @@ python -m torch.distributed.launch --nproc_per_node=2 --master_port=6014 hugnlp_
   --label_names=labels \
   --keep_predict_labels \
   --user_defined="data_name=$clue_task" \
-  --do_adv
+  # --do_adv

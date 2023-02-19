@@ -21,7 +21,7 @@ from transformers.models.gpt2.tokenization_gpt2_fast import GPT2TokenizerFast
 # from models.fengshen.models.longformer import LongformerForMultipleChoice
 from models.kg import BertForPretrainWithKG, BertForPretrainWithKGV2
 from models.language_modeling.mlm import BertForMaskedLM, RobertaForMaskedLM, AlbertForMaskedLM, RoFormerForMaskedLM
-from models.sequence_classification.classification import build_cls_model
+# from models.sequence_classification.classification import build_cls_model
 from models.multiple_choice.multiple_choice_tag import BertForTagMultipleChoice, RoFormerForTagMultipleChoice, MegatronBertForTagMultipleChoice
 from models.multiple_choice.multiple_choice import MegatronBertForMultipleChoice, MegatronBertRDropForMultipleChoice
 from models.semeval7 import DebertaV2ForSemEval7MultiTask
@@ -37,6 +37,23 @@ from models.span_extraction.span_for_ner import BertSpanForNer, RobertaSpanForNe
 from models.language_modeling.kpplm import BertForWikiKGPLM, RoBertaKPPLMForProcessedWikiKGPLM, DeBertaKPPLMForProcessedWikiKGPLM
 from models.language_modeling.causal_lm import GPT2ForCausalLM
 
+from models.sequence_classification.head_cls import (
+    BertForSequenceClassification, BertPrefixForSequenceClassification, 
+    BertPtuningForSequenceClassification, BertAdapterForSequenceClassification,
+    RobertaForSequenceClassification, RobertaPrefixForSequenceClassification,
+    RobertaPtuningForSequenceClassification,RobertaAdapterForSequenceClassification
+)
+
+from models.sequence_classification.masked_prompt_cls import (
+    PromptBertForSequenceClassification, PromptBertPrefixForSequenceClassification,
+    PromptBertPtuningForSequenceClassification, PromptBertAdapterForSequenceClassification,
+    PromptRobertaForSequenceClassification, PromptRobertaPrefixForSequenceClassification,
+    PromptRobertaPtuningForSequenceClassification, PromptRobertaAdapterForSequenceClassification,
+    PromptDebertaForSequenceClassification, PromptDebertaPrefixForSequenceClassification,
+    PromptDebertaPtuningForSequenceClassification,
+    PromptDebertav2ForSequenceClassification, PromptDebertav2PrefixForSequenceClassification,
+    PromptDebertav2PtuningForSequenceClassification
+)
 
 from models.language_modeling.mlm import BertForMaskedLM
 
@@ -56,13 +73,43 @@ CLASSIFICATION_MODEL_CLASSES = {
     "auto_cls": AutoModelForSequenceClassification, # huggingface cls
     "classification": AutoModelForSequenceClassification, # huggingface cls
     "head_cls": {
-        "bert": None,
-        "roberta": None,
+        "bert": BertForSequenceClassification,
+        "roberta": RobertaForSequenceClassification,
     }, # use standard fine-tuning head for cls, e.g., bert+mlp
+    "head_prefix_cls": {
+        "bert": BertPrefixForSequenceClassification,
+        "roberta": RobertaPrefixForSequenceClassification,
+    }, # use standard fine-tuning head with prefix-tuning technique for cls, e.g., bert+mlp
+    "head_ptuning_cls": {
+        "bert": BertPtuningForSequenceClassification,
+        "roberta": RobertaPtuningForSequenceClassification,
+    }, # use standard fine-tuning head with p-tuning technique for cls, e.g., bert+mlp
+    "head_adapter_cls": {
+        "bert": BertAdapterForSequenceClassification,
+        "roberta": RobertaAdapterForSequenceClassification,
+    }, # use standard fine-tuning head with adapter-tuning technique for cls, e.g., bert+mlp
     "masked_prompt_cls": {
-        "bert": None,
-        "roberta": None,
-    }, # use masked lm head for prompt-tuning, e.g., bert+mlm
+        "bert": PromptBertForSequenceClassification,
+        "roberta": PromptRobertaForSequenceClassification,
+        "deberta": PromptDebertaForSequenceClassification,
+        "deberta-v2": PromptDebertav2ForSequenceClassification,
+    }, # use masked lm head technique for prompt-based cls, e.g., bert+mlm
+    "masked_prompt_prefix_cls": {
+        "bert": PromptBertPrefixForSequenceClassification,
+        "roberta": PromptRobertaPrefixForSequenceClassification,
+        "deberta": PromptDebertaPrefixForSequenceClassification,
+        "deberta-v2": PromptDebertav2PrefixForSequenceClassification,
+    }, # use masked lm head with prefix-tuning technique for prompt-based cls, e.g., bert+mlm
+    "masked_prompt_ptuning_cls": {
+        "bert": PromptBertPtuningForSequenceClassification,
+        "roberta": PromptRobertaPtuningForSequenceClassification,
+        "deberta": PromptDebertaPtuningForSequenceClassification,
+        "deberta-v2": PromptDebertav2PtuningForSequenceClassification,
+    }, # use masked lm head with p-tuning technique for prompt-based cls, e.g., bert+mlm
+    "masked_prompt_adapter_cls": {
+        "bert": PromptBertAdapterForSequenceClassification,
+        "roberta": PromptRobertaAdapterForSequenceClassification,
+    }, # use masked lm head with adapter-tuning technique for prompt-based cls, e.g., bert+mlm
     "causal_prompt_cls": {
         "gpt2": None,
         "bart": None,
@@ -134,6 +181,7 @@ OTHER_MODEL_CLASSES = {
 # MODEL_CLASSES = dict(list(PRETRAIN_MODEL_CLASSES.items()) + list(OTHER_MODEL_CLASSES.items()))
 MODEL_CLASSES_LIST = [
     PRETRAIN_MODEL_CLASSES, 
+    CLASSIFICATION_MODEL_CLASSES,
     FEWSHOT_MODEL_CLASSES,
     OTHER_MODEL_CLASSES,
 ]
