@@ -19,6 +19,7 @@ from models.basic_modules.adapter import BertAdaModel, RobertaAdaModel, init_ada
 from tools.model_utils.parameter_freeze import ParameterFreeze
 
 
+
 freezer = ParameterFreeze()
 
 ## ======== BERT ========
@@ -31,7 +32,7 @@ class BertForSequenceClassification(BertPreTrainedModel):
         self.config = config
 
         self.bert = BertModel(config)
-        if self.config.use_pe:
+        if self.config.use_freezing:
             self.bert = freezer.freeze_lm(self.bert)
         
         self.dropout = torch.nn.Dropout(config.hidden_dropout_prob)
@@ -39,8 +40,8 @@ class BertForSequenceClassification(BertPreTrainedModel):
 
         self.init_weights()
     
-    def freeze_backbone(self, use_pe: bool=True):
-        if use_pe:
+    def freeze_backbone(self, use_freezing: bool=True):
+        if use_freezing:
             self.bert = freezer.freeze_lm(self.bert)
         else:
             self.bert = freezer.unfreeze_lm(self.bert)
@@ -65,6 +66,10 @@ class BertForSequenceClassification(BertPreTrainedModel):
             If :obj:`config.num_labels > 1` a classification loss is computed (Cross-Entropy).
         """
         return_dict = return_dict if return_dict is not None else self.config.use_return_dict
+
+        # print("input_ids.shape=", input_ids.shape) # e.g., [8, 128]
+        # print("attention_mask.shape=", attention_mask.shape) # e.g., [8, 128]
+        # print("token_type_ids.shape=", token_type_ids.shape) # e.g., [8, 128]
 
         outputs = self.bert(
             input_ids,
@@ -129,7 +134,7 @@ class BertPrefixForSequenceClassification(BertPreTrainedModel):
         # for param in self.bert.parameters():
         #     param.requires_grad = False
         
-        if self.config.use_pe:
+        if self.config.use_freezing:
             self.bert = freezer.freeze_lm(self.bert)
         
         self.pre_seq_len = config.pre_seq_len
@@ -150,8 +155,8 @@ class BertPrefixForSequenceClassification(BertPreTrainedModel):
         total_param = all_param - bert_param
         print('total param is {}'.format(total_param)) # 9860105
     
-    def freeze_backbone(self, use_pe: bool=True):
-        if use_pe:
+    def freeze_backbone(self, use_freezing: bool=True):
+        if use_freezing:
             self.bert = freezer.freeze_lm(self.bert)
         else:
             self.bert = freezer.unfreeze_lm(self.bert)
@@ -186,14 +191,17 @@ class BertPrefixForSequenceClassification(BertPreTrainedModel):
     ):
         return_dict = return_dict if return_dict is not None else self.config.use_return_dict
 
+        # print("input_ids.shape=", input_ids.shape) # e.g., [8, 128]
+        # print("attention_mask.shape=", attention_mask.shape) # e.g., [8, 128]
+        # print("token_type_ids.shape=", token_type_ids.shape) # e.g., [8, 128]
+
         batch_size = input_ids.shape[0]
         past_key_values = self.get_prompt(batch_size=batch_size)
-        if attention_mask is not None:
-            prefix_attention_mask = torch.ones(batch_size, self.pre_seq_len).to(self.bert.device)
-            attention_mask = torch.cat((prefix_attention_mask, attention_mask), dim=1)
-        if position_ids is not None:
-            prefix_position_ids = torch.zeros(batch_size, self.pre_seq_len).to(self.bert.device)
-            position_ids = torch.cat((prefix_position_ids, position_ids), dim=1)
+        prefix_attention_mask = torch.ones(batch_size, self.pre_seq_len).to(self.bert.device)
+        attention_mask = torch.cat((prefix_attention_mask, attention_mask), dim=1)
+
+        if position_ids is None:
+            position_ids = torch.tensor([i for i in range(input_ids.shape[-1])]).expand(batch_size, -1).to(self.bert.device)
 
         outputs = self.bert(
             input_ids,
@@ -259,7 +267,7 @@ class BertPtuningForSequenceClassification(BertPreTrainedModel):
         # for param in self.bert.parameters():
         #     param.requires_grad = False
         
-        if self.config.use_pe:
+        if self.config.use_freezing:
             self.bert = freezer.freeze_lm(self.bert)
         
         self.pre_seq_len = config.pre_seq_len
@@ -270,8 +278,8 @@ class BertPtuningForSequenceClassification(BertPreTrainedModel):
         self.prefix_tokens = torch.arange(self.pre_seq_len).long()
         self.prefix_encoder = torch.nn.Embedding(self.pre_seq_len, config.hidden_size)
     
-    def freeze_backbone(self, use_pe: bool=True):
-        if use_pe:
+    def freeze_backbone(self, use_freezing: bool=True):
+        if use_freezing:
             self.bert = freezer.freeze_lm(self.bert)
         else:
             self.bert = freezer.unfreeze_lm(self.bert)
@@ -375,11 +383,11 @@ class BertAdapterForSequenceClassification(BertPreTrainedModel):
 
         # for param in self.bert.parameters():
         #     param.requires_grad = False
-        if self.config.use_pe:
+        if self.config.use_freezing:
             self.bert = freezer.freeze_lm_component(self.bert, "adapter")
         
-    def freeze_backbone(self, use_pe: bool=True):
-        if use_pe:
+    def freeze_backbone(self, use_freezing: bool=True):
+        if use_freezing:
             self.bert = freezer.freeze_lm_component(self.bert, "adapter")
         else:
             self.bert = freezer.unfreeze_lm(self.bert)
@@ -473,14 +481,14 @@ class RobertaForSequenceClassification(RobertaPreTrainedModel):
         self.num_labels = config.num_labels
         self.config = config
         self.roberta = RobertaModel(config)
-        if self.config.use_pe:
+        if self.config.use_freezing:
             self.roberta = freezer.freeze_lm(self.roberta)
         self.dropout = torch.nn.Dropout(config.hidden_dropout_prob)
         self.classifier = torch.nn.Linear(config.hidden_size, config.num_labels)
         self.init_weights()
     
-    def freeze_backbone(self, use_pe: bool=True):
-        if use_pe:
+    def freeze_backbone(self, use_freezing: bool=True):
+        if use_freezing:
             self.roberta = freezer.freeze_lm(self.roberta)
         else:
             self.roberta = freezer.unfreeze_lm(self.roberta)
@@ -569,8 +577,6 @@ class RobertaPrefixForSequenceClassification(RobertaPreTrainedModel):
 
         for param in self.roberta.parameters():
             param.requires_grad = False
-        # if self.config.use_pe:
-        #     self.roberta = freezer.freeze_lm(self.roberta)
         
         self.pre_seq_len = config.pre_seq_len
         self.n_layer = config.num_hidden_layers
@@ -589,8 +595,8 @@ class RobertaPrefixForSequenceClassification(RobertaPreTrainedModel):
         total_param = all_param - bert_param
         print('total param is {}'.format(total_param)) # 9860105
     
-    def freeze_backbone(self, use_pe: bool=True):
-        if use_pe:
+    def freeze_backbone(self, use_freezing: bool=True):
+        if use_freezing:
             self.roberta = freezer.freeze_lm(self.roberta)
         else:
             self.roberta = freezer.unfreeze_lm(self.roberta)
@@ -630,12 +636,13 @@ class RobertaPrefixForSequenceClassification(RobertaPreTrainedModel):
         return_dict = return_dict if return_dict is not None else self.config.use_return_dict
 
         batch_size = input_ids.shape[0]
-        # print("batch_size=", batch_size)
         past_key_values = self.get_prompt(batch_size=batch_size)
         prefix_attention_mask = torch.ones(batch_size, self.pre_seq_len).to(self.roberta.device)
         attention_mask = torch.cat((prefix_attention_mask, attention_mask), dim=1)
-        # print("prefix_attention_mask.shape=", prefix_attention_mask.shape)
-        # print("attention_mask.shape=", attention_mask.shape)
+
+        if position_ids is None:
+            position_ids = torch.tensor([i for i in range(input_ids.shape[-1])]).expand(batch_size, -1).to(self.roberta.device)
+
         outputs = self.roberta(
             input_ids,
             attention_mask=attention_mask,
@@ -653,9 +660,6 @@ class RobertaPrefixForSequenceClassification(RobertaPreTrainedModel):
 
         pooled_output = self.dropout(pooled_output)
         logits = self.classifier(pooled_output)
-
-        # print("labels=", labels)
-        
 
         loss = None
         if labels is not None:
@@ -692,8 +696,6 @@ class RobertaPrefixForSequenceClassification(RobertaPreTrainedModel):
             attentions=outputs.attentions,
         )
 
-from transformers.models.bert.modeling_bert import BertForSequenceClassification
-
 #  Prompt-tuning For RoBERTa
 class RobertaPtuningForSequenceClassification(RobertaPreTrainedModel):
     def __init__(self, config):
@@ -707,7 +709,7 @@ class RobertaPtuningForSequenceClassification(RobertaPreTrainedModel):
         # for param in self.roberta.parameters():
         #     param.requires_grad = False
 
-        if self.config.use_pe:
+        if self.config.use_freezing:
             self.roberta = freezer.freeze_lm(self.roberta)
         
         self.pre_seq_len = config.pre_seq_len
@@ -718,8 +720,8 @@ class RobertaPtuningForSequenceClassification(RobertaPreTrainedModel):
         self.prefix_tokens = torch.arange(self.pre_seq_len).long()
         self.prefix_encoder = torch.nn.Embedding(self.pre_seq_len, config.hidden_size)
     
-    def freeze_backbone(self, use_pe: bool=True):
-        if use_pe:
+    def freeze_backbone(self, use_freezing: bool=True):
+        if use_freezing:
             self.roberta = freezer.freeze_lm(self.roberta)
         else:
             self.roberta = freezer.unfreeze_lm(self.roberta)
@@ -826,11 +828,11 @@ class RobertaAdapterForSequenceClassification(RobertaPreTrainedModel):
         # for param in self.roberta.parameters():
         #     param.requires_grad = False
         self.roberta = init_adapter(self.roberta)
-        if self.config.use_pe:
+        if self.config.use_freezing:
             self.roberta = freezer.freeze_lm_component(self.roberta, "adapter")
     
-    def freeze_backbone(self, use_pe: bool=True):
-        if use_pe:
+    def freeze_backbone(self, use_freezing: bool=True):
+        if use_freezing:
             self.roberta = freezer.freeze_lm_component(self.roberta, "adapter")
         else:
             self.roberta = freezer.unfreeze_lm(self.roberta)
@@ -932,7 +934,7 @@ class DebertaPrefixForSequenceClassification(DebertaPreTrainedModel):
         # for param in self.deberta.parameters():
         #     param.requires_grad = False
         
-        if self.config.use_pe:
+        if self.config.use_freezing:
             self.deberta = freezer.freeze_lm(self.deberta)
         
         self.pre_seq_len = config.pre_seq_len
@@ -952,8 +954,8 @@ class DebertaPrefixForSequenceClassification(DebertaPreTrainedModel):
         total_param = all_param - deberta_param
         print('total param is {}'.format(total_param)) # 9860105
     
-    def freeze_backbone(self, use_pe: bool=True):
-        if use_pe:
+    def freeze_backbone(self, use_freezing: bool=True):
+        if use_freezing:
             self.deberta = freezer.freeze_lm(self.deberta)
         else:
             self.deberta = freezer.unfreeze_lm(self.deberta)

@@ -17,8 +17,9 @@ Processing data for Causal LM
 The pre-training corpus is saved in 'txt' file. Each line is a sentence.
 """
 class CausalLMITextLineProcessor(DataProcessor):
-    def __init__(self, data_args, training_args, model_args):
+    def __init__(self, data_args, training_args, model_args, tokenizer=None):
         super().__init__(data_args, training_args, model_args)
+        self.tokenizer = tokenizer
 
     def get_data_collator(self):
         return DataCollatorForCausalLM(

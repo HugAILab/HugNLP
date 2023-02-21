@@ -27,6 +27,9 @@ logger = logging.getLogger(__name__)
 class MrpcProcessor(DataProcessor):
     """Processor for the MRPC data set (GLUE version)."""
 
+    def __init__(self, task_name):
+        self.task_name = task_name 
+
     def get_example_from_tensor_dict(self, tensor_dict):
         """See base class."""
         return InputExample(
@@ -70,6 +73,9 @@ class MrpcProcessor(DataProcessor):
 class MnliProcessor(DataProcessor):
     """Processor for the MultiNLI data set (GLUE version)."""
 
+    def __init__(self, task_name):
+        self.task_name = task_name 
+
     def get_example_from_tensor_dict(self, tensor_dict):
         """See base class."""
         return InputExample(
@@ -112,6 +118,9 @@ class MnliProcessor(DataProcessor):
 class MnliMismatchedProcessor(MnliProcessor):
     """Processor for the MultiNLI Mismatched data set (GLUE version)."""
 
+    def __init__(self, task_name):
+        self.task_name = task_name 
+
     def get_dev_examples(self, data_dir):
         """See base class."""
         return self._create_examples(self._read_tsv(os.path.join(data_dir, "dev_mismatched.tsv")), "dev_mismatched")
@@ -123,6 +132,9 @@ class MnliMismatchedProcessor(MnliProcessor):
 
 class SnliProcessor(DataProcessor):
     """Processor for the MultiNLI data set (GLUE version)."""
+
+    def __init__(self, task_name):
+        self.task_name = task_name 
 
     def get_example_from_tensor_dict(self, tensor_dict):
         """See base class."""
@@ -166,6 +178,9 @@ class SnliProcessor(DataProcessor):
 class ColaProcessor(DataProcessor):
     """Processor for the CoLA data set (GLUE version)."""
 
+    def __init__(self, task_name):
+        self.task_name = task_name 
+
     def get_example_from_tensor_dict(self, tensor_dict):
         """See base class."""
         return InputExample(
@@ -206,6 +221,9 @@ class ColaProcessor(DataProcessor):
 
 class Sst2Processor(DataProcessor):
     """Processor for the SST-2 data set (GLUE version)."""
+
+    def __init__(self, task_name):
+        self.task_name = task_name 
 
     def get_example_from_tensor_dict(self, tensor_dict):
         """See base class."""
@@ -255,6 +273,9 @@ class Sst2Processor(DataProcessor):
 class StsbProcessor(DataProcessor):
     """Processor for the STS-B data set (GLUE version)."""
 
+    def __init__(self, task_name):
+        self.task_name = task_name 
+
     def get_example_from_tensor_dict(self, tensor_dict):
         """See base class."""
         return InputExample(
@@ -296,6 +317,9 @@ class StsbProcessor(DataProcessor):
 
 class QqpProcessor(DataProcessor):
     """Processor for the QQP data set (GLUE version)."""
+
+    def __init__(self, task_name):
+        self.task_name = task_name 
 
     def get_example_from_tensor_dict(self, tensor_dict):
         """See base class."""
@@ -345,6 +369,9 @@ class QqpProcessor(DataProcessor):
 class QnliProcessor(DataProcessor):
     """Processor for the QNLI data set (GLUE version)."""
 
+    def __init__(self, task_name):
+        self.task_name = task_name 
+
     def get_example_from_tensor_dict(self, tensor_dict):
         """See base class."""
         return InputExample(
@@ -386,6 +413,9 @@ class QnliProcessor(DataProcessor):
 
 class RteProcessor(DataProcessor):
     """Processor for the RTE data set (GLUE version)."""
+
+    def __init__(self, task_name):
+        self.task_name = task_name 
 
     def get_example_from_tensor_dict(self, tensor_dict):
         """See base class."""
@@ -429,6 +459,9 @@ class RteProcessor(DataProcessor):
 class WnliProcessor(DataProcessor):
     """Processor for the WNLI data set (GLUE version)."""
 
+    def __init__(self, task_name):
+        self.task_name = task_name 
+
     def get_example_from_tensor_dict(self, tensor_dict):
         """See base class."""
         return InputExample(
@@ -471,6 +504,9 @@ class TextClassificationProcessor(DataProcessor):
     """
     Data processor for text classification datasets (mr, sst-5, subj, trec, cr, mpqa).
     """
+
+    def __init__(self, task_name):
+        self.task_name = task_name 
 
     def __init__(self, task_name):
         self.task_name = task_name 
@@ -541,24 +577,48 @@ def text_classification_metrics(task_name, preds, labels):
 
 # Add your task to the following mappings
 
+# task_to_test_key = {
+#     "cola": "matt",
+#     "mnli": "accuracy",
+#     "mrpc": "f1",
+#     "qnli": "accuracy",
+#     "qqp": "f1",
+#     "rte": "accuracy",
+#     "sst2": "accuracy",
+#     "stsb": "accuracy",
+#     "wnli": "accuracy",
+# }
+
+task_to_keys = {
+    "cola": ("sentence", None),
+    "mnli": ("premise", "hypothesis"),
+    "mrpc": ("sentence1", "sentence2"),
+    "qnli": ("question", "sentence"),
+    "qqp": ("question1", "question2"),
+    "rte": ("sentence1", "sentence2"),
+    "sst2": ("sentence", None),
+    "stsb": ("sentence1", "sentence2"),
+    "wnli": ("sentence1", "sentence2"),
+}
+
 glue_processors = {
-    "cola": ColaProcessor(),
-    "mnli": MnliProcessor(),
-    "mnli-mm": MnliMismatchedProcessor(),
-    "mrpc": MrpcProcessor(),
-    "sst-2": Sst2Processor(),
-    "sts-b": StsbProcessor(),
-    "qqp": QqpProcessor(),
-    "qnli": QnliProcessor(),
-    "rte": RteProcessor(),
-    "wnli": WnliProcessor(),
-    "snli": SnliProcessor(),
-    "mr": TextClassificationProcessor("mr"),
-    "sst-5": TextClassificationProcessor("sst-5"),
-    "subj": TextClassificationProcessor("subj"),
-    "trec": TextClassificationProcessor("trec"),
-    "cr": TextClassificationProcessor("cr"),
-    "mpqa": TextClassificationProcessor("mpqa")
+    "cola": ColaProcessor,
+    "mnli": MnliProcessor,
+    "mnli-mm": MnliMismatchedProcessor,
+    "mrpc": MrpcProcessor,
+    "sst-2": Sst2Processor,
+    "sts-b": StsbProcessor,
+    "qqp": QqpProcessor,
+    "qnli": QnliProcessor,
+    "rte": RteProcessor,
+    "wnli": WnliProcessor,
+    "snli": SnliProcessor,
+    "mr": TextClassificationProcessor,
+    "sst-5": TextClassificationProcessor,
+    "subj": TextClassificationProcessor,
+    "trec": TextClassificationProcessor,
+    "cr": TextClassificationProcessor,
+    "mpqa": TextClassificationProcessor,
 }
 
 num_labels_mapping = {

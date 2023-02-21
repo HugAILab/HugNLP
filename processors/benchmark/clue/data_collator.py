@@ -23,14 +23,19 @@ class DataCollator:
         for f in features:
             batch.append({'input_ids': f['input_ids'],
                           'token_type_ids': f['token_type_ids'],
-                          'attention_mask': f['attention_mask']})
+                          'attention_mask': f['attention_mask']},
+                          )
         batch = self.tokenizer.pad(
             batch,
             padding='max_length',  # 为了index不出错直接Padding到max length，如果用longest，后面的np.unravel_index也要改
             max_length=self.max_length,
             return_tensors="pt"
         ) # {'input_ids': [xxx], xxx}
+        # add position_ids
+        
+        # add labels
         batch["labels"] = torch.Tensor([f['label'] for f in features]).long()
+        
         # add by wjn: 获得每个example每个segment的区间
         if self.is_segment_spans:
             segment_spans = list()

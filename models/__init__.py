@@ -13,7 +13,7 @@ from transformers import AutoModelForTokenClassification, AutoModelForSequenceCl
 from transformers.models.roformer import RoFormerTokenizer
 from transformers.models.bert import BertTokenizerFast, BertForTokenClassification, BertTokenizer
 from transformers.models.roberta.tokenization_roberta import RobertaTokenizer
-from transformers.models.bert.modeling_bert import BertForSequenceClassification
+# from transformers.models.bert.modeling_bert import BertForSequenceClassification
 from transformers.models.gpt2.tokenization_gpt2_fast import GPT2TokenizerFast
 
 
@@ -45,15 +45,22 @@ from models.sequence_classification.head_cls import (
 )
 
 from models.sequence_classification.masked_prompt_cls import (
-    PromptBertForSequenceClassification, PromptBertPrefixForSequenceClassification,
-    PromptBertPtuningForSequenceClassification, PromptBertAdapterForSequenceClassification,
-    PromptRobertaForSequenceClassification, PromptRobertaPrefixForSequenceClassification,
-    PromptRobertaPtuningForSequenceClassification, PromptRobertaAdapterForSequenceClassification,
-    PromptDebertaForSequenceClassification, PromptDebertaPrefixForSequenceClassification,
-    PromptDebertaPtuningForSequenceClassification,
-    PromptDebertav2ForSequenceClassification, PromptDebertav2PrefixForSequenceClassification,
-    PromptDebertav2PtuningForSequenceClassification
+    PromptBertForSequenceClassification, PromptBertPtuningForSequenceClassification,
+    PromptBertPrefixForSequenceClassification, PromptBertAdapterForSequenceClassification,
+    PromptRobertaForSequenceClassification, PromptRobertaPtuningForSequenceClassification,
+    PromptRobertaPrefixForSequenceClassification, PromptRobertaAdapterForSequenceClassification
 )
+
+# from models.sequence_classification.masked_prompt_cls import (
+#     PromptBertForSequenceClassification, PromptBertPrefixForSequenceClassification,
+#     PromptBertPtuningForSequenceClassification, PromptBertAdapterForSequenceClassification,
+#     PromptRobertaForSequenceClassification, PromptRobertaPrefixForSequenceClassification,
+#     PromptRobertaPtuningForSequenceClassification, PromptRobertaAdapterForSequenceClassification,
+#     PromptDebertaForSequenceClassification, PromptDebertaPrefixForSequenceClassification,
+#     PromptDebertaPtuningForSequenceClassification,
+#     PromptDebertav2ForSequenceClassification, PromptDebertav2PrefixForSequenceClassification,
+#     PromptDebertav2PtuningForSequenceClassification
+# )
 
 from models.language_modeling.mlm import BertForMaskedLM
 
@@ -66,7 +73,11 @@ PRETRAIN_MODEL_CLASSES = {
         "roformer": RoFormerForMaskedLM,
     },
     "auto_mlm": AutoModelForMaskedLM,
-    'causal_lm': GPT2ForCausalLM,
+    'causal_lm': {
+        "gpt2": GPT2ForCausalLM,
+        "bart": None,
+        "t5": None,
+    },
 }
 
 CLASSIFICATION_MODEL_CLASSES = {
@@ -91,20 +102,20 @@ CLASSIFICATION_MODEL_CLASSES = {
     "masked_prompt_cls": {
         "bert": PromptBertForSequenceClassification,
         "roberta": PromptRobertaForSequenceClassification,
-        "deberta": PromptDebertaForSequenceClassification,
-        "deberta-v2": PromptDebertav2ForSequenceClassification,
+        # "deberta": PromptDebertaForSequenceClassification,
+        # "deberta-v2": PromptDebertav2ForSequenceClassification,
     }, # use masked lm head technique for prompt-based cls, e.g., bert+mlm
     "masked_prompt_prefix_cls": {
         "bert": PromptBertPrefixForSequenceClassification,
         "roberta": PromptRobertaPrefixForSequenceClassification,
-        "deberta": PromptDebertaPrefixForSequenceClassification,
-        "deberta-v2": PromptDebertav2PrefixForSequenceClassification,
+    #     "deberta": PromptDebertaPrefixForSequenceClassification,
+    #     "deberta-v2": PromptDebertav2PrefixForSequenceClassification,
     }, # use masked lm head with prefix-tuning technique for prompt-based cls, e.g., bert+mlm
     "masked_prompt_ptuning_cls": {
         "bert": PromptBertPtuningForSequenceClassification,
         "roberta": PromptRobertaPtuningForSequenceClassification,
-        "deberta": PromptDebertaPtuningForSequenceClassification,
-        "deberta-v2": PromptDebertav2PtuningForSequenceClassification,
+    #     "deberta": PromptDebertaPtuningForSequenceClassification,
+    #     "deberta-v2": PromptDebertav2PtuningForSequenceClassification,
     }, # use masked lm head with p-tuning technique for prompt-based cls, e.g., bert+mlm
     "masked_prompt_adapter_cls": {
         "bert": PromptBertAdapterForSequenceClassification,

@@ -81,10 +81,11 @@ class DataProcessor:
 
 
 class CLSProcessor(DataProcessor):
-    def __init__(self, data_args, training_args, model_args, post_tokenizer=False, keep_raw_data=False):
+    def __init__(self, data_args, training_args, model_args, tokenizer=None, post_tokenizer=False, keep_raw_data=False):
         super().__init__(data_args, training_args, model_args)
         self.sentence1_key = 'text_a'
         self.sentence2_key = None
+        self.tokenizer = tokenizer
         self.label_column = 'label'
         self.post_tokenizer = post_tokenizer
         self.keep_raw_data = keep_raw_data
@@ -208,12 +209,13 @@ class CLSProcessor(DataProcessor):
 
 
 class FewShotNERProcessor(DataProcessor):
-    def __init__(self, data_args, training_args, model_args, post_tokenizer=False, keep_raw_data=False):
+    def __init__(self, data_args, training_args, model_args, tokenizer=None, post_tokenizer=False, keep_raw_data=False):
         super().__init__(data_args, training_args, model_args)
         self.support_key = 'support_input_texts'
         self.query_key = 'query_input_texts'
         # self.input_column = 'input_texts'
         # self.label_column = 'label'
+        self.tokenizer = tokenizer
         self.post_tokenizer = post_tokenizer
         self.keep_raw_data = keep_raw_data
         self.raw_datasets = None

@@ -20,8 +20,8 @@ def sofmax(logits):
 
 
 class CLUEProcessor(CLSProcessor):
-    def __init__(self, data_args, training_args, model_args, post_tokenizer=False, keep_raw_data=True):
-        super().__init__(data_args, training_args, model_args, post_tokenizer=post_tokenizer, keep_raw_data=keep_raw_data)
+    def __init__(self, data_args, training_args, model_args, tokenizer=None, post_tokenizer=False, keep_raw_data=True):
+        super().__init__(data_args, training_args, model_args, tokenizer, post_tokenizer=post_tokenizer, keep_raw_data=keep_raw_data)
         param = {p.split("=")[0]: p.split("=")[1] for p in (data_args.user_defined).split(" ")}
         assert "data_name" in param, "You must add one defined param 'data_name=xxx' in the user_defined parameter."
         self.data_name = param["data_name"]
@@ -44,7 +44,7 @@ class CLUEProcessor(CLSProcessor):
 
     def get_data_collator(self):
         pad_to_multiple_of_8 = self.training_args.fp16 and not self.data_args.pad_to_max_length
-        return DataCollator(self.tokenizer, pad_to_multiple_of=8 if pad_to_multiple_of_8 else None, pad_to_max_length=self.data_args.pad_to_max_length)
+        return DataCollator(self.tokenizer, max_length=self.data_args.max_seq_length, pad_to_multiple_of=8 if pad_to_multiple_of_8 else None, pad_to_max_length=self.data_args.pad_to_max_length)
 
     def get_examples(self, set_type):
         def read_pseudo(input_file):
@@ -94,11 +94,6 @@ class CLUEProcessor(CLSProcessor):
     def _create_examples(self, lines, set_type):
         examples = self.processor.create_examples(lines, set_type)
         return examples
-
-    def set_config(self, config):
-        config.ent_type_size = 1
-        config.inner_dim = 64
-        config.RoPE = True
 
     def build_preprocess_function(self):
         # Tokenize the texts
@@ -369,8 +364,8 @@ class CSLEFLProcessor(CLUEProcessor):
 # 为Tnews数据集定制的EFL方案
 # 原始Tnews为15类分类，直接让模型预测15个类。EFL版本则转换为15个二分类
 class TnewsEFLProcessor(CLSProcessor):
-    def __init__(self, data_args, training_args, model_args, post_tokenizer=False, keep_raw_data=True):
-        super().__init__(data_args, training_args, model_args, post_tokenizer=post_tokenizer, keep_raw_data=keep_raw_data)
+    def __init__(self, data_args, training_args, model_args, tokenizer=None, post_tokenizer=False, keep_raw_data=True):
+        super().__init__(data_args, training_args, model_args, tokenizer, post_tokenizer=post_tokenizer, keep_raw_data=keep_raw_data)
         param = {p.split("=")[0]: p.split("=")[1] for p in (data_args.user_defined).split(" ")}
         assert "data_name" in param, "You must add one defined param 'data_name=xxx' in the user_defined parameter."
         self.data_name = param["data_name"]
