@@ -56,8 +56,9 @@ Processing data for Masked LM
 The pre-training corpus is saved in 'txt' file. Each line is a sentence.
 """
 class MLMTextLineProcessor(DataProcessor):
-    def __init__(self, data_args, training_args, model_args):
+    def __init__(self, data_args, training_args, model_args, tokenizer=None):
         super().__init__(data_args, training_args, model_args)
+        self.tokenizer = tokenizer
 
     def get_data_collator(self):
         pad_to_multiple_of_8 = self.data_args.line_by_line and self.training_args.fp16 and not self.data_args.pad_to_max_length

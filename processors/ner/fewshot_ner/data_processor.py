@@ -25,8 +25,8 @@ Processing data for FewNERD dataset based on token-based proto
 
 """
 class TokenProtoFewNERDProcessor(FewShotNERProcessor):
-    def __init__(self, data_args, training_args, model_args, post_tokenizer=False, keep_raw_data=True):
-        super().__init__(data_args, training_args, model_args, post_tokenizer=post_tokenizer, keep_raw_data=keep_raw_data)
+    def __init__(self, data_args, training_args, model_args, tokenizer=None, post_tokenizer=False, keep_raw_data=True):
+        super().__init__(data_args, training_args, model_args, tokenizer, post_tokenizer=post_tokenizer, keep_raw_data=keep_raw_data)
         param = {p.split("=")[0]: p.split("=")[1] for p in (data_args.user_defined).split(" ")} # user_defined parameter
         N, Q, K, mode = param["N"], param["Q"], param["K"], param['mode'] # N: num class, Q: query entity num, K: support entity num
         self.train_file = os.path.join(data_args.data_dir, "train_{}_{}.jsonl".format(N, K))

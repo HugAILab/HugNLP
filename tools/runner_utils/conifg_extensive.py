@@ -3,7 +3,8 @@ from config import ModelArguments
 
 # add external config.
 def config_extensive(hf_config: AutoConfig, model_config: ModelArguments):
-    hf_config.use_pe = model_config.use_pe
+    hf_config.use_prompt_for_cls = model_config.use_prompt_for_cls
+    hf_config.use_freezing = model_config.use_freezing
     hf_config.adapter_choice = model_config.adapter_choice
     hf_config.adapter_dim = model_config.adapter_dim
     hf_config.pre_seq_len = model_config.pre_seq_len

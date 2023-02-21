@@ -17,7 +17,12 @@ HugNLP is a novel development and application library based on [HuggingFace](htt
 # Architecture
 
 The framework overview is shown as follow:
-![Figure: the overview of HugNLP](./images/overview.png)
+
+<p align="center">
+    <br>
+    <img src="images/overview.png" width="80%"/>
+    <br>
+<p>
 
 ### Models
 

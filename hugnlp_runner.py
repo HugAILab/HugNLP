@@ -41,7 +41,6 @@ def print_hello():
 def main():
     # See all possible arguments or by passing the --help flag to this script.
     parser = HfArgumentParser((ModelArguments, DataTrainingArguments, TrainingArguments))
-
     model_args, data_args, training_args = parser.parse_args_into_dataclasses()
 
     if training_args.local_rank == 0:
@@ -78,40 +77,7 @@ def main():
     # Set seed before initializing model.
     set_seed(training_args.seed)
 
-    # 加载任务相关处理的processor
-    if data_args.task_name in PROCESSORS:
-        processor = PROCESSORS[data_args.task_name](data_args, training_args, model_args)
-    else:
-        raise ValueError("task name 未指定或不在processor map中")
-    # Load pretrained model and tokenizer
-    # The .from_pretrained methods guarantee that only one local process can concurrently download model & vocab.
-    config_kwargs = {
-        "cache_dir": model_args.cache_dir,
-        "revision": model_args.model_revision,
-        'finetuning_task': data_args.task_name
-    }
-
-    # if 'mlm' not in data_args.task_type:
-    if hasattr(processor, 'labels'):
-        config_kwargs['num_labels'] = len(processor.labels)
-    if model_args.config_name:
-        config = AutoConfig.from_pretrained(model_args.config_name, **config_kwargs)
-    elif model_args.model_name_or_path:
-        config = AutoConfig.from_pretrained(model_args.model_name_or_path, **config_kwargs)
-        if 'longformer' in model_args.model_name_or_path:
-            config.sep_token_id = 102
-    else:
-        config = CONFIG_MAPPING[model_args.model_type]()
-        logger.warning("You are instantiating a new config instance from scratch.")
-        if model_args.config_overrides is not None:
-            logger.info(f"Overriding config: {model_args.config_overrides}")
-            config.update_from_string(model_args.config_overrides)
-            logger.info(f"New config: {config}")
-    
-    # add other config
-    config = config_extensive(config, model_args)
-
-
+    # obtain tokenizer
     tokenizer_kwargs = {
         "cache_dir": model_args.cache_dir,
         "use_fast": model_args.use_fast_tokenizer,
@@ -129,20 +95,54 @@ def main():
             "You can do it from another script, save it, and load it from here, using --tokenizer_name."
         )
 
-    processor.set_tokenizer(tokenizer)
+    # build processors
+    if data_args.task_name in PROCESSORS:
+        processor = PROCESSORS[data_args.task_name](data_args, training_args, model_args, tokenizer=tokenizer)
+    else:
+        raise ValueError("Unknown task name, please check in processor map.")
+    # Load pretrained model and tokenizer
+    # The .from_pretrained methods guarantee that only one local process can concurrently download model & vocab.
+    config_kwargs = {
+        "cache_dir": model_args.cache_dir,
+        "revision": model_args.model_revision,
+        'finetuning_task': data_args.task_name
+    }
 
+    # add num_labels
+    if hasattr(processor, 'labels'):
+        config_kwargs['num_labels'] = len(processor.labels)
+
+    # set configure
+    if model_args.config_name:
+        config = AutoConfig.from_pretrained(model_args.config_name, **config_kwargs)
+    elif model_args.model_name_or_path:
+        config = AutoConfig.from_pretrained(model_args.model_name_or_path, **config_kwargs)
+        if 'longformer' in model_args.model_name_or_path:
+            config.sep_token_id = 102
+    else:
+        config = CONFIG_MAPPING[model_args.model_type]()
+        logger.warning("You are instantiating a new config instance from scratch.")
+        if model_args.config_overrides is not None:
+            logger.info(f"Overriding config: {model_args.config_overrides}")
+            config.update_from_string(model_args.config_overrides)
+            logger.info(f"New config: {config}")
+    
+    # add label mapping if use prompt-tuning
+    if model_args.use_prompt_for_cls:
+        assert hasattr(processor, "label_word_list"), "If you use prompt, you must design label_word_list in processor."
+        config.label_word_list = processor.label_word_list
+    
+    # add other config
+    config = config_extensive(config, model_args)
     processor.set_config(config)
 
+    # set model
     model_class = MODEL_CLASSES[data_args.task_type]
     if type(model_class) == dict:
         model_class = model_class[model_args.model_type]
-
-    # print("training_args.pre_train_from_scratch=", training_args.pre_train_from_scratch)
     if training_args.pre_train_from_scratch:
         logger.info("Training new model from scratch")
-        # model = model_class._from_config(config)
         model = model_class(config)
-
     else:
         logger.info("Continual Tuning a Pre-trained Model")
         model = model_class.from_pretrained(
@@ -155,18 +155,13 @@ def main():
             ignore_mismatched_sizes=True
         )
     
-    # if training_args.local_rank == 0:
-    #     # for name in model.state_dict():
-    #     #     print(name)
-    #     # for parameters in model.parameters():
-    #     #     print(parameters)
-    #     print(model.state_dict()['transformer.h.17.mlp.c_fc.weight'])
-    # assert 1>2
+    # resize token embeddings
     try:
         model.resize_token_embeddings(len(tokenizer))
     except:
         print("Fail to resize token embeddings.")
 
+    # obtain tokenized data
     tokenized_datasets = processor.get_tokenized_datasets()
     if training_args.do_train:
         if "train" not in tokenized_datasets:
@@ -189,7 +184,7 @@ def main():
         if data_args.max_predict_samples is not None:
             test_dataset = test_dataset.select(range(data_args.max_predict_samples))
 
-    # Data collator
+    # set data collator
     data_collator = processor.get_data_collator()
     if hasattr(processor, 'compute_metrics'):
         compute_metrics = processor.compute_metrics
@@ -201,7 +196,8 @@ def main():
     # --mlflow_location：添加mlflow tracker
     # --early_stopping_patience default None, --metric_for_best_model default eval_loss, --load_best_model_at_end, 添加early stopping
     # --freeze_epochs, --freeze_keyword 冻层操作
-
+    
+    # obtain tracking
     callbacks = [LoggerCallback]
     if data_args.mlflow_location or data_args.tracking_uri:
         mlflow_callback = MLflowCallback(model_args, data_args, training_args)

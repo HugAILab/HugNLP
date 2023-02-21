@@ -93,7 +93,15 @@ class ModelArguments:
         metadata={'help': 'do_lower_case'}
     )
 
-    use_pe: bool = field(
+    use_prompt_for_cls: bool = field(
+        default=False,
+        metadata={
+            "help": "Whether to use prompt-based learning settings. If true, that means use pre-trained task with specific" 
+            "template to make predictions"
+        }
+    )
+
+    use_freezing: bool = field(
         default=False,
         metadata={
             "help": "Whether to use parameter-efficient settings. If true, that means freezing the parameters of the backbone, and only"

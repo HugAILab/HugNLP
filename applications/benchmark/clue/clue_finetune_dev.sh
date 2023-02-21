@@ -33,6 +33,7 @@ clue_task=tnews
 #task_type_=fusion_siamese
 #task_type_=autocls
 # TASK_TYPE=classification
+# TASK_TYPE=head_cls
 TASK_TYPE=head_prefix_cls
 
 #### inference model path
@@ -167,4 +168,6 @@ python -m torch.distributed.launch --nproc_per_node=2 --master_port=6014 hugnlp_
   --label_names=labels \
   --keep_predict_labels \
   --user_defined="data_name=$clue_task" \
+  --pre_seq_len=4 \
+  --use_freezing
   # --do_adv

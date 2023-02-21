@@ -75,8 +75,8 @@ class DataCollatorForGlobalPointer:
 
 # Used for mrc-based instruction-tuning in Chinese
 class ChineseInstructionMRCProcessor(CLSProcessor):
-    def __init__(self, data_args, training_args, model_args, post_tokenizer=False, keep_raw_data=True):
-        super().__init__(data_args, training_args, model_args, post_tokenizer=post_tokenizer, keep_raw_data=keep_raw_data)
+    def __init__(self, data_args, training_args, model_args, tokenizer=None, post_tokenizer=False, keep_raw_data=True):
+        super().__init__(data_args, training_args, model_args, tokenizer, post_tokenizer=post_tokenizer, keep_raw_data=keep_raw_data)
         self.train_file = os.path.join(data_args.data_dir, 'train.json') # 原始训练数据
         self.dev_file = os.path.join(data_args.data_dir, 'dev.json')
         self.test_file = os.path.join(data_args.data_dir, 'test.json')

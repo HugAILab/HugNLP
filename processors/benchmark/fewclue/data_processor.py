@@ -22,8 +22,8 @@ from processors.benchmark.fewclue.data_collator import DataCollatorForGlobalPoin
 
 # Used for mrc-based instruction-tuning for FewCLUE benchmark
 class InstructionMRCForFewCLUEProcessor(CLSProcessor):
-    def __init__(self, data_args, training_args, model_args, post_tokenizer=False, keep_raw_data=True):
-        super().__init__(data_args, training_args, model_args, post_tokenizer=post_tokenizer, keep_raw_data=keep_raw_data)
+    def __init__(self, data_args, training_args, model_args, tokenizer=None, post_tokenizer=False, keep_raw_data=True):
+        super().__init__(data_args, training_args, model_args, tokenizer, post_tokenizer=post_tokenizer, keep_raw_data=keep_raw_data)
         param = {p.split("=")[0]: p.split("=")[1] for p in (data_args.user_defined).split(" ")}
         assert "data_name" in param, "You must add one defined param 'data_name=xxx' in the user_defined parameter."
         self.data_name = param["data_name"]
