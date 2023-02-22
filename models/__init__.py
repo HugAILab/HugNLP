@@ -51,17 +51,6 @@ from models.sequence_classification.masked_prompt_cls import (
     PromptRobertaPrefixForSequenceClassification, PromptRobertaAdapterForSequenceClassification
 )
 
-# from models.sequence_classification.masked_prompt_cls import (
-#     PromptBertForSequenceClassification, PromptBertPrefixForSequenceClassification,
-#     PromptBertPtuningForSequenceClassification, PromptBertAdapterForSequenceClassification,
-#     PromptRobertaForSequenceClassification, PromptRobertaPrefixForSequenceClassification,
-#     PromptRobertaPtuningForSequenceClassification, PromptRobertaAdapterForSequenceClassification,
-#     PromptDebertaForSequenceClassification, PromptDebertaPrefixForSequenceClassification,
-#     PromptDebertaPtuningForSequenceClassification,
-#     PromptDebertav2ForSequenceClassification, PromptDebertav2PrefixForSequenceClassification,
-#     PromptDebertav2PtuningForSequenceClassification
-# )
-
 from models.language_modeling.mlm import BertForMaskedLM
 
 # Models for pre-training

@@ -30,13 +30,13 @@ glue_task=rte
 # TASK_TYPE=autocls
 # TASK_TYPE=classification
 # TASK_TYPE=head_cls
-# TASK_TYPE=head_prefix_cls
-TASK_TYPE=masked_prompt_prefix_cls
+TASK_TYPE=head_prefix_cls
+# TASK_TYPE=masked_prompt_prefix_cls
 
-
-len=256
+### hyper-parameter
+len=128
 bz=8
-epoch=5
+epoch=100
 eval_step=50
 wr_step=50
 lr=1e-05
@@ -100,7 +100,7 @@ python -m torch.distributed.launch --nproc_per_node=2 --master_port=6014 hugnlp_
   --label_names=labels \
   --keep_predict_labels \
   --user_defined="data_name=$glue_task" \
-  --use_prompt_for_cls \
+  # --use_prompt_for_cls \ 
   # --pre_seq_len=1 \
   # --use_freezing
   # --do_adv

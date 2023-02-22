@@ -13,7 +13,7 @@ from collections import defaultdict
 from processors.ProcessorBase import CLSProcessor
 from processors.benchmark.glue.glue_processor import glue_processors, glue_output_modes, task_to_keys
 from metrics import datatype2metrics
-from processors.benchmark.glue.data_collator import DataCollator
+from processors.benchmark.glue.data_collator import DataCollatorForGLUE
 from processors.basic_processors.prompt_processor import AddPromptIntoExample
 from processors.benchmark.glue.task_engineering import label_words_mapping
 from tools.processing_utils.tokenizer.tokenizer_utils import get_special_token_mapping
@@ -66,7 +66,7 @@ class GLUEProcessor(CLSProcessor):
 
     def get_data_collator(self):
         pad_to_multiple_of_8 = self.training_args.fp16 and not self.data_args.pad_to_max_length
-        return DataCollator(self.tokenizer, max_length=self.data_args.max_seq_length, pad_to_multiple_of=8 if pad_to_multiple_of_8 else None, pad_to_max_length=self.data_args.pad_to_max_length)
+        return DataCollatorForGLUE(self.tokenizer, max_length=self.data_args.max_seq_length, pad_to_multiple_of=8 if pad_to_multiple_of_8 else None, pad_to_max_length=self.data_args.pad_to_max_length)
 
     def get_tokenized_datasets(self):
 
@@ -95,7 +95,7 @@ class GLUEProcessor(CLSProcessor):
                 load_from_cache_file=False,
                 desc="Running tokenizer on dataset",
                 # cache_file_names={k: f'{cache_dir}/cache_{self.data_args.task_name}_{self.data_name}_{str(k)}.arrow' for k in raw_datasets},
-                remove_columns=remove_columns
+                # remove_columns=remove_columns
             )
             if self.keep_raw_data:
                 self.raw_datasets = raw_datasets

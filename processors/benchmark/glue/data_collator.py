@@ -9,7 +9,7 @@ from transformers import PreTrainedTokenizerBase
 
 
 @dataclass
-class DataCollator:
+class DataCollatorForGLUE:
     tokenizer: PreTrainedTokenizerBase
     max_length: Optional[int] = 512
     pad_to_multiple_of: Optional[int] = None
