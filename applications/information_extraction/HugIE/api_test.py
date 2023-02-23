@@ -57,7 +57,7 @@ class HugIEAPI:
                 if ans not in answer:
                     answer.append(ans)
                     # topk_answer.append({'answer': ans, 'prob': float(prob[index_ids[ei]]), 'pos': (s, e)})
-                    topk_answer_dict[ans] = {'prob': float(prob[index_ids[ei]]), 'pos': [(s, e)]}
+                    topk_answer_dict[ans] = {'prob': float(prob[index_ids[ei]]), 'pos': [(s.detach().cpu().numpy().tolist(), e.detach().cpu().numpy().tolist())]}
 
             predictions[idx] = answer
             if idx not in topk_predictions.keys():
@@ -125,7 +125,7 @@ if __name__ == "__main__":
     predictions, topk_predictions = hugie.request(text, entity_type)
     print("entity_type:{}".format(entity_type))
     print("predictions:\n{}".format(predictions))
-    print("predictions:\n{}".format(topk_predictions))
+    print("topk_predictions:\n{}".format(topk_predictions))
     print("\n\n")
 
     ## event extraction
@@ -134,7 +134,7 @@ if __name__ == "__main__":
     predictions, topk_predictions = hugie.request(text, entity, relation=relation)
     print("entity:{}, relation:{}".format(entity, relation))
     print("predictions:\n{}".format(predictions))
-    print("predictions:\n{}".format(topk_predictions))
+    print("topk_predictions:\n{}".format(topk_predictions))
     print("\n\n")
 
 
@@ -144,7 +144,7 @@ if __name__ == "__main__":
     predictions, topk_predictions = hugie.request(text, entity, relation=relation)
     print("entity:{}, relation:{}".format(entity, relation))
     print("predictions:\n{}".format(predictions))
-    print("predictions:\n{}".format(topk_predictions))
+    print("topk_predictions:\n{}".format(topk_predictions))
     print("\n\n")
 
     ## event extraction
@@ -153,7 +153,7 @@ if __name__ == "__main__":
     predictions, topk_predictions = hugie.request(text, entity, relation=relation)
     print("entity:{}, relation:{}".format(entity, relation))
     print("predictions:\n{}".format(predictions))
-    print("predictions:\n{}".format(topk_predictions))
+    print("topk_predictions:\n{}".format(topk_predictions))
     print("\n\n")
 
     ## event extraction
@@ -162,7 +162,7 @@ if __name__ == "__main__":
     predictions, topk_predictions = hugie.request(text, entity, relation=relation)
     print("entity:{}, relation:{}".format(entity, relation))
     print("predictions:\n{}".format(predictions))
-    print("predictions:\n{}".format(topk_predictions))
+    print("topk_predictions:\n{}".format(topk_predictions))
     print("\n\n")
 
 
