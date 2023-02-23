@@ -2,9 +2,12 @@
     <br>
     <img src="images/logo.png" width="300"/>
     <br>
-<p>
+</p>
     
-<p align="center" style="font-size:22px;"> <b> Welcome to use HugNLP. 🤗 Hugging for NLP!
+<p align="center" style="font-size:22px;"> <b> Welcome to use HugNLP. 🤗 Hugging for NLP! </b>
+<p>
+
+
 
 # About HugNLP
 
@@ -49,13 +52,15 @@ The framework overview is shown as follow:
 
 ## HugIE：Towards Chinese Unified Information Extraction via Extractive MRC and Instruction-tuning 
 
-**Introduction**
+### Introduction
+
 Information Extraction (IE) aims to extract structure knowledge from un-structure text. The structure knowledge is formed as a triple ""(head_entity, relation, tail_entity)"". IE consists of two mainly tasks:
 - Named Entity Recognition (NER) aims to extract all entity mentions of one type.
 - Relation Extraction (RE). It has two kinds of goal, the first aims to classify the relation between two entities, the second is aim at predict the tail entity when given one head entity and the corresponding relation.
 
 
-**Solutions**
+### Solutions
+
 - We unify the tasks of NER and RE into the paradigm of extractive question answering (i.e., machine reading comprehension).
 - We design task-specific instruction and language prompts for NER and RE.
 > For the NER task:
@@ -65,7 +70,7 @@ Information Extraction (IE) aims to extract structure knowledge from un-structur
 > - instruction: "找到文章中【{head_entity}】的【{relation}】？文章：【{passage_text}】"
 - During the training, we utilize Global Pointer with Chinese-Macbert as the basic model.；
 
-**Usage**
+### Usage
 
 Our model is saved in Hugging Face: [https://huggingface.co/wjn1996/wjn1996-hugnlp-hugie-large-zh](https://huggingface.co/wjn1996/wjn1996-hugnlp-hugie-large-zh).
 
