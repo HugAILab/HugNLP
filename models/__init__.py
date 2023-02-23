@@ -117,6 +117,16 @@ CLASSIFICATION_MODEL_CLASSES = {
     }, # use causal lm head for prompt-tuning, e.g., gpt2+lm
 }
 
+SPAN_EXTRACTION_MODEL_CLASSES = {
+    "global_pointer": {
+        "bert": BertForEffiGlobalPointer,
+        "roberta": RobertaForEffiGlobalPointer,
+        "roformer": RoformerForEffiGlobalPointer,
+        "megatronbert": MegatronForEffiGlobalPointer
+    },
+}
+
+
 FEWSHOT_MODEL_CLASSES = {
     "sequence_proto": None,
     "span_proto": SpanProto,
@@ -142,11 +152,6 @@ OTHER_MODEL_CLASSES = {
     'megatronbert_span_ner': MegatronBertSpanForNer,
     # sequence matching
     'fusion_siamese': BertForFusionSiamese,
-    # span extraction
-    'bert_global_pointer': BertForEffiGlobalPointer,
-    'roberta_globale_pointer': RobertaForEffiGlobalPointer,
-    'roformer_global_pointer': RoformerForEffiGlobalPointer,
-    'megatronbert_global_pointer': MegatronForEffiGlobalPointer, 
     # multiple choice
     'multi_choice': AutoModelForMultipleChoice,
     'multi_choice_megatron': MegatronBertForMultipleChoice,
@@ -182,6 +187,7 @@ OTHER_MODEL_CLASSES = {
 MODEL_CLASSES_LIST = [
     PRETRAIN_MODEL_CLASSES, 
     CLASSIFICATION_MODEL_CLASSES,
+    SPAN_EXTRACTION_MODEL_CLASSES,
     FEWSHOT_MODEL_CLASSES,
     OTHER_MODEL_CLASSES,
 ]
@@ -201,5 +207,6 @@ TOKENIZER_CLASSES = {
     "erlangshen": BertTokenizerFast,
     "deberta": BertTokenizer,
     "roformer_v2": BertTokenizerFast,
-    "gpt2": GPT2TokenizerFast
+    "gpt2": GPT2TokenizerFast,
+    "megatronbert": BertTokenizerFast
 }
