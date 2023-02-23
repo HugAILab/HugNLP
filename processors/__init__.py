@@ -27,6 +27,7 @@ from processors.chinese_instruction_tuning.data_process import ChineseInstructio
 PRETRAINING_PROCESSORS = {
     "mlm_text_line": MLMTextLineProcessor, 
     "causal_lm_text_line": CausalLMITextLineProcessor,
+    "en_wiki_kpplm": WikiKPPLMSupervisedJsonProcessor,
 }
 
 
@@ -50,6 +51,10 @@ BENCHMARKS_PROCESSORS = {
     "glue": GLUEProcessor, # glue
 }
 
+INSTRUCTION_PROCESSORS = {
+    "zh_mrc_instruction": ChineseInstructionMRCProcessor,
+}
+
 
 OTHER_PROCESSORS = {
     # pre-training language model
@@ -60,9 +65,9 @@ OTHER_PROCESSORS = {
     # 'causal_lm_incontext': CausalLMInContextProcessor,
     # 'kgpretrain': PretrainWithKGFromDisk,
     # 'kgpretrain_v2': KgV2Processor,
-    'en_wiki_kpplm': WikiKPPLMSupervisedJsonProcessor,
+    
     # chinese instruction-tuning
-    'zh_mrc_instruction': ChineseInstructionMRCProcessor,
+    
     # 'cpic': CPICProcessor,
     
 }
@@ -70,6 +75,7 @@ OTHER_PROCESSORS = {
 PROCESSORS_LIST = [
     PRETRAINING_PROCESSORS, 
     IE_PROCESSORS,
+    INSTRUCTION_PROCESSORS,
     BENCHMARKS_PROCESSORS,
     OTHER_PROCESSORS,
 ]
