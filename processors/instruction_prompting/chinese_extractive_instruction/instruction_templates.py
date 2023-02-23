@@ -4,7 +4,7 @@ import sys
 sys.path.append('./')
 sys.path.append('../')
 sys.path.append('../../')
-from processors.chinese_instruction_tuning.instruction_prompts import *
+from processors.instruction_prompting.chinese_extractive_instruction.instruction_prompts import *
 from tqdm import tqdm
 import random
 
