@@ -116,7 +116,7 @@ class HugIEAPI:
 if __name__ == "__main__":
     from applications.information_extraction.HugIE.api_test import HugIEAPI
     model_type = 'bert'
-    hugie_model_name_or_path = '/Users/wangjianing/Desktop/项目文件/阿里云AIR/信息抽取框架建设/HugNLP/output/chinese-macbert-large/'
+    hugie_model_name_or_path = 'wjn1996/wjn1996-hugnlp-hugie-large-zh'
     hugie = HugIEAPI('bert', hugie_model_name_or_path)
     text = "央广网北京2月23日消息 据中国地震台网正式测定，2月23日8时37分在塔吉克斯坦发生7.2级地震，震源深度10公里，震中位于北纬37.98度，东经73.29度，距我国边境线最近约82公里，地震造成新疆喀什等地震感强烈。"
     

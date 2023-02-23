@@ -15,8 +15,8 @@ from metrics import datatype2metrics
 from collections import defaultdict, Counter
 
 from processors.benchmark.fewclue.utils import InputExample
-from processors.chinese_instruction_tuning.instruction_templates import dataset2instruction
-from processors.chinese_instruction_tuning.instruction_prompts import *
+from processors.instruction_prompting.chinese_extractive_instruction.instruction_templates import dataset2instruction
+from processors.instruction_prompting.chinese_extractive_instruction.instruction_prompts import *
 from processors.benchmark.fewclue.fewclue_processor import clue_processors, clue_output_modes, clue_task_to_instruction_type
 from processors.benchmark.fewclue.data_collator import DataCollatorForGlobalPointer
 

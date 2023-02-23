@@ -45,15 +45,31 @@ The framework overview is shown as follow:
 # Quick Develop
 
 
-# Demo API 
+# Demo APIs & Products 
 
-## HugIE：基于MRC的Instruction-tuning的统一信息抽取框架
-基本思想和优势：
-- 构建Instruction模板，将实体识别和事件抽取统一为MRC形式；
-- 采用Global Pointer训练抽取器；
-- 只需少量代码即可实现事件抽取，获取实体名称，事件信息。
+## HugIE：Towards Chinese Unified Information Extraction via Extractive MRC and Instruction-tuning 
 
-快速使用：
+**Introduction**
+Information Extraction (IE) aims to extract structure knowledge from un-structure text. The structure knowledge is formed as a triple ""(head_entity, relation, tail_entity)"". IE consists of two mainly tasks:
+- Named Entity Recognition (NER) aims to extract all entity mentions of one type.
+- Relation Extraction (RE). It has two kinds of goal, the first aims to classify the relation between two entities, the second is aim at predict the tail entity when given one head entity and the corresponding relation.
+
+
+**Solutions**
+- We unify the tasks of NER and RE into the paradigm of extractive question answering (i.e., machine reading comprehension).
+- We design task-specific instruction and language prompts for NER and RE.
+> For the NER task:
+> - instruction: "找到文章中所有【{entity_type}】类型的实体？文章：【{passage_text}】"
+> 
+> For the RE task:
+> - instruction: "找到文章中【{head_entity}】的【{relation}】？文章：【{passage_text}】"
+- During the training, we utilize Global Pointer with Chinese-Macbert as the basic model.；
+
+**Usage**
+
+Our model is saved in Hugging Face: [https://huggingface.co/wjn1996/wjn1996-hugnlp-hugie-large-zh](https://huggingface.co/wjn1996/wjn1996-hugnlp-hugie-large-zh).
+
+Quick use HugIE for Chinese information extraction：
 
 ```python
 from applications.information_extraction.HugIE.api_test import HugIEAPI
@@ -71,14 +87,13 @@ print("topk_predictions:\n{}".format(predictions))
 print("\n\n")
 
 """
-# 实体识别输出结果：
+# 事件信息输出结果：
 entity:塔吉克斯坦地震, relation:震源位置
 predictions:
 {0: ['10公里', '距我国边境线最近约82公里', '北纬37.98度，东经73.29度', '北纬37.98度，东经73.29度，距我国边境线最近约82公里']}
 topk_predictions:
 {0: [{'answer': '10公里', 'prob': 0.9895901083946228, 'pos': [(80, 84)]}, {'answer': '距我国边境线最近约82公里', 'prob': 0.8584909439086914, 'pos': [(107, 120)]}, {'answer': '北纬37.98度，东经73.29度', 'prob': 0.7202121615409851, 'pos': [(89, 106)]}, {'answer': '北纬37.98度，东经73.29度，距我国边境线最近约82公里', 'prob': 0.11628123372793198, 'pos': [(89, 120)]}]}
 """
-
 
 entity = "塔吉克斯坦地震"
 relation = "时间"
@@ -97,6 +112,7 @@ topk_predictions:
 {0: [{'answer': '2月23日8时37分', 'prob': 0.9999995231628418, 'pos': [(49, 59)]}]}
 """
 ```
+
 
 
 # Contact

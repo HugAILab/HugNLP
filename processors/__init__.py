@@ -21,7 +21,7 @@ from processors.pretraining.causal_lm.data_processor import CausalLMITextLinePro
 # few-shot ner
 from processors.ner.fewshot_ner.data_processor import SpanProtoFewNERDProcessor, SpanProtoCrossNERProcessor, TokenProtoFewNERDProcessor
 # chinese instruction-tuning
-from processors.chinese_instruction_tuning.data_process import ChineseInstructionMRCProcessor
+from processors.instruction_prompting.chinese_extractive_instruction.data_processor import ChineseExtractiveInstructionProcessor
 
 # Pre-training Tasks
 PRETRAINING_PROCESSORS = {
@@ -52,7 +52,7 @@ BENCHMARKS_PROCESSORS = {
 }
 
 INSTRUCTION_PROCESSORS = {
-    "zh_mrc_instruction": ChineseInstructionMRCProcessor,
+    "zh_mrc_instruction": ChineseExtractiveInstructionProcessor,
 }
 
 
