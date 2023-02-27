@@ -253,6 +253,7 @@ class BertPrefixForSequenceClassification(BertPreTrainedModel):
             hidden_states=outputs.hidden_states,
             attentions=outputs.attentions,
         )
+        
 
 #  Prompt-tuning For BERT
 class BertPtuningForSequenceClassification(BertPreTrainedModel):

@@ -13,8 +13,32 @@
 
 HugNLP is a novel development and application library based on [HuggingFace](https://huggingface.co/) for improving the convenience and effectiveness of NLP researches.
 
-# Capability System
+# Core Capacities
 
+### Knowledge-enhanced Pre-trained Language Model
+Conventional pre-training methods lack factual knowledge. 
+To deal with this issue, we present KP-PLM with a novel knowledge prompting paradigm for knowledge-enhanced pre-training.
+Specifically, we construct a knowledge sub-graph for each input text by recognizing entities and aligning with the knowledge base and decompose this sub-graph into multiple relation paths, which can be directly transformed into language prompts.
+
+### Prompt-based Fine-tuning
+Prompt-based fine-tuning aims to reuse the pre-training objective (e.g., Masked Language Modeling, Causal Language Modeling) and utilizes a well-designed template and verbalizer to make predictions, which has achieved great success in low-resource settings.
+We integrate some novel approaches into HugNLP, such as PET, P-tuning, etc.
+
+### Instruction Tuning & In-Context Learning
+Instruction-tuning and in-context learning enable few/zero-shot learning without parameter update, which aims to concatenate the task-aware instructions or example-based demonstrations to prompt GPT-style PLMs to generate reliable responses.
+So, all the NLP tasks can be unified into the same format and can substantially improve the models' generalization.
+Inspired by this idea, we extend it into other two paradigms:
+1) extractive-style paradigm: we unify various NLP tasks into span extraction, which is the same as extractive question answering. 
+2) inference-style paradigm: all the tasks can be viewed as natural language inference to match the relations between inputs and outputs.
+
+### Self-training with Uncertainty Estimation
+Self-training can address the labeled data scarcity issue by leveraging the large-scale unlabeled data in addition to labeled data, which is one of the mature paradigms in semi-supervised learning.
+However, the standard self-training may generate too many noises, inevitably degrading the model performance due to the confirmation bias.
+Thus, we present uncertainty-aware self-training. Specifically, we train a teacher model on few-shot labeled data, and then use Monte Carlo (MC) dropout technique in Bayesian neural network (BNN) to approximate the model certainty, and judiciously select the examples that have a higher model certainty of the teacher.
+
+### Parameter-Efficient Learning
+To improve the training efficiency of HugNLP, we also implement parameter-efficient learning, which aims to freeze some parameters in the backbone so that we only tune a few parameters during model training.
+We develop some novel parameter-efficient learning approaches, such as Prefix-tuning, Adapter-tuning, BitFit and LoRA, etc.
 
 
 # Architecture
@@ -29,26 +53,48 @@ The framework overview is shown as follow:
 
 ### Models
 
+In HugNLP, we provide some popular transformer-based models as backbones, such as BERT, RoBERTa, GPT-2, etc. We also release our pre-built KP-PLM, a novel knowledge-enhanced pre-training paradigm to inject factual knowledge and can be easily used for arbitrary PLMs.
+Apart from basic PLMs, we also implement some task-specific models, involving sequence classification, matching, labeling, span extraction, multi-choice, and text generation.
+Particularly, we develop standard fine-tuning (based on CLS Head and prompt-tuning models that enable PLM tuning on classification tasks.
+For few-shot learning settings, HugNLP provides a prototypical network in both few-shot text classification and named entity recognition (NER).
+
+In addition, we also incorporate some plug-and-play utils in HugNLP. 
+1) Parameter Freezing. If we want to perform parameter-efficient learning, which aims to freeze some parameters in PLMs to improve the training efficiency, we can set the configure ```use_freezing``` and freeze the backbone. A use case is shown in Code.
+2) Uncertainty Estimation aims to calculate the model certainty when in semi-supervised learning.
+3) We also design Prediction Calibration, which can be used to further improve the accuracy by calibrating the distribution and alleviating the semantics bias problem.
 
 ### Processors
+Processors aims to load the dataset and process the task examples in a pipeline, containing sentence tokenization, sampling, and tensor generation.
+Specifically, users can directly obtain the data through ```load_dataset```, which can directly download it from the Internet or load it from the local disk.
+For different tasks, users should define a task-specific data collator, which aims to transform the original examples into model input tensor features.
+
+### Applications
+It provides rich modules for users to build real-world applications and products by selecting among an array of settings from Models and Processors. 
 
 
-### Application
-
-
-### Trainer
 
 # Quick Use
 
-下载代码
-推荐使用vscode
-修改.vscode/sftp.json配置信息，修改服务器地址和密码，实现文件传输
+> git clone https://github.com/wjn1996/HugNLP.git
+> 
+> d HugNLP
+> 
+> python setup.py install
 
 
 # Quick Develop
 
+HugNLP is easy to use and develop. We draw a workflow in the follow figure to show how to develop a new running task.
+<p align="center">
+    <br>
+    <img src="images/workflow.png" width="90%"/>
+    <br>
+</p>
+It consists of five main steps, including library installation, data preparation, processor selection or design, model selection or design, and application design.
+This illustrates that HugNLP can simplify the implementation of complex NLP models and tasks.
 
-# Demo APIs & Products 
+
+# Demo Example 
 
 ## HugIE：Towards Chinese Unified Information Extraction via Extractive MRC and Instruction-tuning 
 
@@ -121,6 +167,30 @@ topk_predictions:
 
 
 # Contact
+ 
+ You can concate the author ```Jianing Wang``` from github.
+ The interaction group in QQ or DINGDING will comming soon.
 
 
 # References
+
+
+> @article{hugnlp,
+  doi = {10.48550/ARXIV.2205.00258},  
+  author = {Jianing Wang, Nuo Chen, Qiushi Sun, Wenkang Huang, Chengyu Wang, Ming Gao},
+  title = {HugNLP: A Unified and Comprehensive Library for Natural Language Processing},
+  publisher = {arXiv},  
+  year = {2022}
+}
+
+The friend framework [EasyNLP](https://github.com/alibaba/EasyNLP) is:
+
+> @article{easynlp,
+  doi = {10.48550/ARXIV.2205.00258},  
+  url = {https://arxiv.org/abs/2205.00258},  
+  author = {Wang, Chengyu and Qiu, Minghui and Zhang, Taolin and Liu, Tingting and Li, Lei and Wang, Jianing and Wang, Ming and Huang, Jun and Lin, Wei},
+  title = {EasyNLP: A Comprehensive and Easy-to-use Toolkit for Natural Language Processing},
+  publisher = {arXiv},  
+  year = {2022}
+}
+
