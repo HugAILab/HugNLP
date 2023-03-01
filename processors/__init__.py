@@ -28,39 +28,39 @@ from processors.default_task_processors.data_processor import DefaultSequenceCla
 
 # Pre-training Tasks
 PRETRAINING_PROCESSORS = {
-    "mlm_text_line": MLMTextLineProcessor, 
-    "causal_lm_text_line": CausalLMITextLineProcessor,
-    "en_wiki_kpplm": WikiKPPLMSupervisedJsonProcessor,
+    'mlm_text_line': MLMTextLineProcessor,
+    'causal_lm_text_line': CausalLMITextLineProcessor,
+    'en_wiki_kpplm': WikiKPPLMSupervisedJsonProcessor,
 }
-
 
 # Information Extraction Tasks
 IE_PROCESSORS = {
-    "span_proto_fewnerd": SpanProtoFewNERDProcessor, # span-based proto for few-shot ner
-    "token_proto_fewnerd": TokenProtoFewNERDProcessor, # token-based proto for few-shot ner
+    'span_proto_fewnerd':
+    SpanProtoFewNERDProcessor,  # span-based proto for few-shot ner
+    'token_proto_fewnerd':
+    TokenProtoFewNERDProcessor,  # token-based proto for few-shot ner
 }
 
 BENCHMARKS_PROCESSORS = {
-    "clue": CLUEProcessor,
-    "clue_ner": CLUENERProcessor,
-    "clue_tnews_efl": TnewsEFLProcessor, # clue Tnews改造
-    "clue_csl_efl": CSLEFLProcessor, # clue Csl改造
-    "c3": C3Processor,
-    "clue_chid": ChidTagProcessor, # clue的chid任务
-    "cmrc": CMRCProcessor, # clue的cmrc任务
-    "chid_mlm": ChidMLMProcessor,
-    "clue_mrc_style": CLUEMRCProcessor, # clue任务转换为mrc模式
-    "fewclue_instruction": InstructionMRCForFewCLUEProcessor,
-    "glue": GLUEProcessor, # glue
+    'clue': CLUEProcessor,
+    'clue_ner': CLUENERProcessor,
+    'clue_tnews_efl': TnewsEFLProcessor,  # clue Tnews改造
+    'clue_csl_efl': CSLEFLProcessor,  # clue Csl改造
+    'c3': C3Processor,
+    'clue_chid': ChidTagProcessor,  # clue的chid任务
+    'cmrc': CMRCProcessor,  # clue的cmrc任务
+    'chid_mlm': ChidMLMProcessor,
+    'clue_mrc_style': CLUEMRCProcessor,  # clue任务转换为mrc模式
+    'fewclue_instruction': InstructionMRCForFewCLUEProcessor,
+    'glue': GLUEProcessor,  # glue
 }
 
 INSTRUCTION_PROCESSORS = {
-    "zh_mrc_instruction": ChineseExtractiveInstructionProcessor,
+    'zh_mrc_instruction': ChineseExtractiveInstructionProcessor,
 }
 
-
 OTHER_PROCESSORS = {
-    "default_cls": DefaultSequenceClassificationProcessor,
+    'default_cls': DefaultSequenceClassificationProcessor,
     # pre-training language model
     # 'mlm_from_disk': MLMFromDisk,
     # 'wwm_from_disk': WWMFromDisk,
@@ -69,21 +69,19 @@ OTHER_PROCESSORS = {
     # 'causal_lm_incontext': CausalLMInContextProcessor,
     # 'kgpretrain': PretrainWithKGFromDisk,
     # 'kgpretrain_v2': KgV2Processor,
-    
+
     # chinese instruction-tuning
-    
+
     # 'cpic': CPICProcessor,
-    
 }
 
 PROCESSORS_LIST = [
-    PRETRAINING_PROCESSORS, 
+    PRETRAINING_PROCESSORS,
     IE_PROCESSORS,
     INSTRUCTION_PROCESSORS,
     BENCHMARKS_PROCESSORS,
     OTHER_PROCESSORS,
 ]
-
 
 # PROCESSORS = dict(list(PRETRAINING_PROCESSORS.items()) + list(OTHER_PROCESSORS.items()))
 PROCESSORS = dict()

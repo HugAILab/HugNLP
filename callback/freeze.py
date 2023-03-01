@@ -16,13 +16,13 @@ class FreezeCallback(TrainerCallback):
     freeze_epochs： 冻层epoch数量，可以是非整数
     freeze_keyword: 冻层关键词
     """
-
     def __init__(self, freeze_epochs, freeze_keyword):
         self.freeze_epochs = freeze_epochs
         self.freeze_keyword = freeze_keyword.split(',')
         self.is_freeze = False
 
-    def on_train_begin(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, model, **kwargs):
+    def on_train_begin(self, args: TrainingArguments, state: TrainerState,
+                       control: TrainerControl, model, **kwargs):
         if state.epoch < self.freeze_epochs:
             for name, param in model.named_parameters():
                 for keyword in self.freeze_keyword:
@@ -31,7 +31,8 @@ class FreezeCallback(TrainerCallback):
                         logger.info(f'layer {name} is frozen.')
             self.is_freeze = True
 
-    def on_step_begin(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, model, **kwargs):
+    def on_step_begin(self, args: TrainingArguments, state: TrainerState,
+                      control: TrainerControl, model, **kwargs):
         epoch = state.epoch
         if self.is_freeze and epoch > self.freeze_epochs:
             for name, param in model.named_parameters():

@@ -1,7 +1,7 @@
 import os
 import random
 from tqdm import tqdm
-path = "/wjn/clue/datasets/CLUEdatasets/THUCNews"
+path = '/wjn/clue/datasets/CLUEdatasets/THUCNews'
 topics = os.listdir(path)
 corpus = list()
 for topic in tqdm(topics):
@@ -19,18 +19,17 @@ for topic in tqdm(topics):
                 continue
             corpus.append(line)
 
-print("num=", len(corpus)) # 843w
+print('num=', len(corpus))  # 843w
 random.shuffle(corpus)
 # sample 80w
 corpus = corpus[:800000]
 train_corpus = corpus[:-10000]
 dev_corpus = corpus[-10000:]
 
-
-with open(os.path.join(path, "train.txt"), 'w', encoding='utf-8') as fw:
+with open(os.path.join(path, 'train.txt'), 'w', encoding='utf-8') as fw:
     for line in tqdm(train_corpus):
-        fw.write(line + "\n")
+        fw.write(line + '\n')
 
-with open(os.path.join(path, "dev.txt"), 'w', encoding='utf-8') as fw:
+with open(os.path.join(path, 'dev.txt'), 'w', encoding='utf-8') as fw:
     for line in tqdm(dev_corpus):
-        fw.write(line + "\n")
+        fw.write(line + '\n')

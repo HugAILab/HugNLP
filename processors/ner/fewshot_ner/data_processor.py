@@ -17,21 +17,38 @@ from torch import distributed as dist
 from datasets import DatasetDict
 from processors.dataset import DatasetK
 from processors.ner.fewshot_ner.data_collator import DataCollatorForSpanProto, DataCollatorForTokenProto
-
-
-
 """
 Processing data for FewNERD dataset based on token-based proto
 
 """
+
+
 class TokenProtoFewNERDProcessor(FewShotNERProcessor):
-    def __init__(self, data_args, training_args, model_args, tokenizer=None, post_tokenizer=False, keep_raw_data=True):
-        super().__init__(data_args, training_args, model_args, tokenizer, post_tokenizer=post_tokenizer, keep_raw_data=keep_raw_data)
-        param = {p.split("=")[0]: p.split("=")[1] for p in (data_args.user_defined).split(" ")} # user_defined parameter
-        N, Q, K, mode = param["N"], param["Q"], param["K"], param['mode'] # N: num class, Q: query entity num, K: support entity num
-        self.train_file = os.path.join(data_args.data_dir, "train_{}_{}.jsonl".format(N, K))
-        self.dev_file = os.path.join(data_args.data_dir, "dev_{}_{}.jsonl".format(N, K))
-        self.test_file = os.path.join(data_args.data_dir, "test_{}_{}.jsonl".format(N, K))
+    def __init__(self,
+                 data_args,
+                 training_args,
+                 model_args,
+                 tokenizer=None,
+                 post_tokenizer=False,
+                 keep_raw_data=True):
+        super().__init__(data_args,
+                         training_args,
+                         model_args,
+                         tokenizer,
+                         post_tokenizer=post_tokenizer,
+                         keep_raw_data=keep_raw_data)
+        param = {
+            p.split('=')[0]: p.split('=')[1]
+            for p in (data_args.user_defined).split(' ')
+        }  # user_defined parameter
+        N, Q, K, mode = param['N'], param['Q'], param['K'], param[
+            'mode']  # N: num class, Q: query entity num, K: support entity num
+        self.train_file = os.path.join(data_args.data_dir,
+                                       'train_{}_{}.jsonl'.format(N, K))
+        self.dev_file = os.path.join(data_args.data_dir,
+                                     'dev_{}_{}.jsonl'.format(N, K))
+        self.test_file = os.path.join(data_args.data_dir,
+                                      'test_{}_{}.jsonl'.format(N, K))
 
         self.max_len = data_args.max_seq_length
         self.doc_stride = data_args.doc_stride
@@ -43,8 +60,9 @@ class TokenProtoFewNERDProcessor(FewShotNERProcessor):
         self.ignore_label_id = -1
         self.max_length = self.data_args.max_seq_length
 
-        self.output_dir = "./outputs/{}-{}-{}".format(self.mode, self.num_class, self.num_example)
-
+        self.output_dir = './outputs/{}-{}-{}'.format(self.mode,
+                                                      self.num_class,
+                                                      self.num_example)
 
     def get_data_collator(self):
         pad_to_multiple_of_8 = self.training_args.fp16 and not self.data_args.pad_to_max_length
@@ -58,7 +76,7 @@ class TokenProtoFewNERDProcessor(FewShotNERProcessor):
         )
 
     def __load_data_from_file__(self, filepath):
-        with open(filepath)as f:
+        with open(filepath) as f:
             lines = f.readlines()
         for i in range(len(lines)):
             lines[i] = json.loads(lines[i].strip())
@@ -66,30 +84,36 @@ class TokenProtoFewNERDProcessor(FewShotNERProcessor):
 
     def get_examples(self, set_type):
         if set_type == 'train':
-            examples = self._create_examples(self.__load_data_from_file__(self.train_file), set_type)
+            examples = self._create_examples(
+                self.__load_data_from_file__(self.train_file), set_type)
             self.train_examples = examples
         elif set_type == 'dev':
-            examples = self._create_examples(self.__load_data_from_file__(self.dev_file), set_type)
+            examples = self._create_examples(
+                self.__load_data_from_file__(self.dev_file), set_type)
             self.dev_examples = examples
         elif set_type == 'test':
-            examples = self._create_examples(self.__load_data_from_file__(self.test_file), set_type)
+            examples = self._create_examples(
+                self.__load_data_from_file__(self.test_file), set_type)
             self.test_file = examples
         else:
             examples = None
         return examples
-    
+
     def get_tokenized_datasets(self):
         raw_datasets = DatasetDict()
         if self.training_args.do_train:
-            train_examples = self.get_examples('train') # 
+            train_examples = self.get_examples('train')  #
             raw_datasets['train'] = DatasetK.from_dict(
-                self.list_2_json(train_examples))  # [{k1: xxx, k2: xxx}, {...}] -> {k1: [xxx, xxx], k2: [xxx, xxx]}
+                self.list_2_json(train_examples)
+            )  # [{k1: xxx, k2: xxx}, {...}] -> {k1: [xxx, xxx], k2: [xxx, xxx]}
         if self.training_args.do_eval:
             dev_examples = self.get_examples('dev')
-            raw_datasets['validation'] = DatasetK.from_dict(self.list_2_json(dev_examples))
+            raw_datasets['validation'] = DatasetK.from_dict(
+                self.list_2_json(dev_examples))
         if self.training_args.do_predict:
             test_examples = self.get_examples('test')
-            raw_datasets['test'] = DatasetK.from_dict(self.list_2_json(test_examples))
+            raw_datasets['test'] = DatasetK.from_dict(
+                self.list_2_json(test_examples))
 
         if self.post_tokenizer:
             if self.keep_raw_data:
@@ -102,43 +126,49 @@ class TokenProtoFewNERDProcessor(FewShotNERProcessor):
         # remove_columns = [self.support_key, self.query_key]
         tokenize_func = self.build_preprocess_function()
         # 多gpu, 0计算完存cache，其他load cache
-        load_from_cache_file = not self.data_args.overwrite_cache if self.training_args.local_rank in [-1, 0] else True
-        base_cache_dir = os.path.join(self.model_args.cache_dir,
-                                      'datasets') if self.model_args.cache_dir else os.path.join(
-            os.path.expanduser("~"), '.cache/huggingface/datasets/')
+        load_from_cache_file = not self.data_args.overwrite_cache if self.training_args.local_rank in [
+            -1, 0
+        ] else True
+        base_cache_dir = os.path.join(
+            self.model_args.cache_dir,
+            'datasets') if self.model_args.cache_dir else os.path.join(
+                os.path.expanduser('~'), '.cache/huggingface/datasets/')
         cache_dir = os.path.join(base_cache_dir, self.data_args.task_name)
 
         os.makedirs(cache_dir, exist_ok=True)
-        with self.training_args.main_process_first(desc="dataset tokenizer map"):
+        with self.training_args.main_process_first(
+                desc='dataset tokenizer map'):
             raw_datasets = raw_datasets.map(
                 tokenize_func,
                 batched=True,
                 load_from_cache_file=load_from_cache_file,
-                desc="Running tokenizer on dataset",
+                desc='Running tokenizer on dataset',
                 cache_file_names={
-                    k: f'{cache_dir}/cache_{self.data_args.task_name}_{self.data_args.data_dir.split("/")[-1]}_{self.mode}_{self.num_class}_{self.num_example}_{str(k)}.arrow'
-                    for k in raw_datasets},
+                    k:
+                    f'{cache_dir}/cache_{self.data_args.task_name}_{self.data_args.data_dir.split("/")[-1]}_{self.mode}_{self.num_class}_{self.num_example}_{str(k)}.arrow'
+                    for k in raw_datasets
+                },
                 num_proc=self.data_args.preprocessing_num_workers,
                 # remove_columns=remove_columns
             )
             if self.keep_raw_data:
                 self.raw_datasets = raw_datasets
-            print("datasets=", raw_datasets)
+            print('datasets=', raw_datasets)
             return raw_datasets
-    
+
     def getraw(self, tokens, labels):
         # 分词、获得input_id，attention mask和segment id
         # get tokenized word list, attention mask, text mask (mask [CLS], [SEP] as well), tags
-        
+
         # split into chunks of length (max_length-2)
         # 2 is for special tokens [CLS] and [SEP]
         tokens_list = []
         labels_list = []
         while len(tokens) > self.max_length - 2:
-            tokens_list.append(tokens[:self.max_length-2])
-            tokens = tokens[self.max_length-2:]
-            labels_list.append(labels[:self.max_length-2])
-            labels = labels[self.max_length-2:]
+            tokens_list.append(tokens[:self.max_length - 2])
+            tokens = tokens[self.max_length - 2:]
+            labels_list.append(labels[:self.max_length - 2])
+            labels = labels[self.max_length - 2:]
         if tokens:
             tokens_list.append(tokens)
             labels_list.append(labels)
@@ -151,7 +181,7 @@ class TokenProtoFewNERDProcessor(FewShotNERProcessor):
             # token -> ids
             tokens = ['[CLS]'] + tokens + ['[SEP]']
             indexed_tokens = self.tokenizer.convert_tokens_to_ids(tokens)
-        
+
             # padding
             while len(indexed_tokens) < self.max_length:
                 indexed_tokens.append(0)
@@ -164,19 +194,19 @@ class TokenProtoFewNERDProcessor(FewShotNERProcessor):
 
             # text mask, also mask [CLS] and [SEP]
             text_mask = np.zeros((self.max_length), dtype=np.int32)
-            text_mask[1:len(tokens)-1] = 1
+            text_mask[1:len(tokens) - 1] = 1
             text_mask_list.append(text_mask)
 
-            assert len(labels_list[i]) == len(tokens) - 2, print(labels_list[i], tokens)
+            assert len(labels_list[i]) == len(tokens) - 2, print(
+                labels_list[i], tokens)
         return indexed_tokens_list, mask_list, text_mask_list, labels_list
-
 
     def additem(self, d, word, mask, text_mask, label):
         d['word'] += word
         d['mask'] += mask
         d['label'] += label
         d['text_mask'] += text_mask
-    
+
     def get_token_label_list(self, words, tags):
         tokens = []
         labels = []
@@ -185,7 +215,9 @@ class TokenProtoFewNERDProcessor(FewShotNERProcessor):
             if word_tokens:
                 tokens.extend(word_tokens)
                 # Use the real label id for the first token of the word, and padding ids for the remaining tokens
-                word_labels = [self.tag2label[tag]] + [self.ignore_label_id] * (len(word_tokens) - 1)
+                word_labels = [
+                    self.tag2label[tag]
+                ] + [self.ignore_label_id] * (len(word_tokens) - 1)
                 labels.extend(word_labels)
         return tokens, labels
 
@@ -199,9 +231,16 @@ class TokenProtoFewNERDProcessor(FewShotNERProcessor):
         'sentence_num': number of sentences in this set (a batch contains multiple sets)
         'text_mask': 0 for special tokens and paddings, 1 for real text
         '''
-        dataset = {'word': [], 'mask': [], 'label':[], 'sentence_num':[], 'text_mask':[] }
+        dataset = {
+            'word': [],
+            'mask': [],
+            'label': [],
+            'sentence_num': [],
+            'text_mask': []
+        }
         for i in range(len(data['word'])):
-            tokens, labels = self.get_token_label_list(data['word'][i], data['label'][i])
+            tokens, labels = self.get_token_label_list(data['word'][i],
+                                                       data['label'][i])
             word, mask, text_mask, label = self.getraw(tokens, labels)
             word = torch.tensor(word).long()
             mask = torch.tensor(mask).long()
@@ -212,39 +251,41 @@ class TokenProtoFewNERDProcessor(FewShotNERProcessor):
             dataset['label2tag'] = [self.label2tag]
         return dataset
 
-
-
     def _create_examples(self, lines, set_type):
         examples = []
         # is_train = 0 if set_type == 'test' else 1
-        for id_, line in enumerate(tqdm(lines)): # 遍历每一行（每一行表示一个episode）
-            target_classes = line['types'] # 当前episode对应的所有类别 list
+        for id_, line in enumerate(tqdm(lines)):  # 遍历每一行（每一行表示一个episode）
+            target_classes = line['types']  # 当前episode对应的所有类别 list
             label2id = {v: ei for ei, v in enumerate(target_classes)}
             support = line['support']
             query = line['query']
 
             distinct_tags = ['O'] + target_classes
-            self.tag2label = {tag: idx for idx, tag in enumerate(distinct_tags)}
-            self.label2tag = {idx: tag for idx, tag in enumerate(distinct_tags)}
+            self.tag2label = {
+                tag: idx
+                for idx, tag in enumerate(distinct_tags)
+            }
+            self.label2tag = {
+                idx: tag
+                for idx, tag in enumerate(distinct_tags)
+            }
             support_set = self.populate(support)
             query_set = self.populate(query, savelabeldic=True)
 
-            examples.append(
-                {
-                    # 'support_set': support_set, # {'word': [], 'mask': [], 'label':[], 'sentence_num':[], 'text_mask':[] }
-                    # 'query_set': query_set, # {'word': [], 'mask': [], 'label':[], 'sentence_num':[], 'text_mask':[] }
-                    "support_word": support_set["word"],
-                    "support_mask": support_set["mask"],
-                    "support_label": support_set["label"],
-                    "support_sentence_num": support_set["sentence_num"],
-                    "support_text_mask": support_set["text_mask"],
-                    "query_word": query_set["word"],
-                    "query_mask": query_set["mask"],
-                    "query_label": query_set["label"],
-                    "query_sentence_num": query_set["sentence_num"],
-                    "query_text_mask": query_set["text_mask"],
-                }
-            )
+            examples.append({
+                # 'support_set': support_set, # {'word': [], 'mask': [], 'label':[], 'sentence_num':[], 'text_mask':[] }
+                # 'query_set': query_set, # {'word': [], 'mask': [], 'label':[], 'sentence_num':[], 'text_mask':[] }
+                'support_word': support_set['word'],
+                'support_mask': support_set['mask'],
+                'support_label': support_set['label'],
+                'support_sentence_num': support_set['sentence_num'],
+                'support_text_mask': support_set['text_mask'],
+                'query_word': query_set['word'],
+                'query_mask': query_set['mask'],
+                'query_label': query_set['label'],
+                'query_sentence_num': query_set['sentence_num'],
+                'query_text_mask': query_set['text_mask'],
+            })
 
         return examples
 
@@ -260,6 +301,7 @@ class TokenProtoFewNERDProcessor(FewShotNERProcessor):
         # input_column = self.input_column
         tokenizer = self.tokenizer
         max_seq_length = self.data_args.max_seq_length
+
         # label_to_id = self.label_to_id
         # label_column = self.label_column
 
@@ -318,8 +360,6 @@ class TokenProtoFewNERDProcessor(FewShotNERProcessor):
                 has_answer[ans]['pos'].extend(value['pos'])
         return has_answer
 
-
-
     def get_predict_result(self, logits, examples, stage='dev'):
         '''
         logits: 表示模型除了loss部分的输出
@@ -353,11 +393,12 @@ class TokenProtoFewNERDProcessor(FewShotNERProcessor):
         '''
         # query_spans, proto_logits, _, __ = logits
         word_size = dist.get_world_size()
-        results = dict() # 所有episode的query预测的span以及对应的类别
+        results = dict()  # 所有episode的query预测的span以及对应的类别
         for i in range(word_size):
-            path = os.path.join(self.output_dir, "predict", "{}_predictions_{}.npy".format(stage, i))
+            path = os.path.join(self.output_dir, 'predict',
+                                '{}_predictions_{}.npy'.format(stage, i))
             # path = "./outputs2/predict/predictions_{}.npy".format(i)
-            assert os.path.exists(path), "unknown path: {}".format(path)
+            assert os.path.exists(path), 'unknown path: {}'.format(path)
             if os.path.exists(path):
                 res = np.load(path, allow_pickle=True)[()]
                 # 合并所有device的结果
@@ -366,27 +407,28 @@ class TokenProtoFewNERDProcessor(FewShotNERProcessor):
 
         predictions = dict()
 
-        for example in examples: # 遍历每个episode
+        for example in examples:  # 遍历每个episode
             # 当前episode ground truth
             query_labeled_spans = example['query_labeled_spans']
             query_labeled_types = example['query_labeled_types']
             query_offset_mapping = example['query_input']['offset_mapping']
             id_ = example['id']
 
-
-
             new_labeled_spans = list()
 
             # 对于query label，将字符级别的区间转换为分词级别
             for ei in range(len(query_labeled_spans)):  # 遍历每一个句子
-                labeled_span = query_labeled_spans[ei]  # list # 当前句子的所有mention span（字符级别）
-                offset = query_offset_mapping[ei]  # 表示tokenizer生成的token对应原始文本中字符级别的位置区间
+                labeled_span = query_labeled_spans[
+                    ei]  # list # 当前句子的所有mention span（字符级别）
+                offset = query_offset_mapping[
+                    ei]  # 表示tokenizer生成的token对应原始文本中字符级别的位置区间
                 new_labeled_span = list()  # 当前句子的所有mention span（token级别）
                 # starts, ends = feature['start'], feature['end']
                 # print('starts=', starts)
                 # print('ends=', ends)
                 position_map = {}
-                for i, (m, n) in enumerate(offset):  # 第i个分词对应原始文本中字符级别的区间(m, n)
+                for i, (m,
+                        n) in enumerate(offset):  # 第i个分词对应原始文本中字符级别的区间(m, n)
                     if i != 0 and m == 0 and n == 0:
                         continue
                     for k in range(m, n + 1):
@@ -403,13 +445,13 @@ class TokenProtoFewNERDProcessor(FewShotNERProcessor):
 
                     if start in position_map and end in position_map:
                         # 指定下列元素为1，说明表示第feature_id个样本的预测区间
-                        new_labeled_span.append([position_map[start], position_map[end]])
+                        new_labeled_span.append(
+                            [position_map[start], position_map[end]])
                 new_labeled_spans.append(new_labeled_span)
 
-
             # 获得模型预测
-            pred_spans, pred_spans_ = results[id_]["spans"], list()
-            pred_types, pred_types_ = results[id_]["types"], list()
+            pred_spans, pred_spans_ = results[id_]['spans'], list()
+            pred_types, pred_types_ = results[id_]['types'], list()
             # for spans, types in zip(pred_spans, pred_types): # 遍历每一个句子
             #     # 如果预测的label为unlabeled type，则删除（即虽然预测的是实体，但并不在当前episode规定的类里，按照规则则全部视为非实体）
             #     spans_ = list()
@@ -448,17 +490,19 @@ class TokenProtoFewNERDProcessor(FewShotNERProcessor):
             })
         '''
         all_metrics = {
-            "span_precision": 0.,
-            "span_recall": 0.,
-            "eval_span_f1": 0,
-            "class_precision": 0.,
-            "class_recall": 0.,
-            "eval_class_f1": 0,
+            'span_precision': 0.,
+            'span_recall': 0.,
+            'eval_span_f1': 0,
+            'class_precision': 0.,
+            'class_recall': 0.,
+            'eval_class_f1': 0,
         }
 
-        examples = self.raw_datasets['validation'] if stage == "dev" else self.raw_datasets['test']
+        examples = self.raw_datasets[
+            'validation'] if stage == 'dev' else self.raw_datasets['test']
         # golden, dataname_map, dataname_type = {}, defaultdict(list), {}
-        predictions = self.get_predict_result(eval_predictions[0], examples, stage)
+        predictions = self.get_predict_result(eval_predictions[0], examples,
+                                              stage)
 
         # === 下面使用Few-NERD官方提供的评测方法 ===
 
@@ -478,8 +522,8 @@ class TokenProtoFewNERDProcessor(FewShotNERProcessor):
             pred_type = predicts['predicted_types']
             # 遍历每个句子，为每个label生成所有的span e.g. {label:[(start_pos, end_pos), ...]}
             for label_span, label_type, pred_span, pred_type in zip(
-                    query_labeled_spans, query_labeled_types, pred_span, pred_type
-            ):
+                    query_labeled_spans, query_labeled_types, pred_span,
+                    pred_type):
                 # 用于评价detector检测区间的效果
                 label_span_dict = {0: list()}
                 pred_span_dict = {0: list()}
@@ -503,12 +547,10 @@ class TokenProtoFewNERDProcessor(FewShotNERProcessor):
                     pred_class_dict[type].append((span[0], span[1]))
 
                 tmp_pred_span_cnt, tmp_label_span_cnt, correct_span = self.metrics_by_entity(
-                    label_span_dict, pred_span_dict
-                )
+                    label_span_dict, pred_span_dict)
 
                 tmp_pred_class_cnt, tmp_label_class_cnt, correct_class = self.metrics_by_entity(
-                    label_class_dict, pred_class_dict
-                )
+                    label_class_dict, pred_class_dict)
                 pred_span_cnt += tmp_pred_span_cnt
                 label_span_cnt += tmp_label_span_cnt
                 correct_span_cnt += correct_span
@@ -520,21 +562,23 @@ class TokenProtoFewNERDProcessor(FewShotNERProcessor):
         span_precision = correct_span_cnt / pred_span_cnt
         span_recall = correct_span_cnt / label_span_cnt
         try:
-            span_f1 = 2 * span_precision * span_recall / (span_precision + span_recall)
+            span_f1 = 2 * span_precision * span_recall / (span_precision +
+                                                          span_recall)
         except:
             span_f1 = 0.
 
         class_precision = correct_class_cnt / pred_class_cnt
         class_recall = correct_class_cnt / label_class_cnt
         try:
-            class_f1 = 2 * class_precision * class_recall / (class_precision + class_recall)
+            class_f1 = 2 * class_precision * class_recall / (class_precision +
+                                                             class_recall)
         except:
             class_f1 = 0.
         all_metrics['span_precision'], all_metrics['span_recall'], all_metrics['eval_span_f1'] = \
             span_precision, span_recall, span_f1
         all_metrics['class_precision'], all_metrics['class_recall'], all_metrics['eval_class_f1'] = \
             class_precision, class_recall, class_f1
-        print("all_metrics=", all_metrics)
+        print('all_metrics=', all_metrics)
         # === 下面用于计算detector的效果 ===
         # 遍历每个episode，获得预测正确的span个数，
 
@@ -567,39 +611,35 @@ class TokenProtoFewNERDProcessor(FewShotNERProcessor):
         return all_metrics
 
     def metrics_by_entity(self, label_class_span, pred_class_span):
-        '''
-        return entity level count of total prediction, true labels, and correct prediction
-        '''
+        """return entity level count of total prediction, true labels, and correct prediction."""
+
         # pred_class_span # {label:[(start_pos, end_pos), ...]}
         # label_class_span # {label:[(start_pos, end_pos), ...]}
         def get_cnt(label_class_span):
-            '''
-            return the count of entities
-            '''
+            """return the count of entities."""
             cnt = 0
             for label in label_class_span:
                 cnt += len(label_class_span[label])
             return cnt
 
         def get_intersect_by_entity(pred_class_span, label_class_span):
-            '''
-            return the count of correct entity
-            '''
+            """return the count of correct entity."""
             cnt = 0
             for label in label_class_span:
-                cnt += len(list(set(label_class_span[label]).intersection(set(pred_class_span.get(label, [])))))
+                cnt += len(
+                    list(
+                        set(label_class_span[label]).intersection(
+                            set(pred_class_span.get(label, [])))))
             return cnt
 
         pred_cnt = get_cnt(pred_class_span)
         label_cnt = get_cnt(label_class_span)
-        correct_cnt = get_intersect_by_entity(pred_class_span, label_class_span)
+        correct_cnt = get_intersect_by_entity(pred_class_span,
+                                              label_class_span)
         return pred_cnt, label_cnt, correct_cnt
 
     def save_result(self, logits, label_ids):
         self.compute_metrics((logits, ), stage='test')
-
-
-
 
 
 """
@@ -607,14 +647,32 @@ Processing data for FewNERD dataset based on spanproto
 - spanproto is span-based prototypical network, which aims to classify each span via prototypical learning.
 
 """
+
+
 class SpanProtoFewNERDProcessor(FewShotNERProcessor):
-    def __init__(self, data_args, training_args, model_args, post_tokenizer=False, keep_raw_data=True):
-        super().__init__(data_args, training_args, model_args, post_tokenizer=post_tokenizer, keep_raw_data=keep_raw_data)
-        param = {p.split("=")[0]: p.split("=")[1] for p in (data_args.user_defined).split(" ")} # user_defined parameter
-        N, Q, K, mode = param["N"], param["Q"], param["K"], param['mode'] # N: num class, Q: query entity num, K: support entity num
-        self.train_file = os.path.join(data_args.data_dir, "train_{}_{}.jsonl".format(N, K))
-        self.dev_file = os.path.join(data_args.data_dir, "dev_{}_{}.jsonl".format(N, K))
-        self.test_file = os.path.join(data_args.data_dir, "test_{}_{}.jsonl".format(N, K))
+    def __init__(self,
+                 data_args,
+                 training_args,
+                 model_args,
+                 post_tokenizer=False,
+                 keep_raw_data=True):
+        super().__init__(data_args,
+                         training_args,
+                         model_args,
+                         post_tokenizer=post_tokenizer,
+                         keep_raw_data=keep_raw_data)
+        param = {
+            p.split('=')[0]: p.split('=')[1]
+            for p in (data_args.user_defined).split(' ')
+        }  # user_defined parameter
+        N, Q, K, mode = param['N'], param['Q'], param['K'], param[
+            'mode']  # N: num class, Q: query entity num, K: support entity num
+        self.train_file = os.path.join(data_args.data_dir,
+                                       'train_{}_{}.jsonl'.format(N, K))
+        self.dev_file = os.path.join(data_args.data_dir,
+                                     'dev_{}_{}.jsonl'.format(N, K))
+        self.test_file = os.path.join(data_args.data_dir,
+                                      'test_{}_{}.jsonl'.format(N, K))
 
         self.max_len = data_args.max_seq_length
         self.doc_stride = data_args.doc_stride
@@ -623,8 +681,9 @@ class SpanProtoFewNERDProcessor(FewShotNERProcessor):
         self.num_class = int(N)
         self.num_example = int(K)
 
-        self.output_dir = "./outputs/{}-{}-{}".format(self.mode, self.num_class, self.num_example)
-
+        self.output_dir = './outputs/{}-{}-{}'.format(self.mode,
+                                                      self.num_class,
+                                                      self.num_example)
 
     def get_data_collator(self):
         pad_to_multiple_of_8 = self.training_args.fp16 and not self.data_args.pad_to_max_length
@@ -638,7 +697,7 @@ class SpanProtoFewNERDProcessor(FewShotNERProcessor):
         )
 
     def __load_data_from_file__(self, filepath):
-        with open(filepath)as f:
+        with open(filepath) as f:
             lines = f.readlines()
         for i in range(len(lines)):
             lines[i] = json.loads(lines[i].strip())
@@ -646,13 +705,16 @@ class SpanProtoFewNERDProcessor(FewShotNERProcessor):
 
     def get_examples(self, set_type):
         if set_type == 'train':
-            examples = self._create_examples(self.__load_data_from_file__(self.train_file), set_type)
+            examples = self._create_examples(
+                self.__load_data_from_file__(self.train_file), set_type)
             self.train_examples = examples
         elif set_type == 'dev':
-            examples = self._create_examples(self.__load_data_from_file__(self.dev_file), set_type)
+            examples = self._create_examples(
+                self.__load_data_from_file__(self.dev_file), set_type)
             self.dev_examples = examples
         elif set_type == 'test':
-            examples = self._create_examples(self.__load_data_from_file__(self.test_file), set_type)
+            examples = self._create_examples(
+                self.__load_data_from_file__(self.test_file), set_type)
             self.test_file = examples
         else:
             examples = None
@@ -660,36 +722,37 @@ class SpanProtoFewNERDProcessor(FewShotNERProcessor):
 
     def get_sentence_with_span(self, data, label2id):
         # 给定一个support/query set，获取每个句子对应的实体span
-        word_list = data["word"]
-        label_list = data["label"]
+        word_list = data['word']
+        label_list = data['label']
         input_texts = list()
         labeled_spans = list()
         labeled_types = list()
-        for words, labels in zip(word_list, label_list): # 遍历每个句子，每个句子是以word列表存储的
+        for words, labels in zip(word_list,
+                                 label_list):  # 遍历每个句子，每个句子是以word列表存储的
             start, end = -1, -1
-            current_label = ""
-            text = ""
+            current_label = ''
+            text = ''
             spans = list()
             span_types = list()
             for ei, word in enumerate(words):
                 label = labels[ei]
-                if label == "O":  # 如果当前的word不是实体，则直接累加到text上。如果此时start不为-1，说明这是实体后的第一个O
-                    text += word + " "
+                if label == 'O':  # 如果当前的word不是实体，则直接累加到text上。如果此时start不为-1，说明这是实体后的第一个O
+                    text += word + ' '
                     if start != -1:
                         spans.append([start, end])
                         span_types.append(label2id[current_label])
                         start, end = -1, -1
-                        current_label = ""
+                        current_label = ''
                 else:  # 如果当前的word是一个实体
                     # 如果当前的实体和上一个实体不同，则需要把上一个实体保存到span里，重新记录当前新的实体
                     if label != current_label and start != -1:
                         spans.append([start, end])
                         span_types.append(label2id[current_label])
                         start, end = -1, -1
-                        current_label = ""
+                        current_label = ''
                     if start == -1:  # 说明当前的word是当前实体的第一个词，记住这个起始位置
                         start = len(text)
-                    text += word + " "  # 将当前的word追加到text上
+                    text += word + ' '  # 将当前的word追加到text上
                     end = len(text)  # 记录一下当前的end位置
                     current_label = label
             if start != -1:
@@ -702,33 +765,31 @@ class SpanProtoFewNERDProcessor(FewShotNERProcessor):
             labeled_types.append(span_types)
         return input_texts, labeled_spans, labeled_types
 
-
-
     def _create_examples(self, lines, set_type):
         examples = []
         # is_train = 0 if set_type == 'test' else 1
-        for id_, line in enumerate(lines): # 遍历每一行（每一行表示一个episode）
-            target_classes = line['types'] # 当前episode对应的所有类别 list
+        for id_, line in enumerate(lines):  # 遍历每一行（每一行表示一个episode）
+            target_classes = line['types']  # 当前episode对应的所有类别 list
             label2id = {v: ei for ei, v in enumerate(target_classes)}
             support = line['support']
             query = line['query']
-            support_input_texts, support_labeled_spans, support_labeled_types = self.get_sentence_with_span(support, label2id)
-            query_input_texts, query_labeled_spans, query_labeled_types = self.get_sentence_with_span(query, label2id)
+            support_input_texts, support_labeled_spans, support_labeled_types = self.get_sentence_with_span(
+                support, label2id)
+            query_input_texts, query_labeled_spans, query_labeled_types = self.get_sentence_with_span(
+                query, label2id)
 
-            examples.append(
-                {
-                    'id': id_,
-                    'support_input_texts': support_input_texts,
-                    'support_labeled_spans': support_labeled_spans,
-                    'support_labeled_types': support_labeled_types,
-                    'support_sentence_num': len(support_input_texts),
-                    'query_input_texts': query_input_texts,
-                    'query_labeled_spans': query_labeled_spans,
-                    'query_labeled_types': query_labeled_types,
-                    'query_sentence_num': len(query_input_texts),
-                    'stage': set_type,
-                }
-            )
+            examples.append({
+                'id': id_,
+                'support_input_texts': support_input_texts,
+                'support_labeled_spans': support_labeled_spans,
+                'support_labeled_types': support_labeled_types,
+                'support_sentence_num': len(support_input_texts),
+                'query_input_texts': query_input_texts,
+                'query_labeled_spans': query_labeled_spans,
+                'query_labeled_types': query_labeled_types,
+                'query_sentence_num': len(query_input_texts),
+                'stage': set_type,
+            })
 
         return examples
 
@@ -746,7 +807,6 @@ class SpanProtoFewNERDProcessor(FewShotNERProcessor):
         max_seq_length = self.data_args.max_seq_length
         # label_to_id = self.label_to_id
         # label_column = self.label_column
-
         '''
         examples = {
             'id': [...]
@@ -763,9 +823,9 @@ class SpanProtoFewNERDProcessor(FewShotNERProcessor):
             'query_labeled_types': [[..]...],
             'query_sentence_num': [...],
         }
-        
+
         return
-        
+
         examples = {
             'id': [...]
             'support_input_texts': [
@@ -782,38 +842,36 @@ class SpanProtoFewNERDProcessor(FewShotNERProcessor):
             'query_sentence_num': [...],
         }
         '''
-
         def func(examples):
             features = {
                 'id': examples['id'],
                 'support_input': list(),
                 'query_input': list(),
             }
-            support_inputs, query_inputs = examples[support_key], examples[query_key]
+            support_inputs, query_inputs = examples[support_key], examples[
+                query_key]
             for ei, support_input in enumerate(support_inputs):
                 # 对每个episode，对support和query进行分词
                 support_input = (support_input, )
                 query_input = (query_inputs[ei], )
-                support_result = tokenizer(
-                    *support_input,
-                    padding=False,
-                    max_length=max_seq_length,
-                    truncation='longest_first',
-                    add_special_tokens=True,
-                    return_offsets_mapping=True
-                )
-                query_result = tokenizer(
-                    *query_input,
-                    padding=False,
-                    max_length=max_seq_length,
-                    truncation='longest_first',
-                    add_special_tokens=True,
-                    return_offsets_mapping=True
-                )
+                support_result = tokenizer(*support_input,
+                                           padding=False,
+                                           max_length=max_seq_length,
+                                           truncation='longest_first',
+                                           add_special_tokens=True,
+                                           return_offsets_mapping=True)
+                query_result = tokenizer(*query_input,
+                                         padding=False,
+                                         max_length=max_seq_length,
+                                         truncation='longest_first',
+                                         add_special_tokens=True,
+                                         return_offsets_mapping=True)
                 features['support_input'].append(support_result)
                 features['query_input'].append(query_result)
-            features['support_labeled_spans'] = examples['support_labeled_spans']
-            features['support_labeled_types'] = examples['support_labeled_types']
+            features['support_labeled_spans'] = examples[
+                'support_labeled_spans']
+            features['support_labeled_types'] = examples[
+                'support_labeled_types']
             features['support_sentence_num'] = examples['support_sentence_num']
             features['query_labeled_spans'] = examples['query_labeled_spans']
             features['query_labeled_types'] = examples['query_labeled_types']
@@ -837,8 +895,6 @@ class SpanProtoFewNERDProcessor(FewShotNERProcessor):
                 has_answer[ans]['pos'].extend(value['pos'])
         return has_answer
 
-
-
     def get_predict_result(self, logits, examples, stage='dev'):
         '''
         logits: 表示模型除了loss部分的输出
@@ -872,11 +928,12 @@ class SpanProtoFewNERDProcessor(FewShotNERProcessor):
         '''
         # query_spans, proto_logits, _, __ = logits
         word_size = dist.get_world_size()
-        results = dict() # 所有episode的query预测的span以及对应的类别
+        results = dict()  # 所有episode的query预测的span以及对应的类别
         for i in range(word_size):
-            path = os.path.join(self.output_dir, "predict", "{}_predictions_{}.npy".format(stage, i))
+            path = os.path.join(self.output_dir, 'predict',
+                                '{}_predictions_{}.npy'.format(stage, i))
             # path = "./outputs2/predict/predictions_{}.npy".format(i)
-            assert os.path.exists(path), "unknown path: {}".format(path)
+            assert os.path.exists(path), 'unknown path: {}'.format(path)
             if os.path.exists(path):
                 res = np.load(path, allow_pickle=True)[()]
                 # 合并所有device的结果
@@ -885,27 +942,28 @@ class SpanProtoFewNERDProcessor(FewShotNERProcessor):
 
         predictions = dict()
 
-        for example in examples: # 遍历每个episode
+        for example in examples:  # 遍历每个episode
             # 当前episode ground truth
             query_labeled_spans = example['query_labeled_spans']
             query_labeled_types = example['query_labeled_types']
             query_offset_mapping = example['query_input']['offset_mapping']
             id_ = example['id']
 
-
-
             new_labeled_spans = list()
 
             # 对于query label，将字符级别的区间转换为分词级别
             for ei in range(len(query_labeled_spans)):  # 遍历每一个句子
-                labeled_span = query_labeled_spans[ei]  # list # 当前句子的所有mention span（字符级别）
-                offset = query_offset_mapping[ei]  # 表示tokenizer生成的token对应原始文本中字符级别的位置区间
+                labeled_span = query_labeled_spans[
+                    ei]  # list # 当前句子的所有mention span（字符级别）
+                offset = query_offset_mapping[
+                    ei]  # 表示tokenizer生成的token对应原始文本中字符级别的位置区间
                 new_labeled_span = list()  # 当前句子的所有mention span（token级别）
                 # starts, ends = feature['start'], feature['end']
                 # print('starts=', starts)
                 # print('ends=', ends)
                 position_map = {}
-                for i, (m, n) in enumerate(offset):  # 第i个分词对应原始文本中字符级别的区间(m, n)
+                for i, (m,
+                        n) in enumerate(offset):  # 第i个分词对应原始文本中字符级别的区间(m, n)
                     if i != 0 and m == 0 and n == 0:
                         continue
                     for k in range(m, n + 1):
@@ -922,13 +980,13 @@ class SpanProtoFewNERDProcessor(FewShotNERProcessor):
 
                     if start in position_map and end in position_map:
                         # 指定下列元素为1，说明表示第feature_id个样本的预测区间
-                        new_labeled_span.append([position_map[start], position_map[end]])
+                        new_labeled_span.append(
+                            [position_map[start], position_map[end]])
                 new_labeled_spans.append(new_labeled_span)
 
-
             # 获得模型预测
-            pred_spans, pred_spans_ = results[id_]["spans"], list()
-            pred_types, pred_types_ = results[id_]["types"], list()
+            pred_spans, pred_spans_ = results[id_]['spans'], list()
+            pred_types, pred_types_ = results[id_]['types'], list()
             # for spans, types in zip(pred_spans, pred_types): # 遍历每一个句子
             #     # 如果预测的label为unlabeled type，则删除（即虽然预测的是实体，但并不在当前episode规定的类里，按照规则则全部视为非实体）
             #     spans_ = list()
@@ -967,17 +1025,19 @@ class SpanProtoFewNERDProcessor(FewShotNERProcessor):
             })
         '''
         all_metrics = {
-            "span_precision": 0.,
-            "span_recall": 0.,
-            "eval_span_f1": 0,
-            "class_precision": 0.,
-            "class_recall": 0.,
-            "eval_class_f1": 0,
+            'span_precision': 0.,
+            'span_recall': 0.,
+            'eval_span_f1': 0,
+            'class_precision': 0.,
+            'class_recall': 0.,
+            'eval_class_f1': 0,
         }
 
-        examples = self.raw_datasets['validation'] if stage == "dev" else self.raw_datasets['test']
+        examples = self.raw_datasets[
+            'validation'] if stage == 'dev' else self.raw_datasets['test']
         # golden, dataname_map, dataname_type = {}, defaultdict(list), {}
-        predictions = self.get_predict_result(eval_predictions[0], examples, stage)
+        predictions = self.get_predict_result(eval_predictions[0], examples,
+                                              stage)
 
         # === 下面使用Few-NERD官方提供的评测方法 ===
 
@@ -997,8 +1057,8 @@ class SpanProtoFewNERDProcessor(FewShotNERProcessor):
             pred_type = predicts['predicted_types']
             # 遍历每个句子，为每个label生成所有的span e.g. {label:[(start_pos, end_pos), ...]}
             for label_span, label_type, pred_span, pred_type in zip(
-                    query_labeled_spans, query_labeled_types, pred_span, pred_type
-            ):
+                    query_labeled_spans, query_labeled_types, pred_span,
+                    pred_type):
                 # 用于评价detector检测区间的效果
                 label_span_dict = {0: list()}
                 pred_span_dict = {0: list()}
@@ -1022,12 +1082,10 @@ class SpanProtoFewNERDProcessor(FewShotNERProcessor):
                     pred_class_dict[type].append((span[0], span[1]))
 
                 tmp_pred_span_cnt, tmp_label_span_cnt, correct_span = self.metrics_by_entity(
-                    label_span_dict, pred_span_dict
-                )
+                    label_span_dict, pred_span_dict)
 
                 tmp_pred_class_cnt, tmp_label_class_cnt, correct_class = self.metrics_by_entity(
-                    label_class_dict, pred_class_dict
-                )
+                    label_class_dict, pred_class_dict)
                 pred_span_cnt += tmp_pred_span_cnt
                 label_span_cnt += tmp_label_span_cnt
                 correct_span_cnt += correct_span
@@ -1039,21 +1097,23 @@ class SpanProtoFewNERDProcessor(FewShotNERProcessor):
         span_precision = correct_span_cnt / pred_span_cnt
         span_recall = correct_span_cnt / label_span_cnt
         try:
-            span_f1 = 2 * span_precision * span_recall / (span_precision + span_recall)
+            span_f1 = 2 * span_precision * span_recall / (span_precision +
+                                                          span_recall)
         except:
             span_f1 = 0.
 
         class_precision = correct_class_cnt / pred_class_cnt
         class_recall = correct_class_cnt / label_class_cnt
         try:
-            class_f1 = 2 * class_precision * class_recall / (class_precision + class_recall)
+            class_f1 = 2 * class_precision * class_recall / (class_precision +
+                                                             class_recall)
         except:
             class_f1 = 0.
         all_metrics['span_precision'], all_metrics['span_recall'], all_metrics['eval_span_f1'] = \
             span_precision, span_recall, span_f1
         all_metrics['class_precision'], all_metrics['class_recall'], all_metrics['eval_class_f1'] = \
             class_precision, class_recall, class_f1
-        print("all_metrics=", all_metrics)
+        print('all_metrics=', all_metrics)
         # === 下面用于计算detector的效果 ===
         # 遍历每个episode，获得预测正确的span个数，
 
@@ -1086,32 +1146,31 @@ class SpanProtoFewNERDProcessor(FewShotNERProcessor):
         return all_metrics
 
     def metrics_by_entity(self, label_class_span, pred_class_span):
-        '''
-        return entity level count of total prediction, true labels, and correct prediction
-        '''
+        """return entity level count of total prediction, true labels, and correct prediction."""
+
         # pred_class_span # {label:[(start_pos, end_pos), ...]}
         # label_class_span # {label:[(start_pos, end_pos), ...]}
         def get_cnt(label_class_span):
-            '''
-            return the count of entities
-            '''
+            """return the count of entities."""
             cnt = 0
             for label in label_class_span:
                 cnt += len(label_class_span[label])
             return cnt
 
         def get_intersect_by_entity(pred_class_span, label_class_span):
-            '''
-            return the count of correct entity
-            '''
+            """return the count of correct entity."""
             cnt = 0
             for label in label_class_span:
-                cnt += len(list(set(label_class_span[label]).intersection(set(pred_class_span.get(label, [])))))
+                cnt += len(
+                    list(
+                        set(label_class_span[label]).intersection(
+                            set(pred_class_span.get(label, [])))))
             return cnt
 
         pred_cnt = get_cnt(pred_class_span)
         label_cnt = get_cnt(label_class_span)
-        correct_cnt = get_intersect_by_entity(pred_class_span, label_class_span)
+        correct_cnt = get_intersect_by_entity(pred_class_span,
+                                              label_class_span)
         return pred_cnt, label_cnt, correct_cnt
 
     def save_result(self, logits, label_ids):
@@ -1123,25 +1182,40 @@ Processing data for CrossNER dataset based on spanproto
 - spanproto is span-based prototypical network, which aims to classify each span via prototypical learning.
 
 """
+
+
 class SpanProtoCrossNERProcessor(FewShotNERProcessor):
-    def __init__(self, data_args, training_args, model_args, post_tokenizer=False, keep_raw_data=True):
-        super().__init__(data_args, training_args, model_args, post_tokenizer=post_tokenizer,
+    def __init__(self,
+                 data_args,
+                 training_args,
+                 model_args,
+                 post_tokenizer=False,
+                 keep_raw_data=True):
+        super().__init__(data_args,
+                         training_args,
+                         model_args,
+                         post_tokenizer=post_tokenizer,
                          keep_raw_data=keep_raw_data)
-        param = {p.split("=")[0]: p.split("=")[1] for p in
-                 (data_args.user_defined).split(" ")}  # user_defined parameter
-        N, K, ID, mode = param["N"], param["K"], param["ID"], param["mode"]  # N: num class, Q: query entity num, K: support entity num
+        param = {
+            p.split('=')[0]: p.split('=')[1]
+            for p in (data_args.user_defined).split(' ')
+        }  # user_defined parameter
+        N, K, ID, mode = param['N'], param['K'], param['ID'], param[
+            'mode']  # N: num class, Q: query entity num, K: support entity num
         # mode = "xval_ner" if K == 1 else "x_val_ner_shot_5"
         # notes: in crossner, N denotes the num class of target domain
         self.train_file = os.path.join(
             data_args.data_dir, mode,
-            ("ner_train_{}.json".format(ID)) if K == '1' else ("ner-train-{}-shot-5.json".format(ID))
-        )
+            ('ner_train_{}.json'.format(ID)) if K == '1' else
+            ('ner-train-{}-shot-5.json'.format(ID)))
         self.dev_file = os.path.join(
             data_args.data_dir, mode,
-            ("ner_valid_{}.json".format(ID)) if K == '1' else ("ner-valid-{}-shot-5.json".format(ID)))
+            ('ner_valid_{}.json'.format(ID)) if K == '1' else
+            ('ner-valid-{}-shot-5.json'.format(ID)))
         self.test_file = os.path.join(
             data_args.data_dir, mode,
-            ("ner_test_{}.json".format(ID)) if K == '1' else ("ner-test-{}-shot-5.json".format(ID)))
+            ('ner_test_{}.json'.format(ID)) if K == '1' else
+            ('ner-test-{}-shot-5.json'.format(ID)))
 
         self.max_len = data_args.max_seq_length
         self.doc_stride = data_args.doc_stride
@@ -1151,18 +1225,17 @@ class SpanProtoCrossNERProcessor(FewShotNERProcessor):
         self.num_example = int(K)
         self.ID = ID
 
-        self.output_dir = "./outputs/{}-{}".format(self.mode, ID)
+        self.output_dir = './outputs/{}-{}'.format(self.mode, ID)
 
     def get_num_class(self, data_labels):
-        if data_labels == "News":
+        if data_labels == 'News':
             return 4
-        if data_labels == "Wiki":
+        if data_labels == 'Wiki':
             return 11
-        if data_labels == "SocialMedia":
+        if data_labels == 'SocialMedia':
             return 6
-        if data_labels == "OntoNotes":
+        if data_labels == 'OntoNotes':
             return 18
-
 
     def get_data_collator(self):
         pad_to_multiple_of_8 = self.training_args.fp16 and not self.data_args.pad_to_max_length
@@ -1173,27 +1246,28 @@ class SpanProtoCrossNERProcessor(FewShotNERProcessor):
             mode=self.mode,
             pad_to_multiple_of=8 if pad_to_multiple_of_8 else None,
             pad_to_max_length=self.data_args.pad_to_max_length,
-            path=self.output_dir
-        )
+            path=self.output_dir)
 
     def __load_data_from_file__(self, filepath):
         with open(filepath) as f:
             raw_data = json.load(f)
         return raw_data
 
-
     def get_tokenized_datasets(self):
         raw_datasets = DatasetDict()
         if self.training_args.do_train:
             train_examples = self.get_examples('train')
             raw_datasets['train'] = DatasetK.from_dict(
-                self.list_2_json(train_examples))  # [{k1: xxx, k2: xxx}, {...}] -> {k1: [xxx, xxx], k2: [xxx, xxx]}
+                self.list_2_json(train_examples)
+            )  # [{k1: xxx, k2: xxx}, {...}] -> {k1: [xxx, xxx], k2: [xxx, xxx]}
         if self.training_args.do_eval:
             dev_examples = self.get_examples('dev')
-            raw_datasets['validation'] = DatasetK.from_dict(self.list_2_json(dev_examples))
+            raw_datasets['validation'] = DatasetK.from_dict(
+                self.list_2_json(dev_examples))
         if self.training_args.do_predict:
             test_examples = self.get_examples('test')
-            raw_datasets['test'] = DatasetK.from_dict(self.list_2_json(test_examples))
+            raw_datasets['test'] = DatasetK.from_dict(
+                self.list_2_json(test_examples))
 
         if self.post_tokenizer:
             if self.keep_raw_data:
@@ -1206,39 +1280,47 @@ class SpanProtoCrossNERProcessor(FewShotNERProcessor):
         remove_columns = [self.support_key, self.query_key]
         tokenize_func = self.build_preprocess_function()
         # 多gpu, 0计算完存cache，其他load cache
-        load_from_cache_file = not self.data_args.overwrite_cache if self.training_args.local_rank in [-1, 0] else True
-        base_cache_dir = os.path.join(self.model_args.cache_dir,
-                                      'datasets') if self.model_args.cache_dir else os.path.join(
-            os.path.expanduser("~"), '.cache/huggingface/datasets/')
+        load_from_cache_file = not self.data_args.overwrite_cache if self.training_args.local_rank in [
+            -1, 0
+        ] else True
+        base_cache_dir = os.path.join(
+            self.model_args.cache_dir,
+            'datasets') if self.model_args.cache_dir else os.path.join(
+                os.path.expanduser('~'), '.cache/huggingface/datasets/')
         cache_dir = os.path.join(base_cache_dir, self.data_args.task_name)
 
         os.makedirs(cache_dir, exist_ok=True)
-        with self.training_args.main_process_first(desc="dataset tokenizer map"):
+        with self.training_args.main_process_first(
+                desc='dataset tokenizer map'):
             raw_datasets = raw_datasets.map(
                 tokenize_func,
                 batched=True,
                 load_from_cache_file=load_from_cache_file,
-                desc="Running tokenizer on dataset",
+                desc='Running tokenizer on dataset',
                 cache_file_names={
-                    k: f'{cache_dir}/cache_{self.data_args.task_name}_{self.data_args.data_dir.split("/")[-1]}_{self.mode}_{self.ID}_{self.num_example}_{str(k)}.arrow'
-                    for k in raw_datasets},
+                    k:
+                    f'{cache_dir}/cache_{self.data_args.task_name}_{self.data_args.data_dir.split("/")[-1]}_{self.mode}_{self.ID}_{self.num_example}_{str(k)}.arrow'
+                    for k in raw_datasets
+                },
                 num_proc=self.data_args.preprocessing_num_workers,
-                remove_columns=remove_columns
-            )
+                remove_columns=remove_columns)
             if self.keep_raw_data:
                 self.raw_datasets = raw_datasets
-            print("datasets=", raw_datasets)
+            print('datasets=', raw_datasets)
             return raw_datasets
 
     def get_examples(self, set_type):
         if set_type == 'train':
-            examples = self._create_examples(self.__load_data_from_file__(self.train_file), set_type)
+            examples = self._create_examples(
+                self.__load_data_from_file__(self.train_file), set_type)
             self.train_examples = examples
         elif set_type == 'dev':
-            examples = self._create_examples(self.__load_data_from_file__(self.dev_file), set_type)
+            examples = self._create_examples(
+                self.__load_data_from_file__(self.dev_file), set_type)
             self.dev_examples = examples
         elif set_type == 'test':
-            examples = self._create_examples(self.__load_data_from_file__(self.test_file), set_type)
+            examples = self._create_examples(
+                self.__load_data_from_file__(self.test_file), set_type)
             self.test_file = examples
         else:
             examples = None
@@ -1246,37 +1328,38 @@ class SpanProtoCrossNERProcessor(FewShotNERProcessor):
 
     def get_sentence_with_span(self, data, label2id):
         # 给定一个support/query set，获取每个句子对应的实体span
-        word_list = data["seq_ins"]
-        label_list = data["seq_outs"]
+        word_list = data['seq_ins']
+        label_list = data['seq_outs']
         input_texts = list()
         labeled_spans = list()
         labeled_types = list()
-        for words, labels in zip(word_list, label_list):  # 遍历每个句子，每个句子是以word列表存储的
+        for words, labels in zip(word_list,
+                                 label_list):  # 遍历每个句子，每个句子是以word列表存储的
             start, end = -1, -1
-            current_label = ""
-            text = ""
+            current_label = ''
+            text = ''
             spans = list()
             span_types = list()
             for ei, word in enumerate(words):
                 label = labels[ei]
-                label = label.replace("B-", "").replace("I-", "")
-                if label == "O":  # 如果当前的word不是实体，则直接累加到text上。如果此时start不为-1，说明这是实体后的第一个O
-                    text += word + " "
+                label = label.replace('B-', '').replace('I-', '')
+                if label == 'O':  # 如果当前的word不是实体，则直接累加到text上。如果此时start不为-1，说明这是实体后的第一个O
+                    text += word + ' '
                     if start != -1:
                         spans.append([start, end])
                         span_types.append(label2id[current_label])
                         start, end = -1, -1
-                        current_label = ""
+                        current_label = ''
                 else:  # 如果当前的word是一个实体
                     # 如果当前的实体和上一个实体不同，则需要把上一个实体保存到span里，重新记录当前新的实体
                     if label != current_label and start != -1:
                         spans.append([start, end])
                         span_types.append(label2id[current_label])
                         start, end = -1, -1
-                        current_label = ""
+                        current_label = ''
                     if start == -1:  # 说明当前的word是当前实体的第一个词，记住这个起始位置
                         start = len(text)
-                    text += word + " "  # 将当前的word追加到text上
+                    text += word + ' '  # 将当前的word追加到text上
                     end = len(text)  # 记录一下当前的end位置
                     current_label = label
             if start != -1:
@@ -1290,17 +1373,17 @@ class SpanProtoCrossNERProcessor(FewShotNERProcessor):
         return input_texts, labeled_spans, labeled_types
 
     def _create_examples(self, raw_data: dict, set_type):
-
         def get_label2id(suport_labels, query_labels):
             label2id = dict()
             for sent in suport_labels + query_labels:
                 for label in sent:
-                    if label == "O":
+                    if label == 'O':
                         continue
-                    label = label.replace("B-", "").replace("I-", "")
+                    label = label.replace('B-', '').replace('I-', '')
                     if label not in label2id.keys():
                         label2id[label] = len(label2id)
             return label2id
+
         examples = []
         # is_train = 0 if set_type == 'test' else 1
         for domain_name, domain_data in raw_data.items():
@@ -1311,28 +1394,38 @@ class SpanProtoCrossNERProcessor(FewShotNERProcessor):
                 support = line['support']
                 query = line['batch']
                 label2id = get_label2id(support['seq_outs'], query['seq_outs'])
-                support_input_texts, support_labeled_spans, support_labeled_types = self.get_sentence_with_span(support,
-                                                                                                                label2id)
-                query_input_texts, query_labeled_spans, query_labeled_types = self.get_sentence_with_span(query, label2id)
+                support_input_texts, support_labeled_spans, support_labeled_types = self.get_sentence_with_span(
+                    support, label2id)
+                query_input_texts, query_labeled_spans, query_labeled_types = self.get_sentence_with_span(
+                    query, label2id)
 
                 num_class = self.get_num_class(domain_name)
                 assert num_class == len(label2id)
 
-                examples.append(
-                    {
-                        'id': id_,
-                        'support_input_texts': support_input_texts,
-                        'support_labeled_spans': support_labeled_spans,
-                        'support_labeled_types': support_labeled_types,
-                        'support_sentence_num': len(support_input_texts),
-                        'query_input_texts': query_input_texts,
-                        'query_labeled_spans': query_labeled_spans,
-                        'query_labeled_types': query_labeled_types,
-                        'query_sentence_num': len(query_input_texts),
-                        'num_class': num_class,
-                        'stage': set_type,
-                    }
-                )
+                examples.append({
+                    'id':
+                    id_,
+                    'support_input_texts':
+                    support_input_texts,
+                    'support_labeled_spans':
+                    support_labeled_spans,
+                    'support_labeled_types':
+                    support_labeled_types,
+                    'support_sentence_num':
+                    len(support_input_texts),
+                    'query_input_texts':
+                    query_input_texts,
+                    'query_labeled_spans':
+                    query_labeled_spans,
+                    'query_labeled_types':
+                    query_labeled_types,
+                    'query_sentence_num':
+                    len(query_input_texts),
+                    'num_class':
+                    num_class,
+                    'stage':
+                    set_type,
+                })
 
         return examples
 
@@ -1350,7 +1443,6 @@ class SpanProtoCrossNERProcessor(FewShotNERProcessor):
         max_seq_length = self.data_args.max_seq_length
         # label_to_id = self.label_to_id
         # label_column = self.label_column
-
         '''
         examples = {
             'id': [...]
@@ -1386,38 +1478,36 @@ class SpanProtoCrossNERProcessor(FewShotNERProcessor):
             'query_sentence_num': [...],
         }
         '''
-
         def func(examples):
             features = {
                 'id': examples['id'],
                 'support_input': list(),
                 'query_input': list(),
             }
-            support_inputs, query_inputs = examples[support_key], examples[query_key]
+            support_inputs, query_inputs = examples[support_key], examples[
+                query_key]
             for ei, support_input in enumerate(support_inputs):
                 # 对每个episode，对support和query进行分词
-                support_input = (support_input,)
-                query_input = (query_inputs[ei],)
-                support_result = tokenizer(
-                    *support_input,
-                    padding=False,
-                    max_length=max_seq_length,
-                    truncation='longest_first',
-                    add_special_tokens=True,
-                    return_offsets_mapping=True
-                )
-                query_result = tokenizer(
-                    *query_input,
-                    padding=False,
-                    max_length=max_seq_length,
-                    truncation='longest_first',
-                    add_special_tokens=True,
-                    return_offsets_mapping=True
-                )
+                support_input = (support_input, )
+                query_input = (query_inputs[ei], )
+                support_result = tokenizer(*support_input,
+                                           padding=False,
+                                           max_length=max_seq_length,
+                                           truncation='longest_first',
+                                           add_special_tokens=True,
+                                           return_offsets_mapping=True)
+                query_result = tokenizer(*query_input,
+                                         padding=False,
+                                         max_length=max_seq_length,
+                                         truncation='longest_first',
+                                         add_special_tokens=True,
+                                         return_offsets_mapping=True)
                 features['support_input'].append(support_result)
                 features['query_input'].append(query_result)
-            features['support_labeled_spans'] = examples['support_labeled_spans']
-            features['support_labeled_types'] = examples['support_labeled_types']
+            features['support_labeled_spans'] = examples[
+                'support_labeled_spans']
+            features['support_labeled_types'] = examples[
+                'support_labeled_types']
             features['support_sentence_num'] = examples['support_sentence_num']
             features['query_labeled_spans'] = examples['query_labeled_spans']
             features['query_labeled_types'] = examples['query_labeled_types']
@@ -1478,10 +1568,10 @@ class SpanProtoCrossNERProcessor(FewShotNERProcessor):
         num_class = examples[0]['num_class']
         results = dict()  # 所有episode的query预测的span以及对应的类别
         for i in range(word_size):
-            path = os.path.join(
-                self.output_dir, "predict", "{}_predictions_{}.npy".format(stage, i))
+            path = os.path.join(self.output_dir, 'predict',
+                                '{}_predictions_{}.npy'.format(stage, i))
             # path = "./outputs2/predict/predictions_{}.npy".format(i)
-            assert os.path.exists(path), "unknown path: {}".format(path)
+            assert os.path.exists(path), 'unknown path: {}'.format(path)
             if os.path.exists(path):
                 res = np.load(path, allow_pickle=True)[()]
                 # 合并所有device的结果
@@ -1502,14 +1592,17 @@ class SpanProtoCrossNERProcessor(FewShotNERProcessor):
 
             # 对于query label，将字符级别的区间转换为分词级别
             for ei in range(len(query_labeled_spans)):  # 遍历每一个句子
-                labeled_span = query_labeled_spans[ei]  # list # 当前句子的所有mention span（字符级别）
-                offset = query_offset_mapping[ei]  # 表示tokenizer生成的token对应原始文本中字符级别的位置区间
+                labeled_span = query_labeled_spans[
+                    ei]  # list # 当前句子的所有mention span（字符级别）
+                offset = query_offset_mapping[
+                    ei]  # 表示tokenizer生成的token对应原始文本中字符级别的位置区间
                 new_labeled_span = list()  # 当前句子的所有mention span（token级别）
                 # starts, ends = feature['start'], feature['end']
                 # print('starts=', starts)
                 # print('ends=', ends)
                 position_map = {}
-                for i, (m, n) in enumerate(offset):  # 第i个分词对应原始文本中字符级别的区间(m, n)
+                for i, (m,
+                        n) in enumerate(offset):  # 第i个分词对应原始文本中字符级别的区间(m, n)
                     if i != 0 and m == 0 and n == 0:
                         continue
                     for k in range(m, n + 1):
@@ -1526,12 +1619,13 @@ class SpanProtoCrossNERProcessor(FewShotNERProcessor):
 
                     if start in position_map and end in position_map:
                         # 指定下列元素为1，说明表示第feature_id个样本的预测区间
-                        new_labeled_span.append([position_map[start], position_map[end]])
+                        new_labeled_span.append(
+                            [position_map[start], position_map[end]])
                 new_labeled_spans.append(new_labeled_span)
 
             # 获得模型预测
-            pred_spans, pred_spans_ = results[id_]["spans"], list()
-            pred_types, pred_types_ = results[id_]["types"], list()
+            pred_spans, pred_spans_ = results[id_]['spans'], list()
+            pred_types, pred_types_ = results[id_]['types'], list()
             # for spans, types in zip(pred_spans, pred_types): # 遍历每一个句子
             #     # 如果预测的label为unlabeled type，则删除（即虽然预测的是实体，但并不在当前episode规定的类里，按照规则则全部视为非实体）
             #     spans_ = list()
@@ -1559,7 +1653,7 @@ class SpanProtoCrossNERProcessor(FewShotNERProcessor):
 
         return predictions
 
-    def compute_metrics(self, eval_predictions, stage="dev"):
+    def compute_metrics(self, eval_predictions, stage='dev'):
         '''
         eval_predictions: huggingface
         eval_predictions[0]: logits
@@ -1571,17 +1665,19 @@ class SpanProtoCrossNERProcessor(FewShotNERProcessor):
             })
         '''
         all_metrics = {
-            "span_precision": 0.,
-            "span_recall": 0.,
-            "eval_span_f1": 0,
-            "class_precision": 0.,
-            "class_recall": 0.,
-            "eval_class_f1": 0,
+            'span_precision': 0.,
+            'span_recall': 0.,
+            'eval_span_f1': 0,
+            'class_precision': 0.,
+            'class_recall': 0.,
+            'eval_class_f1': 0,
         }
 
-        examples = self.raw_datasets['validation'] if stage == "dev" else self.raw_datasets['test']
+        examples = self.raw_datasets[
+            'validation'] if stage == 'dev' else self.raw_datasets['test']
         # golden, dataname_map, dataname_type = {}, defaultdict(list), {}
-        predictions = self.get_predict_result(eval_predictions[0], examples, stage)
+        predictions = self.get_predict_result(eval_predictions[0], examples,
+                                              stage)
 
         # === 下面使用Few-NERD官方提供的评测方法 ===
 
@@ -1602,8 +1698,8 @@ class SpanProtoCrossNERProcessor(FewShotNERProcessor):
             num_class = predicts['num_class']
             # 遍历每个句子，为每个label生成所有的span e.g. {label:[(start_pos, end_pos), ...]}
             for label_span, label_type, pred_span, pred_type in zip(
-                    query_labeled_spans, query_labeled_types, pred_span, pred_type
-            ):
+                    query_labeled_spans, query_labeled_types, pred_span,
+                    pred_type):
                 # 用于评价detector检测区间的效果
                 label_span_dict = {0: list()}
                 pred_span_dict = {0: list()}
@@ -1627,12 +1723,10 @@ class SpanProtoCrossNERProcessor(FewShotNERProcessor):
                     pred_class_dict[type].append((span[0], span[1]))
 
                 tmp_pred_span_cnt, tmp_label_span_cnt, correct_span = self.metrics_by_entity(
-                    label_span_dict, pred_span_dict
-                )
+                    label_span_dict, pred_span_dict)
 
                 tmp_pred_class_cnt, tmp_label_class_cnt, correct_class = self.metrics_by_entity(
-                    label_class_dict, pred_class_dict
-                )
+                    label_class_dict, pred_class_dict)
                 pred_span_cnt += tmp_pred_span_cnt
                 label_span_cnt += tmp_label_span_cnt
                 correct_span_cnt += correct_span
@@ -1644,21 +1738,23 @@ class SpanProtoCrossNERProcessor(FewShotNERProcessor):
         span_precision = correct_span_cnt / pred_span_cnt
         span_recall = correct_span_cnt / label_span_cnt
         try:
-            span_f1 = 2 * span_precision * span_recall / (span_precision + span_recall)
+            span_f1 = 2 * span_precision * span_recall / (span_precision +
+                                                          span_recall)
         except:
             span_f1 = 0.
 
         class_precision = correct_class_cnt / pred_class_cnt
         class_recall = correct_class_cnt / label_class_cnt
         try:
-            class_f1 = 2 * class_precision * class_recall / (class_precision + class_recall)
+            class_f1 = 2 * class_precision * class_recall / (class_precision +
+                                                             class_recall)
         except:
             class_f1 = 0.
         all_metrics['span_precision'], all_metrics['span_recall'], all_metrics['eval_span_f1'] = \
             span_precision, span_recall, span_f1
         all_metrics['class_precision'], all_metrics['class_recall'], all_metrics['eval_class_f1'] = \
             class_precision, class_recall, class_f1
-        print("{} all_metrics=".format(stage), all_metrics)
+        print('{} all_metrics='.format(stage), all_metrics)
         # === 下面用于计算detector的效果 ===
         # 遍历每个episode，获得预测正确的span个数，
 
@@ -1691,34 +1787,32 @@ class SpanProtoCrossNERProcessor(FewShotNERProcessor):
         return all_metrics
 
     def metrics_by_entity(self, label_class_span, pred_class_span):
-        '''
-        return entity level count of total prediction, true labels, and correct prediction
-        '''
+        """return entity level count of total prediction, true labels, and correct prediction."""
 
         # pred_class_span # {label:[(start_pos, end_pos), ...]}
         # label_class_span # {label:[(start_pos, end_pos), ...]}
         def get_cnt(label_class_span):
-            '''
-            return the count of entities
-            '''
+            """return the count of entities."""
             cnt = 0
             for label in label_class_span:
                 cnt += len(label_class_span[label])
             return cnt
 
         def get_intersect_by_entity(pred_class_span, label_class_span):
-            '''
-            return the count of correct entity
-            '''
+            """return the count of correct entity."""
             cnt = 0
             for label in label_class_span:
-                cnt += len(list(set(label_class_span[label]).intersection(set(pred_class_span.get(label, [])))))
+                cnt += len(
+                    list(
+                        set(label_class_span[label]).intersection(
+                            set(pred_class_span.get(label, [])))))
             return cnt
 
         pred_cnt = get_cnt(pred_class_span)
         label_cnt = get_cnt(label_class_span)
-        correct_cnt = get_intersect_by_entity(pred_class_span, label_class_span)
+        correct_cnt = get_intersect_by_entity(pred_class_span,
+                                              label_class_span)
         return pred_cnt, label_cnt, correct_cnt
 
     def save_result(self, logits, label_ids):
-        self.compute_metrics((logits,), stage='test')
+        self.compute_metrics((logits, ), stage='test')

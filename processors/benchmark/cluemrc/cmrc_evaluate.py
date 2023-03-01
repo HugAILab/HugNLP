@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-'''
-Evaluation script for CMRC 2018
+"""Evaluation script for CMRC 2018.
+
 version: v5 - special
 Note:
 v5 - special: Evaluate on SQuAD-style CMRC 2018 Datasets
 v5: formatted output, add usage description
 v4: fixed segmentation issues
-'''
+"""
 import re
 import nltk
 
@@ -14,6 +14,8 @@ import nltk
 # split Chinese with English
 def mixed_segmentation(in_str, rm_punc=False):
     return list(in_str)
+
+
 # def mixed_segmentation(in_str, rm_punc=False):
 #     in_str = str(in_str).lower().strip()
 #     segs_out = []
@@ -43,9 +45,11 @@ def mixed_segmentation(in_str, rm_punc=False):
 # remove punctuation
 def remove_punctuation(in_str):
     in_str = str(in_str).lower().strip()
-    sp_char = ['-', ':', '_', '*', '^', '/', '\\', '~', '`', '+', '=',
-               '，', '。', '：', '？', '！', '“', '”', '；', '’', '《', '》', '……', '·', '、',
-               '「', '」', '（', '）', '－', '～', '『', '』']
+    sp_char = [
+        '-', ':', '_', '*', '^', '/', '\\', '~', '`', '+', '=', '，', '。', '：',
+        '？', '！', '“', '”', '；', '’', '《', '》', '……', '·', '、', '「', '」', '（',
+        '）', '－', '～', '『', '』'
+    ]
     out_segs = []
     for char in in_str:
         if char in sp_char:
@@ -85,6 +89,7 @@ def evaluate2(prediction, ground_truth):
     f1_score = 100.0 * f1 / total_count
     em_score = 100.0 * em / total_count
     return {'f1': round(f1_score, 4), 'em': round(em_score, 4)}
+
 
 def evaluate(prediction, ground_truth):
     f1 = 0

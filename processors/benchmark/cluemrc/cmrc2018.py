@@ -18,8 +18,17 @@ from metrics import datatype2metrics
 
 
 class CMRCProcessor(CLSProcessor):
-    def __init__(self, data_args, training_args, model_args, post_tokenizer=False, keep_raw_data=True):
-        super().__init__(data_args, training_args, model_args, post_tokenizer=post_tokenizer, keep_raw_data=keep_raw_data)
+    def __init__(self,
+                 data_args,
+                 training_args,
+                 model_args,
+                 post_tokenizer=False,
+                 keep_raw_data=True):
+        super().__init__(data_args,
+                         training_args,
+                         model_args,
+                         post_tokenizer=post_tokenizer,
+                         keep_raw_data=keep_raw_data)
         self.train_file = os.path.join(data_args.data_dir, 'train.json')
         self.dev_file = os.path.join(data_args.data_dir, 'dev.json')
         self.test_file = os.path.join(data_args.data_dir, 'test.json')
@@ -31,20 +40,27 @@ class CMRCProcessor(CLSProcessor):
 
     def get_data_collator(self):
         pad_to_multiple_of_8 = self.training_args.fp16 and not self.data_args.pad_to_max_length
-        return DataCollatorForTokenClassification(self.tokenizer, padding='longest', pad_to_multiple_of=8 if pad_to_multiple_of_8 else None)
+        return DataCollatorForTokenClassification(
+            self.tokenizer,
+            padding='longest',
+            pad_to_multiple_of=8 if pad_to_multiple_of_8 else None)
 
     def get_examples(self, set_type):
         if set_type == 'train':
-            examples = self._create_examples(self._read_json(self.train_file)['data'] + self._read_json(self.trial_file)['data'], 'train')
+            examples = self._create_examples(
+                self._read_json(self.train_file)['data'] +
+                self._read_json(self.trial_file)['data'], 'train')
             # examples = self._create_examples(self._read_json(self.train_file)['data'], 'train')
             examples = examples[:self.data_args.max_train_samples]
             self.train_examples = examples
         elif set_type == 'dev':
-            examples = self._create_examples(self._read_json(self.dev_file)['data'], 'dev')
+            examples = self._create_examples(
+                self._read_json(self.dev_file)['data'], 'dev')
             examples = examples[:self.data_args.max_eval_samples]
             self.dev_examples = examples
         elif set_type == 'test':
-            examples = self._create_examples(self._read_json(self.test_file)['data'], 'test')
+            examples = self._create_examples(
+                self._read_json(self.test_file)['data'], 'test')
             examples = examples[:self.data_args.max_predict_samples]
             self.test_examples = examples
         return examples
@@ -52,30 +68,43 @@ class CMRCProcessor(CLSProcessor):
     def _create_examples(self, lines, set_type):
         examples = []
         for line in lines:
-            for paragraph in line["paragraphs"]:
-                context = paragraph["context"].strip()
-                for qa in paragraph["qas"]:
-                    question = qa["question"].strip()
-                    id_ = qa["id"]
+            for paragraph in line['paragraphs']:
+                context = paragraph['context'].strip()
+                for qa in paragraph['qas']:
+                    question = qa['question'].strip()
+                    id_ = qa['id']
                     answers = qa['answers']
                     if set_type == 'train':
                         # assert len(answers) == 1
-                        examples.extend(self.stride_split(id_, question, context, answers[0]['text'], answers[0]['answer_start'], is_train=1))
+                        examples.extend(
+                            self.stride_split(id_,
+                                              question,
+                                              context,
+                                              answers[0]['text'],
+                                              answers[0]['answer_start'],
+                                              is_train=1))
                     elif set_type == 'dev':
-                        answer_starts = [answer["answer_start"] for answer in answers]
+                        answer_starts = [
+                            answer['answer_start'] for answer in answers
+                        ]
                         answer_text = [answer['text'] for answer in answers]
-                        o = self.stride_split(id_, question, context, answer_text[0], answer_starts[0], is_train=1)
+                        o = self.stride_split(id_,
+                                              question,
+                                              context,
+                                              answer_text[0],
+                                              answer_starts[0],
+                                              is_train=1)
                         for i in o:
                             i['answer_all'] = answer_text
                         examples.extend(o)
                     else:
-                        examples.extend(self.stride_split(id_, question, context, '', -1))
+                        examples.extend(
+                            self.stride_split(id_, question, context, '', -1))
 
         return examples
 
     def stride_split(self, i, q, c, a, s, is_train=0):
-        """滑动窗口分割context
-        """
+        """滑动窗口分割context."""
         # 标准转换
         # q = lowercase_and_normalize(q)
         # c = lowercase_and_normalize(c)
@@ -85,7 +114,7 @@ class CMRCProcessor(CLSProcessor):
             s = s + 1
         if a and a[-1] == ' ':
             a = a[:-1]
-        if a in ["中医认为鲈鱼性温味甘，有健脾胃、补肝肾、止咳化痰的作用。", "北京故宫博物院"]:
+        if a in ['中医认为鲈鱼性温味甘，有健脾胃、补肝肾、止咳化痰的作用。', '北京故宫博物院']:
             s = s - 1
 
         e = s + len(a)
@@ -95,9 +124,25 @@ class CMRCProcessor(CLSProcessor):
         while True:
             l, r = n * self.doc_stride, n * self.doc_stride + max_c_len
             if l <= s < e <= r:
-                results.append({'id': i, 'question': q, 'content': c[l:r], 'answer': a, 'start': s - l, 'end': e - l, 'is_train': is_train})
+                results.append({
+                    'id': i,
+                    'question': q,
+                    'content': c[l:r],
+                    'answer': a,
+                    'start': s - l,
+                    'end': e - l,
+                    'is_train': is_train
+                })
             else:
-                results.append({'id': i, 'question': q, 'content': c[l:r], 'answer': '', 'start': -1, 'end': -1, 'is_train': is_train})
+                results.append({
+                    'id': i,
+                    'question': q,
+                    'content': c[l:r],
+                    'answer': '',
+                    'start': -1,
+                    'end': -1,
+                    'is_train': is_train
+                })
             if r >= len(c):
                 return results
             n += 1
@@ -109,7 +154,8 @@ class CMRCProcessor(CLSProcessor):
 
         def func(examples):
             # Tokenize
-            starts, ends, answers = examples['start'], examples['end'], examples['answer']
+            starts, ends, answers = examples['start'], examples[
+                'end'], examples['answer']
             is_train = max(starts) > 0
             sep_id = tokenizer.sep_token_id
             tokenized_examples = tokenizer(
@@ -117,14 +163,16 @@ class CMRCProcessor(CLSProcessor):
                 examples['content'],
                 truncation=True,
                 max_length=max_seq_length,
-                padding="max_length" if self.data_args.pad_to_max_length else False,
-                return_offsets_mapping=True
-            )
+                padding='max_length'
+                if self.data_args.pad_to_max_length else False,
+                return_offsets_mapping=True)
             # 确定label
             offset_mapping = tokenized_examples['offset_mapping']
             labels = []
             if is_train:
-                for input_id, offset, start, end, answer in zip(tokenized_examples['input_ids'], offset_mapping, starts, ends, answers):
+                for input_id, offset, start, end, answer in zip(
+                        tokenized_examples['input_ids'], offset_mapping,
+                        starts, ends, answers):
                     label = [0] * len(input_id)
                     sep_idx_1 = input_id.index(sep_id)
                     for i, (m, n) in enumerate(offset):
@@ -148,7 +196,8 @@ class CMRCProcessor(CLSProcessor):
                     labels.append(label)
             else:
                 for i in range(len(examples['question'])):
-                    labels.append([0] * len(tokenized_examples['input_ids'][i]))
+                    labels.append([0] *
+                                  len(tokenized_examples['input_ids'][i]))
 
             tokenized_examples['labels'] = labels
             return tokenized_examples
@@ -183,13 +232,15 @@ class CMRCProcessor(CLSProcessor):
             start_idx[k] = i
             end_idx[k] = max_end[k]
         feature_map_prob = max_sum
-        feature_answer = np.concatenate((start_idx.reshape(-1, 1), end_idx.reshape(-1, 1)), axis=1)
+        feature_answer = np.concatenate(
+            (start_idx.reshape(-1, 1), end_idx.reshape(-1, 1)), axis=1)
 
         # 单个token
         single_sum_prob = probs[:, :, 3] * 2
         max_start = np.argmax(single_sum_prob, axis=1)
         max_end = max_start
-        max_pos = np.concatenate((max_start.reshape(-1, 1), max_end.reshape(-1, 1)), axis=1)
+        max_pos = np.concatenate(
+            (max_start.reshape(-1, 1), max_end.reshape(-1, 1)), axis=1)
         max_prob = single_sum_prob.max(axis=1)
         new = max_prob > feature_map_prob
         feature_map_prob[new] = max_prob[new]
@@ -205,7 +256,7 @@ class CMRCProcessor(CLSProcessor):
                 print(1)
             s = best_example['offset_mapping'][best_start_end[0]][0]
             e = best_example['offset_mapping'][best_start_end[1]][1]
-            answer = best_example['content'][s: e]
+            answer = best_example['content'][s:e]
             predict_answers[example_id] = answer
         return predict_answers
 
@@ -214,7 +265,8 @@ class CMRCProcessor(CLSProcessor):
         predictions, label_ids = eval_predictions
         if label_ids.max() == 0:
             return {'eval_em': 0, 'eval_f1': 0}
-        predict_answers, _ = self.get_predict_answer('validation', predictions, label_ids)
+        predict_answers, _ = self.get_predict_answer('validation', predictions,
+                                                     label_ids)
         # predict_answers2, _ = self.get_predict_answer2('validation', predictions, label_ids)
         true_labels = {}
         for example in self.raw_datasets['validation']:
@@ -223,8 +275,10 @@ class CMRCProcessor(CLSProcessor):
         return evaluate2(predict_answers, true_labels)
 
     def save_result(self, logits, label_ids):
-        predict_answers, top_answers = self.get_predict_answer('test', logits, label_ids)
-        outfile = os.path.join(self.training_args.output_dir, 'cmrc2018_predict.json')
+        predict_answers, top_answers = self.get_predict_answer(
+            'test', logits, label_ids)
+        outfile = os.path.join(self.training_args.output_dir,
+                               'cmrc2018_predict.json')
         with open(outfile, 'w', encoding='utf8') as f:
             json.dump(predict_answers, f, ensure_ascii=False, indent=4)
 
@@ -241,18 +295,21 @@ class DataCollatorForGlobalPointer:
         is_train = max([feature['is_train'] for feature in features]) > 0
         batch = []
         for f in features:
-            batch.append({'input_ids': f['input_ids'], 'token_type_ids': f['token_type_ids'], 'attention_mask': f['attention_mask']})
-        batch = self.tokenizer.pad(
-            batch,
-            padding='max_length',
-            max_length=self.max_length,
-            return_tensors="pt"
-        )
+            batch.append({
+                'input_ids': f['input_ids'],
+                'token_type_ids': f['token_type_ids'],
+                'attention_mask': f['attention_mask']
+            })
+        batch = self.tokenizer.pad(batch,
+                                   padding='max_length',
+                                   max_length=self.max_length,
+                                   return_tensors='pt')
         # 确定label
         if not is_train:
             return batch
         else:
-            labels = torch.zeros(len(features), 1, self.max_length, self.max_length)  # 阅读理解任务entity种类为1
+            labels = torch.zeros(len(features), 1, self.max_length,
+                                 self.max_length)  # 阅读理解任务entity种类为1
             for feature_id, feature in enumerate(features):
                 start, end = feature['start'], feature['end']
                 offset = feature['offset_mapping']
@@ -265,7 +322,8 @@ class DataCollatorForGlobalPointer:
                         position_map[k] = i
                 if start > 0 and end > 0:
 
-                    labels[feature_id, 0, position_map[start], position_map[end] - 1] = 1
+                    labels[feature_id, 0, position_map[start],
+                           position_map[end] - 1] = 1
 
                 else:
                     # 不包含答案时则将label指向[CLS]
@@ -280,7 +338,10 @@ class DataCollatorForGlobalPointer:
 
 class CMRCGPProcessor(CMRCProcessor):
     def __init__(self, data_args, training_args, model_args):
-        super().__init__(data_args, training_args, model_args, keep_raw_data=True)
+        super().__init__(data_args,
+                         training_args,
+                         model_args,
+                         keep_raw_data=True)
         self.sentence1_key = None
         self.example_id_feature_map = {}
         self.offset_map = {}
@@ -288,7 +349,10 @@ class CMRCGPProcessor(CMRCProcessor):
 
     def get_data_collator(self):
         pad_to_multiple_of_8 = self.training_args.fp16 and not self.data_args.pad_to_max_length
-        return DataCollatorForGlobalPointer(self.tokenizer, pad_to_multiple_of=8 if pad_to_multiple_of_8 else None, pad_to_max_length=self.data_args.pad_to_max_length)
+        return DataCollatorForGlobalPointer(
+            self.tokenizer,
+            pad_to_multiple_of=8 if pad_to_multiple_of_8 else None,
+            pad_to_max_length=self.data_args.pad_to_max_length)
 
     def set_config(self, config):
         config.ent_type_size = 1
@@ -307,15 +371,19 @@ class CMRCGPProcessor(CMRCProcessor):
                 examples['content'],
                 truncation=True,
                 max_length=max_seq_length,
-                padding="max_length" if self.data_args.pad_to_max_length else False,
-                return_offsets_mapping=True
-            )
+                padding='max_length'
+                if self.data_args.pad_to_max_length else False,
+                return_offsets_mapping=True)
             # 确定label
             return tokenized_examples
 
         return func
 
-    def get_predict_answer(self, dataset_name, predictions, label_ids, return_top=False):
+    def get_predict_answer(self,
+                           dataset_name,
+                           predictions,
+                           label_ids,
+                           return_top=False):
         probs, indices = predictions
         probs = probs.squeeze(1)
         indices = indices.squeeze(1)
@@ -324,39 +392,48 @@ class CMRCGPProcessor(CMRCProcessor):
         if dataset_name not in self.example_id_feature_map:
             self.example_id_feature_map[dataset_name] = defaultdict(list)
             for feature_id, example in enumerate(examples):
-                self.example_id_feature_map[dataset_name][example['id']].append(feature_id)
+                self.example_id_feature_map[dataset_name][
+                    example['id']].append(feature_id)
             self.offset_map[dataset_name] = examples['offset_mapping']
             self.content_map[dataset_name] = examples['content']
         predict_answers, topk_result = {}, {}
-        for example_id, feature_ids in self.example_id_feature_map[dataset_name].items():
+        for example_id, feature_ids in self.example_id_feature_map[
+                dataset_name].items():
             feature_ids = [id_ for id_ in feature_ids if indices[id_][0] != 0]
             if len(feature_ids) == 0:
                 predict_answers[example_id] = ''
                 topk_result[example_id] = ''
                 continue
-            feature_scores, feature_indices = probs[feature_ids].flatten().tolist(), indices[feature_ids].flatten().tolist()
+            feature_scores, feature_indices = probs[feature_ids].flatten(
+            ).tolist(), indices[feature_ids].flatten().tolist()
             feature_id_flatten = []
             for id_ in feature_ids:
                 feature_id_flatten += [id_] * len(probs[feature_ids[0]])
-            result = list(zip(feature_scores, feature_indices, feature_id_flatten))
+            result = list(
+                zip(feature_scores, feature_indices, feature_id_flatten))
 
             result = [i for i in result if i[1] != 0]
             best_score, best_start_end, best_feature_id = result[0]
-            best_start_end = np.unravel_index(best_start_end, (self.data_args.max_seq_length, self.data_args.max_seq_length))
+            best_start_end = np.unravel_index(
+                best_start_end,
+                (self.data_args.max_seq_length, self.data_args.max_seq_length))
 
             # assert best_example['id'] == example_id
-            s = self.offset_map[dataset_name][best_feature_id][best_start_end[0]][0]
-            e = self.offset_map[dataset_name][best_feature_id][best_start_end[1]][1]
-            answer = self.content_map[dataset_name][best_feature_id][s: e]
+            s = self.offset_map[dataset_name][best_feature_id][
+                best_start_end[0]][0]
+            e = self.offset_map[dataset_name][best_feature_id][
+                best_start_end[1]][1]
+            answer = self.content_map[dataset_name][best_feature_id][s:e]
 
             predict_answers[example_id] = answer
             if return_top:
                 out = []
                 for prob, se, fid in result:
-                    se = np.unravel_index(se, (self.data_args.max_seq_length, self.data_args.max_seq_length))
+                    se = np.unravel_index(se, (self.data_args.max_seq_length,
+                                               self.data_args.max_seq_length))
                     s = self.offset_map[dataset_name][fid][se[0]][0]
                     e = self.offset_map[dataset_name][fid][se[1]][1]
-                    answer = self.content_map[dataset_name][fid][s: e]
+                    answer = self.content_map[dataset_name][fid][s:e]
                     out.append({'prob': prob, 'answer': answer})
                     # out.append({'prob': prob, 'answer': answer, 'fid': fid, 'start_end': [int(se[0]), int(se[1])]})
                 topk_result[example_id] = out[:20]
@@ -386,10 +463,15 @@ class CMRCGPProcessor(CMRCProcessor):
     #     return all_metrics
 
     def save_result(self, logits, label_ids):
-        predict_answers, top_answers = self.get_predict_answer('test', logits, label_ids, return_top=True)
-        outfile = os.path.join(self.training_args.output_dir, 'cmrc2018_predict.json')
+        predict_answers, top_answers = self.get_predict_answer('test',
+                                                               logits,
+                                                               label_ids,
+                                                               return_top=True)
+        outfile = os.path.join(self.training_args.output_dir,
+                               'cmrc2018_predict.json')
         with open(outfile, 'w', encoding='utf8') as f:
             json.dump(predict_answers, f, ensure_ascii=False, indent=4)
-        topfile = os.path.join(self.training_args.output_dir, 'top20_predict.json')
+        topfile = os.path.join(self.training_args.output_dir,
+                               'top20_predict.json')
         with open(topfile, 'w', encoding='utf8') as f2:
             json.dump(top_answers, f2, ensure_ascii=False, indent=4)

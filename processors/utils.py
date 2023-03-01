@@ -8,9 +8,9 @@ import json
 import unicodedata
 from typing import List, Tuple
 
+
 def lowercase_and_normalize(text):
-    """转小写，并进行简单的标准化
-    """
+    """转小写，并进行简单的标准化."""
     text = text.lower()
     text = unicodedata.normalize('NFD', text)
     text = ''.join([ch for ch in text if unicodedata.category(ch) != 'Mn'])
@@ -18,18 +18,18 @@ def lowercase_and_normalize(text):
 
 
 class MetaExample(object):
-    """The meta example of text"""
+    """The meta example of text."""
+    def __init__(
+            self,
+            guid: str,
+            text: str,
+            mention_list: List[str],
+            mention_span: List[Tuple[int, int]],
+            mention_link_entity: List[str],
+            meta_type: int = 1,  # 当文本为KG所属domain时，标记为1
+            unique_id: int = 0):
+        """Create a new MetaExample.
 
-    def __init__(self,
-                 guid: str,
-                 text: str,
-                 mention_list: List[str],
-                 mention_span: List[Tuple[int, int]],
-                 mention_link_entity: List[str],
-                 meta_type: int = 1,  # 当文本为KG所属domain时，标记为1
-                 unique_id: int = 0):
-        """
-        Create a new MetaExample
         :param guid: a unique textual identifier
         :param text: the sequence of text
         :param mention_list: all entity mentions extracted from the text
@@ -55,16 +55,16 @@ class MetaExample(object):
 
     def to_json_string(self):
         """Serialize this instance to a JSON string."""
-        return json.dumps(self.to_dict(), indent=2, sort_keys=True) + "\n"
+        return json.dumps(self.to_dict(), indent=2, sort_keys=True) + '\n'
 
     @staticmethod
     def load_examples(path: str) -> List['MetaExample']:
-        """Load a set of input examples from a file"""
+        """Load a set of input examples from a file."""
         with open(path, 'rb') as fh:
             return pickle.load(fh)
 
     @staticmethod
     def save_examples(examples: List['MetaExample'], path: str) -> None:
-        """Save a set of input examples to a file"""
+        """Save a set of input examples to a file."""
         with open(path, 'wb') as fh:
             pickle.dump(examples, fh)

@@ -12,14 +12,12 @@ from processors.pretraining.kg_enhance_plm.kg_prompt import KGPrompt
 
 null = None
 
-def run_proc(
-    para_id: int,
-    examples: List,
-    kg_prompt: KGPrompt,
-    tokenizer: RobertaTokenizer,
-    output_folder: str
-):
-    fw = open(os.path.join(output_folder, "feature_{}.json".format(para_id)), 'w', encoding='utf-8')
+
+def run_proc(para_id: int, examples: List, kg_prompt: KGPrompt,
+             tokenizer: RobertaTokenizer, output_folder: str):
+    fw = open(os.path.join(output_folder, 'feature_{}.json'.format(para_id)),
+              'w',
+              encoding='utf-8')
 
     ei = 0
     for example in tqdm(examples):
@@ -36,7 +34,9 @@ def run_proc(
         is_negative = False if random.random() < 0.8 else True
         if task != 1:
             is_negative = False
-        prompt = kg_prompt.get_demonstration(example, is_negative, start_from_input=False)
+        prompt = kg_prompt.get_demonstration(example,
+                                             is_negative,
+                                             start_from_input=False)
         '''
         prompt = {
             'input_ids': input_ids,
@@ -53,7 +53,7 @@ def run_proc(
             prompt['input_ids'], prompt['token_type_ids'], prompt['entity_spans'], \
             prompt['relation_spans'], prompt['token_type_span']
         kg_prompt_ids = input_ids[token_type_span[0][1]:]
-        input_ids = input_ids[: token_type_span[0][1]]
+        input_ids = input_ids[:token_type_span[0][1]]
 
         if len(entity_spans) == 0 or len(relation_spans) == 0:
             continue
@@ -85,9 +85,11 @@ def run_proc(
             entity_label = [tokenizer.cls_token_id] + kg_prompt_ids[start: end] + [tokenizer.sep_token_id] \
                            + [tokenizer.pad_token_id] * (max_len - (end - start) - 2)
             _, entity_negative = kg_prompt.sample_entity(neg_num=5)
-            entity_negative = kg_prompt.encode_kg(entity_negative, max_len=max_len)
+            entity_negative = kg_prompt.encode_kg(entity_negative,
+                                                  max_len=max_len)
             # mlm_labels[start: end] = input_ids[start: end]
-            kg_prompt_ids[start: end] = [tokenizer.mask_token_id] * (end - start)
+            kg_prompt_ids[start:end] = [tokenizer.mask_token_id
+                                        ] * (end - start)
 
             feature = {
                 'input_ids': input_ids,
@@ -107,9 +109,11 @@ def run_proc(
             relation_label = [tokenizer.cls_token_id] + kg_prompt_ids[start: end] + [tokenizer.sep_token_id] \
                              + [tokenizer.pad_token_id] * (max_len - (end - start) - 2)
             _, relation_negative = kg_prompt.sample_relation(neg_num=5)
-            relation_negative = kg_prompt.encode_kg(relation_negative, max_len=max_len)
+            relation_negative = kg_prompt.encode_kg(relation_negative,
+                                                    max_len=max_len)
             # mlm_labels[start: end] = input_ids[start: end]
-            kg_prompt_ids[start: end] = [tokenizer.mask_token_id] * (end - start)
+            kg_prompt_ids[start:end] = [tokenizer.mask_token_id
+                                        ] * (end - start)
 
             feature = {
                 'input_ids': input_ids,
@@ -120,19 +124,19 @@ def run_proc(
                 'task_id': task,
             }
 
-        fw.write("{}\n".format(json.dumps(feature)))
+        fw.write('{}\n'.format(json.dumps(feature)))
     fw.close()
 
 
 class MultiProcess:
-    def __init__(self, kg_prompt: KGPrompt, tokenizer: RobertaTokenizer, dataset: List, output_folder: str):
+    def __init__(self, kg_prompt: KGPrompt, tokenizer: RobertaTokenizer,
+                 dataset: List, output_folder: str):
         self.kg_prompt = kg_prompt
         self.tokenizer = tokenizer
         self.dataset = dataset
         self.output_folder = output_folder
 
-
-    def process(self, digits, fold="1by1"):  # 处理函数：用于处理数据
+    def process(self, digits, fold='1by1'):  # 处理函数：用于处理数据
         examples, para_id = digits
 
         run_proc(
@@ -156,50 +160,62 @@ class MultiProcess:
                 max_i = chunk_size * (i + 1)
             else:
                 max_i = num
-            digits = [self.dataset[min_i: max_i], i]
+            digits = [self.dataset[min_i:max_i], i]
             # 每个线程唤醒并执行
-            procs.append(multiprocessing.Process(target=self.process, args=(digits, "parallel")))
+            procs.append(
+                multiprocessing.Process(target=self.process,
+                                        args=(digits, 'parallel')))
         for proc in procs:
             proc.start()
         for proc in procs:
             proc.join()
 
     def merge(self):  # 数据合并函数：对每个线程上的处理好的数据进行合并
-        file_list = ["feature_{}.json".format(i) for i in range(self.n_cpu)]
-        fw = open(os.path.join(self.output_folder, 'data2kw_2.6kw.json'), 'w', encoding='utf-8')
+        file_list = ['feature_{}.json'.format(i) for i in range(self.n_cpu)]
+        fw = open(os.path.join(self.output_folder, 'data2kw_2.6kw.json'),
+                  'w',
+                  encoding='utf-8')
         print('Start merging ...')
         for file in tqdm(file_list):
-            with open(os.path.join(self.output_folder, file), 'r', encoding='utf-8') as fr:
+            with open(os.path.join(self.output_folder, file),
+                      'r',
+                      encoding='utf-8') as fr:
                 lines = fr.readlines()
             for line in lines:
                 fw.write(line)
-        print("Meger is done.")
+        print('Meger is done.')
+
 
 def merge(output_folder, n_cpu):  # 数据合并函数：对每个线程上的处理好的数据进行合并
-    file_list = ["feature_{}.json".format(i) for i in range(n_cpu)]
-    fw = open(os.path.join(output_folder, 'data2kw_2.6kw.json'), 'w', encoding='utf-8')
+    file_list = ['feature_{}.json'.format(i) for i in range(n_cpu)]
+    fw = open(os.path.join(output_folder, 'data2kw_2.6kw.json'),
+              'w',
+              encoding='utf-8')
     print('Start merging ...')
     num = 0
     for file in tqdm(file_list):
-        with open(os.path.join(output_folder, file), 'r', encoding='utf-8') as fr:
+        with open(os.path.join(output_folder, file), 'r',
+                  encoding='utf-8') as fr:
             lines = fr.readlines()
         num += len(lines)
         for line in lines:
             fw.write(line)
     fw.close()
-    print("Meger is done.")
-    print("Total {}".format(num))
+    print('Meger is done.')
+    print('Total {}'.format(num))
 
-if __name__ == "__main__":
+
+if __name__ == '__main__':
     input_folder = './pretrain_data/data/'
     output_folder = './pretrain_data/features/'
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
 
-
     tokenizer = RobertaTokenizer.from_pretrained('roberta-base')
     kg_prompt = KGPrompt(tokenizer=tokenizer)
-    with open(os.path.join(input_folder, 'total_pretrain_data.json'), 'r', encoding='utf-8') as fr:
+    with open(os.path.join(input_folder, 'total_pretrain_data.json'),
+              'r',
+              encoding='utf-8') as fr:
         lines = fr.readlines()
     print('len(lines)=', len(lines))
     lines = lines[20000000:]
@@ -216,7 +232,4 @@ if __name__ == "__main__":
     m.run()  # 多线程
     m.merge()
 
-
-
     # merge(output_folder, 50)
-

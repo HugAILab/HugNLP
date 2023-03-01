@@ -12,15 +12,18 @@ from torch.nn import CrossEntropyLoss
 from transformers import AutoModelForCausalLM
 from transformers.modeling_outputs import CausalLMOutputWithCrossAttentions
 from transformers.models.gpt2.modeling_gpt2 import GPT2LMHeadModel, GPT2Model, GPT2PreTrainedModel
-
 """
 Function: Use Causal LM to pre-train GPT-2
 Notes:
 - In default, the Causal LM aims to train on all tokens, the label of each token is the next token, which let the model learn in regressive way.
 - If you want to choose some tokens, or mask some tokens (like MLM), the label of non-masked token should be -100, which can be used for cross-entropy function (only calculate loss at not -100)
 """
+
+
 class GPT2ForCausalLM(GPT2PreTrainedModel):
-    _keys_to_ignore_on_load_missing = [r"attn.masked_bias", r"attn.bias", r"lm_head.weight"]
+    _keys_to_ignore_on_load_missing = [
+        r'attn.masked_bias', r'attn.bias', r'lm_head.weight'
+    ]
 
     def __init__(self, config):
         super().__init__(config)
@@ -41,15 +44,15 @@ class GPT2ForCausalLM(GPT2PreTrainedModel):
         self.lm_head = new_embeddings
 
     def prepare_inputs_for_generation(self, input_ids, past=None, **kwargs):
-        token_type_ids = kwargs.get("token_type_ids", None)
+        token_type_ids = kwargs.get('token_type_ids', None)
         # only last token for inputs_ids if past is defined in kwargs
         if past:
             input_ids = input_ids[:, -1].unsqueeze(-1)
             if token_type_ids is not None:
                 token_type_ids = token_type_ids[:, -1].unsqueeze(-1)
 
-        attention_mask = kwargs.get("attention_mask", None)
-        position_ids = kwargs.get("position_ids", None)
+        attention_mask = kwargs.get('attention_mask', None)
+        position_ids = kwargs.get('position_ids', None)
 
         if attention_mask is not None and position_ids is None:
             # create position_ids on the fly for batch generation
@@ -60,12 +63,12 @@ class GPT2ForCausalLM(GPT2PreTrainedModel):
         else:
             position_ids = None
         return {
-            "input_ids": input_ids,
-            "past_key_values": past,
-            "use_cache": kwargs.get("use_cache"),
-            "position_ids": position_ids,
-            "attention_mask": attention_mask,
-            "token_type_ids": token_type_ids,
+            'input_ids': input_ids,
+            'past_key_values': past,
+            'use_cache': kwargs.get('use_cache'),
+            'position_ids': position_ids,
+            'attention_mask': attention_mask,
+            'token_type_ids': token_type_ids,
         }
 
     def forward(
@@ -125,11 +128,12 @@ class GPT2ForCausalLM(GPT2PreTrainedModel):
             # print("shift_labels=", shift_labels)
             # Flatten the tokens
             loss_fct = CrossEntropyLoss()
-            loss = loss_fct(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1))
+            loss = loss_fct(shift_logits.view(-1, shift_logits.size(-1)),
+                            shift_labels.view(-1))
 
         if not return_dict:
-            output = (lm_logits,) + transformer_outputs[1:]
-            return ((loss,) + output) if loss is not None else output
+            output = (lm_logits, ) + transformer_outputs[1:]
+            return ((loss, ) + output) if loss is not None else output
 
         return CausalLMOutputWithCrossAttentions(
             loss=loss,
@@ -141,17 +145,17 @@ class GPT2ForCausalLM(GPT2PreTrainedModel):
         )
 
     @staticmethod
-    def _reorder_cache(past: Tuple[Tuple[torch.Tensor]], beam_idx: torch.Tensor) -> Tuple[Tuple[torch.Tensor]]:
-        """
-        This function is used to re-order the `past_key_values` cache if [`~PreTrainedModel.beam_search`] or
+    def _reorder_cache(past: Tuple[Tuple[torch.Tensor]],
+                       beam_idx: torch.Tensor) -> Tuple[Tuple[torch.Tensor]]:
+        """This function is used to re-order the `past_key_values` cache if [`~PreTrainedModel.beam_search`] or.
+
         [`~PreTrainedModel.beam_sample`] is called. This is required to match `past_key_values` with the correct
         beam_idx at every generation step.
         """
         return tuple(
-            tuple(past_state.index_select(0, beam_idx.to(past_state.device)) for past_state in layer_past)
-            for layer_past in past
-        )
-
+            tuple(
+                past_state.index_select(0, beam_idx.to(past_state.device))
+                for past_state in layer_past) for layer_past in past)
 
 
 # class GPT2ForCanusalLM(GPT2LMHeadModel):
@@ -217,7 +221,7 @@ class GPT2ForCausalLM(GPT2PreTrainedModel):
 #         if not return_dict:
 #             output = (lm_logits,) + transformer_outputs[1:]
 #             return ((loss,) + output) if loss is not None else output
-        
+
 #         return CausalLMOutputWithCrossAttentions(
 #             loss=loss,
 #             logits=lm_logits,
@@ -227,17 +231,20 @@ class GPT2ForCausalLM(GPT2PreTrainedModel):
 #             cross_attentions=transformer_outputs.cross_attentions,
 #         )
 
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     from transformers.models.gpt2.tokenization_gpt2 import GPT2Tokenizer
-    tokenizer = GPT2Tokenizer.from_pretrained("/Users/wangjianing/Desktop/开源代码与数据模型/模型/gpt2")
+    tokenizer = GPT2Tokenizer.from_pretrained(
+        '/Users/wangjianing/Desktop/开源代码与数据模型/模型/gpt2')
     tokenizer.pad_token_id = tokenizer.eos_token_id
     # print("tokenizer.eos_token_id=", tokenizer.eos_token_id) # 50256
-    model = GPT2ForCanusalLM.from_pretrained("/Users/wangjianing/Desktop/开源代码与数据模型/模型/gpt2")
+    model = GPT2ForCanusalLM.from_pretrained(
+        '/Users/wangjianing/Desktop/开源代码与数据模型/模型/gpt2')
     input_text = "My friend Jack invites me to play computer games with him, but my girl friend doesn't agree. I think"
-    inputs = tokenizer(input_text, add_special_tokens=True, return_tensors='pt')
-    inputs["labels"] = inputs["input_ids"]
-    print("inputs=", inputs)
+    inputs = tokenizer(input_text,
+                       add_special_tokens=True,
+                       return_tensors='pt')
+    inputs['labels'] = inputs['input_ids']
+    print('inputs=', inputs)
     """
     inputs= {'input_ids': tensor([[ 3666,  1545,  3619, 27671,   502,   284,   711,  3644,  1830,   351,
            683,    11,   475,   616,  2576,  1545,  1595,   470,  4236,    13,
@@ -247,7 +254,7 @@ if __name__ == "__main__":
 
     """
     outputs = model(**inputs)
-    print("loss=", outputs[0])
+    print('loss=', outputs[0])
     """
     loss= tensor(3.9444, grad_fn=<NllLossBackward0>)
     """
@@ -256,12 +263,12 @@ if __name__ == "__main__":
         emb_match=None,
         control_code=None,
         past_key_values=None,
-        max_length=len(inputs["input_ids"][0]) + 10,
+        max_length=len(inputs['input_ids'][0]) + 10,
         min_length=5,
         temperature=1.0,
         top_k=1,
-        top_p=0.5, #top_p=0.5,
-        repetition_penalty=1.0, # 重复词惩罚，用于控制生成多样性的文本
+        top_p=0.5,  #top_p=0.5,
+        repetition_penalty=1.0,  # 重复词惩罚，用于控制生成多样性的文本
         do_sample=False,
         num_beams=5,
         # bad_words_ids=[[628], [198]] if True else None,
@@ -269,7 +276,7 @@ if __name__ == "__main__":
     )
     # print("output_sequences=", output_sequences)
     results = tokenizer.decode(output_sequences[0])
-    print("results=", results)
+    print('results=', results)
     """
     results= My friend Jack invites me to play computer games with him, but my girl friend doesn't agree. I think  it's a good idea to play computer games
     """

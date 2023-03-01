@@ -1,5 +1,6 @@
 from typing import List, Dict
 
+
 class Metric(object):
     def __init__(self):
         super(Metric, self).__init__()

@@ -2,8 +2,8 @@ import os
 import pickle
 from tqdm import tqdm
 
-input_folder = "../pretrain_data/data"
-output_folder = "../pretrain_data/data"
+input_folder = '../pretrain_data/data'
+output_folder = '../pretrain_data/data'
 if not os.path.exists(output_folder):
     os.mkdir(output_folder)
 
@@ -57,11 +57,12 @@ for j in tqdm(range(len(file_list))):
         large_data.extend(tmp)
         if len(large_data) >= num_sample_per_large_file:
             with open(os.path.join(large_data_path, str(i)), 'wb') as fout:
-                pickle.dump(large_data[:num_sample_per_large_file], fout, protocol=4)
+                pickle.dump(large_data[:num_sample_per_large_file],
+                            fout,
+                            protocol=4)
                 i += 1
             if len(large_data) > num_sample_per_large_file:
                 large_data = large_data[num_sample_per_large_file:]
             else:
                 large_data = []
 print('# rest samples: {}'.format(len(large_data)))
-

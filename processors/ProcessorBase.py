@@ -44,7 +44,7 @@ class DataProcessor:
     @classmethod
     def _read_json2(cls, input_file):
         """Reads a json list file."""
-        with open(input_file, "r", encoding="utf-8") as f:
+        with open(input_file, 'r', encoding='utf-8') as f:
             reader = f.readlines()
             lines = []
             for line in reader:
@@ -53,7 +53,10 @@ class DataProcessor:
 
     @classmethod
     def _read_jsonl(cls, input_file):
-        return [json.loads(line) for line in open(input_file, encoding='utf8').readlines()]
+        return [
+            json.loads(line)
+            for line in open(input_file, encoding='utf8').readlines()
+        ]
 
     @classmethod
     def _read_text(cls, input_file):
@@ -61,7 +64,10 @@ class DataProcessor:
 
     @classmethod
     def _read_tsv(cls, input_file):
-        return [i.strip().split('\t') for i in open(input_file, encoding='utf8').readlines()]
+        return [
+            i.strip().split('\t')
+            for i in open(input_file, encoding='utf8').readlines()
+        ]
 
     @classmethod
     def list_2_json(cls, examples):
@@ -81,7 +87,13 @@ class DataProcessor:
 
 
 class CLSProcessor(DataProcessor):
-    def __init__(self, data_args, training_args, model_args, tokenizer=None, post_tokenizer=False, keep_raw_data=False):
+    def __init__(self,
+                 data_args,
+                 training_args,
+                 model_args,
+                 tokenizer=None,
+                 post_tokenizer=False,
+                 keep_raw_data=False):
         super().__init__(data_args, training_args, model_args)
         self.sentence1_key = 'text_a'
         self.sentence2_key = None
@@ -93,7 +105,10 @@ class CLSProcessor(DataProcessor):
 
     def get_data_collator(self):
         pad_to_multiple_of_8 = self.training_args.fp16 and not self.data_args.pad_to_max_length
-        return DataCollatorWithPadding(self.tokenizer, padding='longest', pad_to_multiple_of=8 if pad_to_multiple_of_8 else None)
+        return DataCollatorWithPadding(
+            self.tokenizer,
+            padding='longest',
+            pad_to_multiple_of=8 if pad_to_multiple_of_8 else None)
 
     def build_preprocess_function(self):
         # Tokenize the texts
@@ -107,21 +122,21 @@ class CLSProcessor(DataProcessor):
             if sentence2_key:
                 inputs = (examples[sentence1_key], examples[sentence2_key])
             else:
-                inputs = (examples[sentence1_key],)
+                inputs = (examples[sentence1_key], )
             result = tokenizer(*inputs,
                                padding=False,
                                max_length=max_seq_length,
                                truncation='longest_first',
-                               add_special_tokens=True
-                               )
+                               add_special_tokens=True)
             # result['token_type_ids'] = [[0]*len(i) for i in result['input_ids']]
 
             if label_to_id:
                 # 分类
-                result["label"] = [(label_to_id[l] if l else None) for l in examples[label_column]]
+                result['label'] = [(label_to_id[l] if l else None)
+                                   for l in examples[label_column]]
             else:
                 # 回归
-                result["label"] = [(l) for l in examples[label_column]]
+                result['label'] = [(l) for l in examples[label_column]]
             return result
 
         return func
@@ -130,13 +145,17 @@ class CLSProcessor(DataProcessor):
         raw_datasets = DatasetDict()
         if self.training_args.do_train:
             train_examples = self.get_examples('train')
-            raw_datasets['train'] = DatasetK.from_dict(self.list_2_json(train_examples)) # [{k1: xxx, k2: xxx}, {...}] -> {k1: [xxx, xxx], k2: [xxx, xxx]}
+            raw_datasets['train'] = DatasetK.from_dict(
+                self.list_2_json(train_examples)
+            )  # [{k1: xxx, k2: xxx}, {...}] -> {k1: [xxx, xxx], k2: [xxx, xxx]}
         if self.training_args.do_eval:
             dev_examples = self.get_examples('dev')
-            raw_datasets['validation'] = DatasetK.from_dict(self.list_2_json(dev_examples))
+            raw_datasets['validation'] = DatasetK.from_dict(
+                self.list_2_json(dev_examples))
         if self.training_args.do_predict:
             test_examples = self.get_examples('test')
-            raw_datasets['test'] = DatasetK.from_dict(self.list_2_json(test_examples))
+            raw_datasets['test'] = DatasetK.from_dict(
+                self.list_2_json(test_examples))
 
         if self.post_tokenizer:
             if self.keep_raw_data:
@@ -146,11 +165,18 @@ class CLSProcessor(DataProcessor):
         # 指定了cache_file_names在_map_single中也需要cache_files不为空才能读取cache
         for key, value in raw_datasets.items():
             value.set_cache_files(['cache_local'])
-        remove_columns = self.sentence1_key if not self.sentence2_key else [self.sentence1_key, self.sentence2_key]
+        remove_columns = self.sentence1_key if not self.sentence2_key else [
+            self.sentence1_key, self.sentence2_key
+        ]
         tokenize_func = self.build_preprocess_function()
         # 多gpu, 0计算完存cache，其他load cache
-        load_from_cache_file = not self.data_args.overwrite_cache if self.training_args.local_rank in [-1, 0] else True
-        base_cache_dir = os.path.join(self.model_args.cache_dir, 'datasets') if self.model_args.cache_dir else os.path.join(os.path.expanduser("~"), '.cache/huggingface/datasets/')
+        load_from_cache_file = not self.data_args.overwrite_cache if self.training_args.local_rank in [
+            -1, 0
+        ] else True
+        base_cache_dir = os.path.join(
+            self.model_args.cache_dir,
+            'datasets') if self.model_args.cache_dir else os.path.join(
+                os.path.expanduser('~'), '.cache/huggingface/datasets/')
         cache_dir = os.path.join(base_cache_dir, self.data_args.task_name)
 
         os.makedirs(cache_dir, exist_ok=True)
@@ -170,15 +196,19 @@ class CLSProcessor(DataProcessor):
         #             self.raw_datasets = raw_datasets
         #         return raw_datasets
         # else:
-        with self.training_args.main_process_first(desc="dataset tokenizer map"):
+        with self.training_args.main_process_first(
+                desc='dataset tokenizer map'):
             raw_datasets = raw_datasets.map(
                 tokenize_func,
                 batched=True,
                 load_from_cache_file=load_from_cache_file,
-                desc="Running tokenizer on dataset",
-                cache_file_names={k: f'{cache_dir}/cache_{self.data_args.task_name}_{self.data_args.data_dir.split("/")[-1]}_{str(k)}.arrow' for k in raw_datasets},
-                remove_columns=remove_columns
-            )
+                desc='Running tokenizer on dataset',
+                cache_file_names={
+                    k:
+                    f'{cache_dir}/cache_{self.data_args.task_name}_{self.data_args.data_dir.split("/")[-1]}_{str(k)}.arrow'
+                    for k in raw_datasets
+                },
+                remove_columns=remove_columns)
             if self.keep_raw_data:
                 self.raw_datasets = raw_datasets
             return raw_datasets
@@ -207,9 +237,14 @@ class CLSProcessor(DataProcessor):
         }
 
 
-
 class FewShotNERProcessor(DataProcessor):
-    def __init__(self, data_args, training_args, model_args, tokenizer=None, post_tokenizer=False, keep_raw_data=False):
+    def __init__(self,
+                 data_args,
+                 training_args,
+                 model_args,
+                 tokenizer=None,
+                 post_tokenizer=False,
+                 keep_raw_data=False):
         super().__init__(data_args, training_args, model_args)
         self.support_key = 'support_input_texts'
         self.query_key = 'query_input_texts'
@@ -225,7 +260,10 @@ class FewShotNERProcessor(DataProcessor):
 
     def get_data_collator(self):
         pad_to_multiple_of_8 = self.training_args.fp16 and not self.data_args.pad_to_max_length
-        return DataCollatorWithPadding(self.tokenizer, padding='longest', pad_to_multiple_of=8 if pad_to_multiple_of_8 else None)
+        return DataCollatorWithPadding(
+            self.tokenizer,
+            padding='longest',
+            pad_to_multiple_of=8 if pad_to_multiple_of_8 else None)
 
     def build_preprocess_function(self):
         # Tokenize the texts
@@ -235,7 +273,6 @@ class FewShotNERProcessor(DataProcessor):
         max_seq_length = self.data_args.max_seq_length
         # label_to_id = self.label_to_id
         # label_column = self.label_column
-
         '''
         examples = {
             'id': [...]
@@ -253,36 +290,34 @@ class FewShotNERProcessor(DataProcessor):
             'query_sentence_num': [...],
         }
         '''
-
         def func(examples):
             features = {
                 'id': examples['id'],
                 'support_input': list(),
                 'query_input': list(),
             }
-            support_inputs, query_inputs = examples[support_key], examples[query_key]
+            support_inputs, query_inputs = examples[support_key], examples[
+                query_key]
             for ei, support_input in enumerate(support_inputs):
                 # 对每个episode，对support和query进行分词
                 support_input = (support_input, )
                 query_input = (query_inputs[ei], )
-                support_result = tokenizer(
-                    *support_input,
-                    padding=False,
-                    max_length=max_seq_length,
-                    truncation='longest_first',
-                    add_special_tokens=True
-                )
-                query_result = tokenizer(
-                    *query_input,
-                    padding=False,
-                    max_length=max_seq_length,
-                    truncation='longest_first',
-                    add_special_tokens=True
-                )
+                support_result = tokenizer(*support_input,
+                                           padding=False,
+                                           max_length=max_seq_length,
+                                           truncation='longest_first',
+                                           add_special_tokens=True)
+                query_result = tokenizer(*query_input,
+                                         padding=False,
+                                         max_length=max_seq_length,
+                                         truncation='longest_first',
+                                         add_special_tokens=True)
                 features[support_input].append(support_result)
                 features[query_input].append(query_result)
-            features['support_labeled_spans'] = examples['support_labeled_spans']
-            features['support_labeled_types'] = examples['support_labeled_types']
+            features['support_labeled_spans'] = examples[
+                'support_labeled_spans']
+            features['support_labeled_types'] = examples[
+                'support_labeled_types']
             features['support_sentence_num'] = examples['support_sentence_num']
             features['query_labeled_spans'] = examples['query_labeled_spans']
             features['query_labeled_types'] = examples['query_labeled_types']
@@ -297,13 +332,16 @@ class FewShotNERProcessor(DataProcessor):
         if self.training_args.do_train:
             train_examples = self.get_examples('train')
             raw_datasets['train'] = DatasetK.from_dict(
-                self.list_2_json(train_examples))  # [{k1: xxx, k2: xxx}, {...}] -> {k1: [xxx, xxx], k2: [xxx, xxx]}
+                self.list_2_json(train_examples)
+            )  # [{k1: xxx, k2: xxx}, {...}] -> {k1: [xxx, xxx], k2: [xxx, xxx]}
         if self.training_args.do_eval:
             dev_examples = self.get_examples('dev')
-            raw_datasets['validation'] = DatasetK.from_dict(self.list_2_json(dev_examples))
+            raw_datasets['validation'] = DatasetK.from_dict(
+                self.list_2_json(dev_examples))
         if self.training_args.do_predict:
             test_examples = self.get_examples('test')
-            raw_datasets['test'] = DatasetK.from_dict(self.list_2_json(test_examples))
+            raw_datasets['test'] = DatasetK.from_dict(
+                self.list_2_json(test_examples))
 
         if self.post_tokenizer:
             if self.keep_raw_data:
@@ -316,28 +354,33 @@ class FewShotNERProcessor(DataProcessor):
         remove_columns = [self.support_key, self.query_key]
         tokenize_func = self.build_preprocess_function()
         # 多gpu, 0计算完存cache，其他load cache
-        load_from_cache_file = not self.data_args.overwrite_cache if self.training_args.local_rank in [-1, 0] else True
-        base_cache_dir = os.path.join(self.model_args.cache_dir,
-                                      'datasets') if self.model_args.cache_dir else os.path.join(
-            os.path.expanduser("~"), '.cache/huggingface/datasets/')
+        load_from_cache_file = not self.data_args.overwrite_cache if self.training_args.local_rank in [
+            -1, 0
+        ] else True
+        base_cache_dir = os.path.join(
+            self.model_args.cache_dir,
+            'datasets') if self.model_args.cache_dir else os.path.join(
+                os.path.expanduser('~'), '.cache/huggingface/datasets/')
         cache_dir = os.path.join(base_cache_dir, self.data_args.task_name)
 
         os.makedirs(cache_dir, exist_ok=True)
-        with self.training_args.main_process_first(desc="dataset tokenizer map"):
+        with self.training_args.main_process_first(
+                desc='dataset tokenizer map'):
             raw_datasets = raw_datasets.map(
                 tokenize_func,
                 batched=True,
                 load_from_cache_file=load_from_cache_file,
-                desc="Running tokenizer on dataset",
+                desc='Running tokenizer on dataset',
                 cache_file_names={
-                    k: f'{cache_dir}/cache_{self.data_args.task_name}_{self.data_args.data_dir.split("/")[-1]}_{self.mode}_{self.num_class}_{self.num_example}_{str(k)}.arrow'
-                    for k in raw_datasets},
+                    k:
+                    f'{cache_dir}/cache_{self.data_args.task_name}_{self.data_args.data_dir.split("/")[-1]}_{self.mode}_{self.num_class}_{self.num_example}_{str(k)}.arrow'
+                    for k in raw_datasets
+                },
                 num_proc=self.data_args.preprocessing_num_workers,
-                remove_columns=remove_columns
-            )
+                remove_columns=remove_columns)
             if self.keep_raw_data:
                 self.raw_datasets = raw_datasets
-            print("datasets=", raw_datasets)
+            print('datasets=', raw_datasets)
             return raw_datasets
 
     def get_examples(self, set_type):

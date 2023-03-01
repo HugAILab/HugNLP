@@ -25,8 +25,8 @@ from transformers.file_utils import (
     add_start_docstrings_to_model_forward,
 )
 
+
 class WordEmbeddingAdapter(nn.Module):
-    
     def __init__(self, config):
         super(WordEmbeddingAdapter, self).__init__()
         self.dropout = nn.Dropout(config.hidden_dropout_prob)
@@ -38,7 +38,8 @@ class WordEmbeddingAdapter(nn.Module):
         attn_W = torch.zeros(config.hidden_size, config.hidden_size)
         self.attn_W = nn.Parameter(attn_W)
         self.attn_W.data.normal_(mean=0.0, std=config.initializer_range)
-        self.layer_norm = nn.LayerNorm(config.hidden_size, eps=config.layer_norm_eps)
+        self.layer_norm = nn.LayerNorm(config.hidden_size,
+                                       eps=config.layer_norm_eps)
 
     def forward(self, layer_output, word_embeddings, word_mask):
         """
@@ -52,20 +53,25 @@ class WordEmbeddingAdapter(nn.Module):
         word_outputs = self.linear1(word_embeddings)
         word_outputs = self.tanh(word_outputs)
         word_outputs = self.linear2(word_outputs)
-        word_outputs = self.dropout(word_outputs)   # word_outputs：[b_size, len_input, num_word, d_model]
+        word_outputs = self.dropout(
+            word_outputs
+        )  # word_outputs：[b_size, len_input, num_word, d_model]
         # if type(word_mask) == torch.long:
         word_mask = word_mask.bool()
 
         # 计算每个字符向量，与其对应的所有词向量的注意力权重，然后加权求和。采用双线性映射计算注意力权重
         # layer_output = layer_output.unsqueeze(2)    # layer_output：[b_size, len_input, 1, d_model]
-        socres = torch.matmul(layer_output.unsqueeze(2), self.attn_W)  # [b_size, len_input, 1, d_model]
-        socres = torch.matmul(socres, torch.transpose(word_outputs, 2, 3))  # [b_size, len_input, 1, num_word]
+        socres = torch.matmul(layer_output.unsqueeze(2),
+                              self.attn_W)  # [b_size, len_input, 1, d_model]
+        socres = torch.matmul(socres, torch.transpose(
+            word_outputs, 2, 3))  # [b_size, len_input, 1, num_word]
         socres = socres.squeeze(2)  # [b_size, len_input, num_word]
         socres.masked_fill_(word_mask, -1e9)  # 将pad的注意力设为很小的数
         socres = F.softmax(socres, dim=-1)  # [b_size, len_input, num_word]
         attn = socres.unsqueeze(-1)  # [b_size, len_input, num_word, 1]
 
-        weighted_word_embedding = torch.sum(word_outputs * attn, dim=2)  # [N, L, D]   # 加权求和，得到每个汉字对应的词向量集合的表示
+        weighted_word_embedding = torch.sum(
+            word_outputs * attn, dim=2)  # [N, L, D]   # 加权求和，得到每个汉字对应的词向量集合的表示
         layer_output = layer_output + weighted_word_embedding
 
         layer_output = self.dropout(layer_output)
@@ -75,12 +81,7 @@ class WordEmbeddingAdapter(nn.Module):
 
 
 class LEBertModel(BertPreTrainedModel):
-    """
-
-    The model can behave as an encoder (with only self-attention) as well
-    as a decoder, in which case a layer of cross-attention is added between
-    the self-attention layers, following the architecture described in `Attention is all you need`_ by Ashish Vaswani,
-    Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N. Gomez, Lukasz Kaiser and Illia Polosukhin.
+    """The model can behave as an encoder (with only self-attention) as well as a decoder, in which case a layer of cross-attention is added between the self-attention layers, following the architecture described in `Attention is all you need`_ by Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N. Gomez, Lukasz Kaiser and Illia Polosukhin.
 
     To behave as an decoder the model needs to be initialized with the
     :obj:`is_decoder` argument of the configuration set to :obj:`True`.
@@ -90,9 +91,7 @@ class LEBertModel(BertPreTrainedModel):
 
     .. _`Attention is all you need`:
         https://arxiv.org/abs/1706.03762
-
     """
-
     def __init__(self, config):
         super().__init__(config)
         self.config = config
@@ -111,16 +110,18 @@ class LEBertModel(BertPreTrainedModel):
 
     def _prune_heads(self, heads_to_prune):
         """Prunes heads of the model.
+
         heads_to_prune: dict of {layer_num: list of heads to prune in this layer}
         See base class PreTrainedModel
         """
         for layer, heads in heads_to_prune.items():
             self.encoder.layer[layer].attention.prune_heads(heads)
 
-    @add_start_docstrings_to_model_forward(BERT_INPUTS_DOCSTRING.format("batch_size, sequence_length"))
+    @add_start_docstrings_to_model_forward(
+        BERT_INPUTS_DOCSTRING.format('batch_size, sequence_length'))
     @add_code_sample_docstrings(
         processor_class=_TOKENIZER_FOR_DOC,
-        checkpoint="bert-base-uncased",
+        checkpoint='bert-base-uncased',
         output_type=BaseModelOutputWithPoolingAndCrossAttentions,
         config_class=_CONFIG_FOR_DOC,
     )
@@ -151,39 +152,49 @@ class LEBertModel(BertPreTrainedModel):
             ``1`` for tokens that are NOT MASKED, ``0`` for MASKED tokens.
         """
         output_attentions = output_attentions if output_attentions is not None else self.config.output_attentions
-        output_hidden_states = (
-            output_hidden_states if output_hidden_states is not None else self.config.output_hidden_states
-        )
+        output_hidden_states = (output_hidden_states
+                                if output_hidden_states is not None else
+                                self.config.output_hidden_states)
         return_dict = return_dict if return_dict is not None else self.config.use_return_dict
 
         if input_ids is not None and inputs_embeds is not None:
-            raise ValueError("You cannot specify both input_ids and inputs_embeds at the same time")
+            raise ValueError(
+                'You cannot specify both input_ids and inputs_embeds at the same time'
+            )
         elif input_ids is not None:
             input_shape = input_ids.size()
         elif inputs_embeds is not None:
             input_shape = inputs_embeds.size()[:-1]
         else:
-            raise ValueError("You have to specify either input_ids or inputs_embeds")
+            raise ValueError(
+                'You have to specify either input_ids or inputs_embeds')
 
         device = input_ids.device if input_ids is not None else inputs_embeds.device
 
         if attention_mask is None:
             attention_mask = torch.ones(input_shape, device=device)
         if token_type_ids is None:
-            token_type_ids = torch.zeros(input_shape, dtype=torch.long, device=device)
+            token_type_ids = torch.zeros(input_shape,
+                                         dtype=torch.long,
+                                         device=device)
 
         # We can provide a self-attention mask of dimensions [batch_size, from_seq_length, to_seq_length]
         # ourselves in which case we just need to make it broadcastable to all heads.
-        extended_attention_mask: torch.Tensor = self.get_extended_attention_mask(attention_mask, input_shape, device)
+        extended_attention_mask: torch.Tensor = self.get_extended_attention_mask(
+            attention_mask, input_shape, device)
 
         # If a 2D ou 3D attention mask is provided for the cross-attention
         # we need to make broadcastabe to [batch_size, num_heads, seq_length, seq_length]
         if self.config.is_decoder and encoder_hidden_states is not None:
-            encoder_batch_size, encoder_sequence_length, _ = encoder_hidden_states.size()
-            encoder_hidden_shape = (encoder_batch_size, encoder_sequence_length)
+            encoder_batch_size, encoder_sequence_length, _ = encoder_hidden_states.size(
+            )
+            encoder_hidden_shape = (encoder_batch_size,
+                                    encoder_sequence_length)
             if encoder_attention_mask is None:
-                encoder_attention_mask = torch.ones(encoder_hidden_shape, device=device)
-            encoder_extended_attention_mask = self.invert_attention_mask(encoder_attention_mask)
+                encoder_attention_mask = torch.ones(encoder_hidden_shape,
+                                                    device=device)
+            encoder_extended_attention_mask = self.invert_attention_mask(
+                encoder_attention_mask)
         else:
             encoder_extended_attention_mask = None
 
@@ -192,11 +203,13 @@ class LEBertModel(BertPreTrainedModel):
         # attention_probs has shape bsz x n_heads x N x N
         # input head_mask has shape [num_heads] or [num_hidden_layers x num_heads]
         # and head_mask is converted to shape [num_hidden_layers x batch x num_heads x seq_length x seq_length]
-        head_mask = self.get_head_mask(head_mask, self.config.num_hidden_layers)
+        head_mask = self.get_head_mask(head_mask,
+                                       self.config.num_hidden_layers)
 
-        embedding_output = self.embeddings(
-            input_ids=input_ids, position_ids=position_ids, token_type_ids=token_type_ids, inputs_embeds=inputs_embeds
-        )
+        embedding_output = self.embeddings(input_ids=input_ids,
+                                           position_ids=position_ids,
+                                           token_type_ids=token_type_ids,
+                                           inputs_embeds=inputs_embeds)
         encoder_outputs = self.encoder(
             embedding_output,
             word_embeddings=word_embeddings,
@@ -227,7 +240,8 @@ class BertEncoder(nn.Module):
     def __init__(self, config):
         super().__init__()
         self.config = config
-        self.layer = nn.ModuleList([BertLayer(config) for _ in range(config.num_hidden_layers)])
+        self.layer = nn.ModuleList(
+            [BertLayer(config) for _ in range(config.num_hidden_layers)])
         self.word_embedding_adapter = WordEmbeddingAdapter(config)
 
     def forward(
@@ -251,12 +265,13 @@ class BertEncoder(nn.Module):
         next_decoder_cache = () if use_cache else None
         for i, layer_module in enumerate(self.layer):
             if output_hidden_states:
-                all_hidden_states = all_hidden_states + (hidden_states,)
+                all_hidden_states = all_hidden_states + (hidden_states, )
 
             layer_head_mask = head_mask[i] if head_mask is not None else None
-            past_key_value = past_key_values[i] if past_key_values is not None else None
+            past_key_value = past_key_values[
+                i] if past_key_values is not None else None
 
-            if getattr(self.config, "gradient_checkpointing", False):
+            if getattr(self.config, 'gradient_checkpointing', False):
 
                 if use_cache:
                     # logger.warning(
@@ -290,33 +305,30 @@ class BertEncoder(nn.Module):
                 )
             hidden_states = layer_outputs[0]
             if use_cache:
-                next_decoder_cache += (layer_outputs[-1],)
+                next_decoder_cache += (layer_outputs[-1], )
 
             if output_attentions:
-                all_attentions = all_attentions + (layer_outputs[1],)
+                all_attentions = all_attentions + (layer_outputs[1], )
 
             # 在第i层之后，进行融合
             # if i == self.config.add_layer:
-            if i >= int(self.config.add_layer): # edit by wjn
-                hidden_states = self.word_embedding_adapter(hidden_states, word_embeddings, word_mask)
+            if i >= int(self.config.add_layer):  # edit by wjn
+                hidden_states = self.word_embedding_adapter(
+                    hidden_states, word_embeddings, word_mask)
 
         if output_hidden_states:
-            all_hidden_states = all_hidden_states + (hidden_states,)
+            all_hidden_states = all_hidden_states + (hidden_states, )
 
         # if not return_dict:
         #     return tuple(v for v in [hidden_states, all_hidden_states, all_attentions] if v is not None)
         if not return_dict:
-            return tuple(
-                v
-                for v in [
-                    hidden_states,
-                    next_decoder_cache,
-                    all_hidden_states,
-                    all_attentions,
-                    # all_cross_attentions,
-                ]
-                if v is not None
-            )
+            return tuple(v for v in [
+                hidden_states,
+                next_decoder_cache,
+                all_hidden_states,
+                all_attentions,
+                # all_cross_attentions,
+            ] if v is not None)
         return BaseModelOutputWithPastAndCrossAttentions(
             last_hidden_state=hidden_states,
             hidden_states=all_hidden_states,
