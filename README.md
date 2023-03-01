@@ -3,7 +3,7 @@
     <img src="images/logo.png" width="360"/>
     <br>
 </p>
-    
+
 <p align="center" style="font-size:22px;"> <b> Welcome to use HugNLP. 🤗 Hugging for NLP! </b>
 <p>
 
@@ -174,14 +174,23 @@ topk_predictions:
 
 
 # Contact
- 
+
  You can contact the author ```Jianing Wang``` from github.
  The interaction group in QQ or dingding will come soon.
 
 
 # References
 
-Our paper ```HugNLP: A Unified and Comprehensive Library for Natural Language Processing``` is committed for demo track of ACL2023. The preprint version in ARXIV will come soon.
+```latex
+@misc{wang2023hugnlp,
+  doi       = {10.48550/ARXIV.2302.14286},
+  url       = {https://arxiv.org/abs/2302.14286},
+  author    = {Wang, Jianing and Chen, Nuo and Sun, Qiushi and Huang, Wenkang and Wang, Chengyu and Gao, Ming},
+  title     = {HugNLP: A Unified and Comprehensive Library for Natural Language Processing},
+  publisher = {arXiv},
+  year      = {2023}
+}
+```
 
 
 
