@@ -135,7 +135,7 @@ FEWSHOT_MODEL_CLASSES = {
 
 
 CODE_MODEL_CLASSES = {
-
+    "code_detection": None,
 }
 
 # task_type 负责对应model类型
