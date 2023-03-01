@@ -7,6 +7,8 @@
 <p align="center" style="font-size:22px;"> <b> Welcome to use HugNLP. 🤗 Hugging for NLP! </b>
 <p>
 
+[![Build Status](https://app.travis-ci.com/nchen909/HugNLP.svg?branch=main)](https://app.travis-ci.com/github/nchen909/HugNLP)[![GitHub pull-requests](https://img.shields.io/github/issues-pr/nchen909/HugNLP.svg)](https://github.com/nchen909/HugNLP/pull/)[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
+
 # About HugNLP
 
 HugNLP is a novel development and application library based on [Hugging Face](https://huggingface.co/) for improving the convenience and effectiveness of NLP researchers. The founder and main developer is [Jianing Wang](https://wjn1996.github.io/). The collaborators (programmers) are [Nuo Chen](https://github.com/nchen909) and [Qiushi Sun](https://github.com/QiushiSun).
