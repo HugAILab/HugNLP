@@ -23,6 +23,9 @@ from processors.ner.fewshot_ner.data_processor import SpanProtoFewNERDProcessor,
 # chinese instruction-tuning
 from processors.instruction_prompting.chinese_extractive_instruction.data_processor import ChineseExtractiveInstructionProcessor
 
+# default applications
+from processors.default_task_processors.data_processor import DefaultSequenceClassificationProcessor
+
 # Pre-training Tasks
 PRETRAINING_PROCESSORS = {
     "mlm_text_line": MLMTextLineProcessor, 
@@ -57,6 +60,7 @@ INSTRUCTION_PROCESSORS = {
 
 
 OTHER_PROCESSORS = {
+    "default_cls": DefaultSequenceClassificationProcessor,
     # pre-training language model
     # 'mlm_from_disk': MLMFromDisk,
     # 'wwm_from_disk': WWMFromDisk,
