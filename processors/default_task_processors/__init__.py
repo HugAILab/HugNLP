@@ -1,6 +1,5 @@
 # define default processors:
-"""
-sequence classification
+"""sequence classification.
 
 sequence matching
 

@@ -7,9 +7,10 @@ from transformers import BertTokenizer
 
 
 class JiebaTokenizer(BertTokenizer):
-    def __init__(
-            self, pre_tokenizer=lambda x: jieba.cut(x, HMM=False), *args, **kwargs
-    ):
+    def __init__(self,
+                 pre_tokenizer=lambda x: jieba.cut(x, HMM=False),
+                 *args,
+                 **kwargs):
         super().__init__(*args, **kwargs)
         self.pre_tokenizer = pre_tokenizer
 

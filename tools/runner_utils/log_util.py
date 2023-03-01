@@ -13,7 +13,10 @@ def init_logger(log_file, log_level, dist_rank):
     # transformers.utils.logging.enable_propagation()
 
     logger = logging.getLogger('')
-    log_format = logging.Formatter(fmt='[%(levelname)s|%(filename)s:%(lineno)s] %(asctime)s >> %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+    log_format = logging.Formatter(
+        fmt=
+        '[%(levelname)s|%(filename)s:%(lineno)s] %(asctime)s >> %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S')
     logger.setLevel(log_level)
     console_handler = logging.StreamHandler(sys.stderr)
     console_handler.setFormatter(log_format)

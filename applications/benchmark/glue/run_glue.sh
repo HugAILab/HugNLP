@@ -100,7 +100,7 @@ python -m torch.distributed.launch --nproc_per_node=2 --master_port=6014 hugnlp_
   --label_names=labels \
   --keep_predict_labels \
   --user_defined="data_name=$glue_task" \
-  # --use_prompt_for_cls \ 
+  # --use_prompt_for_cls \
   # --pre_seq_len=1 \
   # --use_freezing
   # --do_adv
