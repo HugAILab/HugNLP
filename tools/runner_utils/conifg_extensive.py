@@ -1,6 +1,7 @@
 from transformers import AutoConfig
 from config import ModelArguments
 
+
 # add external config.
 def config_extensive(hf_config: AutoConfig, model_config: ModelArguments):
     hf_config.use_prompt_for_cls = model_config.use_prompt_for_cls

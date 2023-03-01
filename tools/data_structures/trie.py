@@ -14,9 +14,7 @@ class Trie:
         self.data = {}
 
     def add(self, word: str):
-        """
-        Passes over every char (utf-8 char) on word and recursively adds it to the internal `data` trie representation.
-        The special key `""` is used to represent termination.
+        """Passes over every char (utf-8 char) on word and recursively adds it to the internal `data` trie representation. The special key `""` is used to represent termination.
 
         This function is idempotent, adding twice the same word will leave the trie unchanged
 
@@ -40,7 +38,7 @@ class Trie:
         for char in word:
             ref[char] = char in ref and ref[char] or {}
             ref = ref[char]
-        ref[""] = 1
+        ref[''] = 1
 
     def find(self, text: str):
         states = OrderedDict()
@@ -52,7 +50,7 @@ class Trie:
             to_remove = set()
             reset = False
             for start, trie_pointer in states.items():
-                if "" in trie_pointer:
+                if '' in trie_pointer:
                     for lookstart, looktrie_pointer in states.items():
                         if lookstart > start:
                             break
@@ -62,8 +60,10 @@ class Trie:
                         else:
                             lookahead_index = current
                             end = current
-                        next_char = text[lookahead_index] if lookahead_index < len(text) else None
-                        if "" in looktrie_pointer:
+                        next_char = text[
+                            lookahead_index] if lookahead_index < len(
+                                text) else None
+                        if '' in looktrie_pointer:
                             start = lookstart
                             end = lookahead_index
                             skip = lookahead_index
@@ -71,7 +71,7 @@ class Trie:
                         while next_char in looktrie_pointer:
                             looktrie_pointer = looktrie_pointer[next_char]
                             lookahead_index += 1
-                            if "" in looktrie_pointer:
+                            if '' in looktrie_pointer:
                                 start = lookstart
                                 end = lookahead_index
                                 skip = lookahead_index
@@ -95,7 +95,7 @@ class Trie:
             if current >= skip and current_char in self.data:
                 states[current] = self.data[current_char]
         for start, trie_pointer in states.items():
-            if "" in trie_pointer:
+            if '' in trie_pointer:
                 end = len(text)
                 offsets.append([start, end])
                 break
@@ -131,7 +131,7 @@ class Trie:
         for end in offsets:
             if start > end:
                 logger.error(
-                    "There was a bug in Trie algorithm in tokenization. Attempting to recover. Please report it anyway."
+                    'There was a bug in Trie algorithm in tokenization. Attempting to recover. Please report it anyway.'
                 )
                 continue
             elif start == end:

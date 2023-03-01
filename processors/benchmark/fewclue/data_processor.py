@@ -20,26 +20,45 @@ from processors.instruction_prompting.chinese_extractive_instruction.instruction
 from processors.benchmark.fewclue.fewclue_processor import clue_processors, clue_output_modes, clue_task_to_instruction_type
 from processors.benchmark.fewclue.data_collator import DataCollatorForGlobalPointer
 
+
 # Used for mrc-based instruction-tuning for FewCLUE benchmark
 class InstructionMRCForFewCLUEProcessor(CLSProcessor):
-    def __init__(self, data_args, training_args, model_args, tokenizer=None, post_tokenizer=False, keep_raw_data=True):
-        super().__init__(data_args, training_args, model_args, tokenizer, post_tokenizer=post_tokenizer, keep_raw_data=keep_raw_data)
-        param = {p.split("=")[0]: p.split("=")[1] for p in (data_args.user_defined).split(" ")}
-        assert "data_name" in param, "You must add one defined param 'data_name=xxx' in the user_defined parameter."
-        self.data_name = param["data_name"]
-        self.is_pseudo = False # 是否加载上一轮模型预测的dev和test的pseudo label
+    def __init__(self,
+                 data_args,
+                 training_args,
+                 model_args,
+                 tokenizer=None,
+                 post_tokenizer=False,
+                 keep_raw_data=True):
+        super().__init__(data_args,
+                         training_args,
+                         model_args,
+                         tokenizer,
+                         post_tokenizer=post_tokenizer,
+                         keep_raw_data=keep_raw_data)
+        param = {
+            p.split('=')[0]: p.split('=')[1]
+            for p in (data_args.user_defined).split(' ')
+        }
+        assert 'data_name' in param, "You must add one defined param 'data_name=xxx' in the user_defined parameter."
+        self.data_name = param['data_name']
+        self.is_pseudo = False  # 是否加载上一轮模型预测的dev和test的pseudo label
         self.pseudo_threshold = 1.0
-        if "is_pseudo" in param.keys():
-            self.is_pseudo = bool(param["is_pseudo"])
-            self.pseudo_threshold = float(param["pseudo_threshold"])
+        if 'is_pseudo' in param.keys():
+            self.is_pseudo = bool(param['is_pseudo'])
+            self.pseudo_threshold = float(param['pseudo_threshold'])
         self.data_dir = data_args.data_dir
-        assert self.data_name in clue_processors.keys(), "Unknown task name {}".format(self.data_name)
+        assert self.data_name in clue_processors.keys(
+        ), 'Unknown task name {}'.format(self.data_name)
         self.processor = clue_processors[self.data_name]
         self.output_modes = clue_output_modes[self.data_name]
-        self.train_file = os.path.join(data_args.data_dir, 'train_few_all.json') # 原始训练数据
+        self.train_file = os.path.join(data_args.data_dir,
+                                       'train_few_all.json')  # 原始训练数据
         self.dev_file = os.path.join(data_args.data_dir, 'dev_few_all.json')
-        self.test_file = os.path.join(data_args.data_dir, 'test.json') # fewclue榜单提交测试集
-        self.test_file = os.path.join(data_args.data_dir, 'test_public.json') # fewclue公开测试集
+        self.test_file = os.path.join(data_args.data_dir,
+                                      'test.json')  # fewclue榜单提交测试集
+        self.test_file = os.path.join(data_args.data_dir,
+                                      'test_public.json')  # fewclue公开测试集
         self.max_len = data_args.max_seq_length
         self.doc_stride = data_args.doc_stride
         self.sentence1_key = None
@@ -48,7 +67,10 @@ class InstructionMRCForFewCLUEProcessor(CLSProcessor):
 
     def get_data_collator(self):
         pad_to_multiple_of_8 = self.training_args.fp16 and not self.data_args.pad_to_max_length
-        return DataCollatorForGlobalPointer(self.tokenizer, pad_to_multiple_of=8 if pad_to_multiple_of_8 else None, pad_to_max_length=self.data_args.pad_to_max_length)
+        return DataCollatorForGlobalPointer(
+            self.tokenizer,
+            pad_to_multiple_of=8 if pad_to_multiple_of_8 else None,
+            pad_to_max_length=self.data_args.pad_to_max_length)
 
     def convert_to_instruction_template(self, examples: List[InputExample]):
         '''
@@ -65,17 +87,12 @@ class InstructionMRCForFewCLUEProcessor(CLSProcessor):
         # print("example=", examples[0])
         instruction_type = clue_task_to_instruction_type[self.data_name]
         format_info = dataset2instruction[instruction_type]
-        instruction_processor = format_info["instruction"](
-            self.data_name,
-            examples,
-            label_mappings,
-            format_info["prompt"],
-            format_info["keys_order"],
-            format_info["data_type"]
-        )
+        instruction_processor = format_info['instruction'](
+            self.data_name, examples, label_mappings, format_info['prompt'],
+            format_info['keys_order'], format_info['data_type'])
         instruction_data = instruction_processor.transform2instruction()
         return instruction_data
-    
+
     def get_examples(self, set_type):
         if set_type == 'train':
             examples = self.processor.get_train_examples(self.data_dir)
@@ -96,17 +113,16 @@ class InstructionMRCForFewCLUEProcessor(CLSProcessor):
             examples = examples[:self.data_args.max_predict_samples]
             self.test_examples = examples
         return examples
-        
 
     def _create_examples(self, lines, set_type):
         examples = []
         is_train = 0 if set_type == 'test' else 1
         for line in lines:
-            id_ = line['guid'] # 原始数据的编号
-            text = line['instruction'] # 原始文本+候选+模板形成的最终输入序列
-            target = line['target'] # 目标答案
-            start = line['start'] # 目标答案在输入序列的起始位置
-            data_type = line['data_type'] # 该任务的类型
+            id_ = line['guid']  # 原始数据的编号
+            text = line['instruction']  # 原始文本+候选+模板形成的最终输入序列
+            target = line['target']  # 目标答案
+            start = line['start']  # 目标答案在输入序列的起始位置
+            data_type = line['data_type']  # 该任务的类型
             if data_type == 'ner':
                 new_start, new_end = [], []
                 for t, entity_starts in zip(target, start):
@@ -118,13 +134,15 @@ class InstructionMRCForFewCLUEProcessor(CLSProcessor):
             else:
                 start, end = [start], [start + len(target)]
 
-            examples.append({'id': id_,
-                             'content': text,
-                             'start': start,
-                             'end': end,
-                             'target': target,
-                             'data_type': data_type,
-                             'is_train': is_train})
+            examples.append({
+                'id': id_,
+                'content': text,
+                'start': start,
+                'end': end,
+                'target': target,
+                'data_type': data_type,
+                'is_train': is_train
+            })
 
         return examples
 
@@ -144,9 +162,9 @@ class InstructionMRCForFewCLUEProcessor(CLSProcessor):
                 examples['content'],
                 truncation=True,
                 max_length=max_seq_length,
-                padding="max_length" if self.data_args.pad_to_max_length else False,
-                return_offsets_mapping=True
-            )
+                padding='max_length'
+                if self.data_args.pad_to_max_length else False,
+                return_offsets_mapping=True)
             # 确定label
             return tokenized_examples
 
@@ -165,7 +183,6 @@ class InstructionMRCForFewCLUEProcessor(CLSProcessor):
                 has_answer[ans]['prob'] += value['prob']
                 has_answer[ans]['pos'].extend(value['pos'])
         return has_answer
-
 
     def get_predict_result(self, logits, examples):
         probs, indices = logits
@@ -188,14 +205,19 @@ class InstructionMRCForFewCLUEProcessor(CLSProcessor):
                 index_ids = index_ids[prob > 0.0]
                 for ei, entity in enumerate(entity_index):
                     # 1D index转2D index
-                    start_end = np.unravel_index(entity, (self.data_args.max_seq_length, self.data_args.max_seq_length))
+                    start_end = np.unravel_index(
+                        entity, (self.data_args.max_seq_length,
+                                 self.data_args.max_seq_length))
                     s = example['offset_mapping'][start_end[0]][0]
                     e = example['offset_mapping'][start_end[1]][1]
-                    ans = example['content'][s: e]
+                    ans = example['content'][s:e]
                     if ans not in answer:
                         answer.append(ans)
                         # topk_answer.append({'answer': ans, 'prob': float(prob[index_ids[ei]]), 'pos': (s, e)})
-                        topk_answer_dict[ans] = {'prob': float(prob[index_ids[ei]]), 'pos': [(s, e)]}
+                        topk_answer_dict[ans] = {
+                            'prob': float(prob[index_ids[ei]]),
+                            'pos': [(s, e)]
+                        }
 
                 predictions[id_] = answer
                 if id_ not in topk_predictions.keys():
@@ -203,12 +225,15 @@ class InstructionMRCForFewCLUEProcessor(CLSProcessor):
                     topk_predictions[id_] = topk_answer_dict
                 else:
                     # print("topk_predictions[id_]=", topk_predictions[id_])
-                    topk_predictions[id_] = self.fush_multi_answer(topk_predictions[id_], topk_answer_dict)
+                    topk_predictions[id_] = self.fush_multi_answer(
+                        topk_predictions[id_], topk_answer_dict)
             else:
-                best_start_end = np.unravel_index(index[0], (self.data_args.max_seq_length, self.data_args.max_seq_length))
+                best_start_end = np.unravel_index(
+                    index[0], (self.data_args.max_seq_length,
+                               self.data_args.max_seq_length))
                 s = example['offset_mapping'][best_start_end[0]][0]
                 e = example['offset_mapping'][best_start_end[1]][1]
-                answer = example['content'][s: e]
+                answer = example['content'][s:e]
                 predictions[id_] = answer
 
                 topk_answer_dict = dict()
@@ -219,24 +244,34 @@ class InstructionMRCForFewCLUEProcessor(CLSProcessor):
                     if ei > 6:
                         break
                     # 1D index转2D index
-                    start_end = np.unravel_index(index, (self.data_args.max_seq_length, self.data_args.max_seq_length))
+                    start_end = np.unravel_index(
+                        index, (self.data_args.max_seq_length,
+                                self.data_args.max_seq_length))
                     s = example['offset_mapping'][start_end[0]][0]
                     e = example['offset_mapping'][start_end[1]][1]
-                    ans = example['content'][s: e]
+                    ans = example['content'][s:e]
                     # topk_answer.append({'answer': ans, 'prob': float(prob[index_ids[ei]]), 'pos': (s, e)})
-                    topk_answer_dict[ans] = {'prob': float(prob[index_ids[ei]]), 'pos': [(s, e)]}
+                    topk_answer_dict[ans] = {
+                        'prob': float(prob[index_ids[ei]]),
+                        'pos': [(s, e)]
+                    }
 
                 predictions[id_] = answer
                 if id_ not in topk_predictions.keys():
                     topk_predictions[id_] = topk_answer_dict
                 else:
-                    topk_predictions[id_] = self.fush_multi_answer(topk_predictions[id_], topk_answer_dict)
+                    topk_predictions[id_] = self.fush_multi_answer(
+                        topk_predictions[id_], topk_answer_dict)
 
         for id_, values in topk_predictions.items():
             # values {'ans': {}, ...}
             answer_list = list()
             for ans, value in values.items():
-                answer_list.append({'answer': ans, 'prob': value['prob'], 'pos': value['pos']})
+                answer_list.append({
+                    'answer': ans,
+                    'prob': value['prob'],
+                    'pos': value['pos']
+                })
             topk_predictions[id_] = answer_list
 
         return predictions, topk_predictions
@@ -247,7 +282,7 @@ class InstructionMRCForFewCLUEProcessor(CLSProcessor):
         predictions, _ = self.get_predict_result(eval_predictions[0], examples)
         for example in examples:
             data_type = example['data_type']
-            dataname = "_".join(example["id"].split("_")[:-1])
+            dataname = '_'.join(example['id'].split('_')[:-1])
             if dataname not in dataname_type:
                 dataname_type[dataname] = data_type
             id_ = example['id']
@@ -258,9 +293,9 @@ class InstructionMRCForFewCLUEProcessor(CLSProcessor):
                 golden[id_] = example['target']
 
         all_metrics = {
-            "macro_f1": 0.,
-            "micro_f1": 0.,
-            "eval_num": 0,
+            'macro_f1': 0.,
+            'micro_f1': 0.,
+            'eval_num': 0,
         }
 
         for dataname, data_ids in dataname_map.items():
@@ -271,13 +306,15 @@ class InstructionMRCForFewCLUEProcessor(CLSProcessor):
             # print('score=', score)
             acc, f1 = score['acc'], score['f1']
             # if len(gold) != len(pred) or len(gold) < 20:
-                # print(dataname, dataname_type[dataname], round(acc, 4), len(gold), len(pred), data_ids)
-            all_metrics["macro_f1"] += f1
-            all_metrics["micro_f1"] += f1 * len(data_ids)
-            all_metrics["eval_num"] += len(data_ids)
+            # print(dataname, dataname_type[dataname], round(acc, 4), len(gold), len(pred), data_ids)
+            all_metrics['macro_f1'] += f1
+            all_metrics['micro_f1'] += f1 * len(data_ids)
+            all_metrics['eval_num'] += len(data_ids)
             all_metrics[dataname] = round(acc, 4)
-        all_metrics["macro_f1"] = round(all_metrics["macro_f1"] / len(dataname_map), 4)
-        all_metrics["micro_f1"] = round(all_metrics["micro_f1"] / all_metrics["eval_num"], 4)
+        all_metrics['macro_f1'] = round(
+            all_metrics['macro_f1'] / len(dataname_map), 4)
+        all_metrics['micro_f1'] = round(
+            all_metrics['micro_f1'] / all_metrics['eval_num'], 4)
         return all_metrics
 
     def save_result(self, logits, label_ids):
@@ -288,18 +325,24 @@ class InstructionMRCForFewCLUEProcessor(CLSProcessor):
         labels = self.labels
         submit_predicts = dict()
         for key, value in predicts.items():
-            submit_predicts[int(key.split('-')[1])] = labels[int(verbalizer_[value])]
+            submit_predicts[int(key.split('-')[1])] = labels[int(
+                verbalizer_[value])]
 
         outfile = os.path.join(self.training_args.output_dir, 'answer.json')
         with open(outfile, 'w', encoding='utf8') as f:
             json.dump(submit_predicts, f, ensure_ascii=False, indent=2)
 
-        topk_file = os.path.join(self.training_args.output_dir, 'topk_prob.json')
+        topk_file = os.path.join(self.training_args.output_dir,
+                                 'topk_prob.json')
         with open(topk_file, 'w', encoding='utf8') as f2:
             json.dump(topk_predicts, f2, ensure_ascii=False, indent=2)
 
-
-    def create_test_label_data(self, examples, out, pos, tag: dict=None, threshole=0.9):
+    def create_test_label_data(self,
+                               examples,
+                               out,
+                               pos,
+                               tag: dict = None,
+                               threshole=0.9):
         '''
         该函数用于生成dev数据集
         out: 每个样本对应的Topk个预测结果及其得分
@@ -310,7 +353,6 @@ class InstructionMRCForFewCLUEProcessor(CLSProcessor):
           },...
         }
         '''
-
 
         # 构建映射
         '''
@@ -324,13 +366,13 @@ class InstructionMRCForFewCLUEProcessor(CLSProcessor):
         '''
         model_num = 6
         template_per_model_num = 1
-        correct_answer = dict() 
+        correct_answer = dict()
         for k, v in out.items():
             if 'ner' in k.lower():
                 continue
             v = sorted(v.items(), key=lambda x: x[1], reverse=True)
             best_result, best_prob = v[0][0], v[0][1]
-            best_pos = pos[k][best_result] # (x, x) or [(x, x), ..]
+            best_pos = pos[k][best_result]  # (x, x) or [(x, x), ..]
             if best_prob >= threshole * model_num * template_per_model_num:
                 correct_answer[k] = (best_pos, best_result)
         # if tag is not None:
@@ -346,23 +388,24 @@ class InstructionMRCForFewCLUEProcessor(CLSProcessor):
                 target = correct_answer[id][1]
                 pos = correct_answer[id][0]
                 if type(pos[0]) == int:
-                    if content[pos[0]: pos[1]] != target:
+                    if content[pos[0]:pos[1]] != target:
                         continue
                     example['start'] = [pos[0]]
                     example['end'] = [pos[1]]
                     example['target'] = target
                     new_example.append(example)
                 else:
-                    assert type(pos) == list and type(pos[0]) == list and type(pos[0][0]) == int
+                    assert type(pos) == list and type(pos[0]) == list and type(
+                        pos[0][0]) == int
                     for pos_i in pos:
-                        if content[pos_i[0]: pos_i[1]] == target:
+                        if content[pos_i[0]:pos_i[1]] == target:
                             example['start'] = [pos_i[0]]
                             example['end'] = [pos_i[1]]
                             example['target'] = target
                             new_example.append(example)
                             break
 
-        print("example ==")
+        print('example ==')
         print(new_example[0])
-        print("correct answer num: {}".format(len(new_example)))
+        print('correct answer num: {}'.format(len(new_example)))
         return new_example

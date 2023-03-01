@@ -4,11 +4,11 @@
 # @File    : parameter_freeze.py
 
 import torch
-
-
 """
 This is use for parameter fixing and unfreezing, which can be viewed as parameter-efficient settings.
 """
+
+
 class ParameterFreeze():
     # freeze all parameters
     def freeze_lm(self, model: torch.nn.Module):
@@ -28,7 +28,7 @@ class ParameterFreeze():
     # freeze all parameters without bias
     def freeze_lm_finetune_bias(self, model: torch.nn.Module):
         for name, param in model.named_parameters():
-            if "bias" in name:
+            if 'bias' in name:
                 print(name)
                 continue
             param.requires_grad = False
@@ -83,7 +83,7 @@ class ParameterFreeze():
                 param.requires_grad = False
             model = self.unfreeze_classification_head(model)
 
-        elif "prompt_emb" in component:
+        elif 'prompt_emb' in component:
             for name, param in model.named_parameters():
                 if 'prompt_emb' in name:
                     continue
@@ -102,7 +102,7 @@ class ParameterFreeze():
         keep_layers = []
         update_parameters = []
         for i in range(k):
-            keep_layers.append('layer.'+str(23-i))
+            keep_layers.append('layer.' + str(23 - i))
 
         for name, param in model.named_parameters():
             update = False
@@ -118,7 +118,6 @@ class ParameterFreeze():
                 param.requires_grad = False
         model = self.unfreeze_classification_head(model)
         return model
-
 
     def unfreeze_lm(self, model: torch.nn.Module):
         for param in model.parameters():

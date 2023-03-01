@@ -14,14 +14,14 @@ from transformers.models.albert.modeling_albert import AlbertPreTrainedModel, Al
 from transformers.models.roformer.modeling_roformer import RoFormerPreTrainedModel, RoFormerModel, RoFormerOnlyMLMHead
 
 logger = logging.getLogger(__name__)
-
 """
 Function: Use MLM to pre-train BERT
 Notes:
 - The label of non-masked token is -100, which can be used for cross-entropy function (only calculate loss at not -100)
 """
-class BertForMaskedLM(BertPreTrainedModel):
 
+
+class BertForMaskedLM(BertPreTrainedModel):
     def __init__(self, config, *inputs, **kwargs):
         super().__init__(config, *inputs, **kwargs)
 
@@ -76,26 +76,32 @@ class BertForMaskedLM(BertPreTrainedModel):
         masked_lm_loss = None
         if labels is not None:
             loss_fct = CrossEntropyLoss()  # -100 index = padding token
-            masked_lm_loss = loss_fct(prediction_scores.view(-1, self.config.vocab_size), labels.view(-1))
+            masked_lm_loss = loss_fct(
+                prediction_scores.view(-1, self.config.vocab_size),
+                labels.view(-1))
 
         if not return_dict:
-            output = (prediction_scores,) + outputs[2:]
-            return ((masked_lm_loss,) + output) if masked_lm_loss is not None else output
+            output = (prediction_scores, ) + outputs[2:]
+            return ((masked_lm_loss, ) +
+                    output) if masked_lm_loss is not None else output
 
         return MaskedLMOutput(
-            loss=masked_lm_loss, # ()
-            logits=prediction_scores, # (batch_size, seq_len, vocab_size)
-            hidden_states=outputs.hidden_states, # (batch_size, seq_len, hidden_size)
+            loss=masked_lm_loss,  # ()
+            logits=prediction_scores,  # (batch_size, seq_len, vocab_size)
+            hidden_states=outputs.
+            hidden_states,  # (batch_size, seq_len, hidden_size)
             attentions=outputs.attentions,
         )
+
 
 """
 Function: Use MLM to pre-train RoBERTa
 Notes:
 - The label of non-masked token is -100, which can be used for cross-entropy function (only calculate loss at not -100)
 """
-class RobertaForMaskedLM(RobertaPreTrainedModel):
 
+
+class RobertaForMaskedLM(RobertaPreTrainedModel):
     def __init__(self, config, *inputs, **kwargs):
         super().__init__(config, *inputs, **kwargs)
 
@@ -150,26 +156,32 @@ class RobertaForMaskedLM(RobertaPreTrainedModel):
         masked_lm_loss = None
         if labels is not None:
             loss_fct = CrossEntropyLoss()  # -100 index = padding token
-            masked_lm_loss = loss_fct(prediction_scores.view(-1, self.config.vocab_size), labels.view(-1))
+            masked_lm_loss = loss_fct(
+                prediction_scores.view(-1, self.config.vocab_size),
+                labels.view(-1))
 
         if not return_dict:
-            output = (prediction_scores,) + outputs[2:]
-            return ((masked_lm_loss,) + output) if masked_lm_loss is not None else output
+            output = (prediction_scores, ) + outputs[2:]
+            return ((masked_lm_loss, ) +
+                    output) if masked_lm_loss is not None else output
 
         return MaskedLMOutput(
-            loss=masked_lm_loss, # ()
-            logits=prediction_scores, # (batch_size, seq_len, vocab_size)
-            hidden_states=outputs.hidden_states, # (batch_size, seq_len, hidden_size)
+            loss=masked_lm_loss,  # ()
+            logits=prediction_scores,  # (batch_size, seq_len, vocab_size)
+            hidden_states=outputs.
+            hidden_states,  # (batch_size, seq_len, hidden_size)
             attentions=outputs.attentions,
         )
+
 
 """
 Function: Use MLM to pre-train ALBERT
 Notes:
 - The label of non-masked token is -100, which can be used for cross-entropy function (only calculate loss at not -100)
 """
-class AlbertForMaskedLM(AlbertPreTrainedModel):
 
+
+class AlbertForMaskedLM(AlbertPreTrainedModel):
     def __init__(self, config, *inputs, **kwargs):
         super().__init__(config, *inputs, **kwargs)
 
@@ -249,11 +261,14 @@ class AlbertForMaskedLM(AlbertPreTrainedModel):
         masked_lm_loss = None
         if labels is not None:
             loss_fct = CrossEntropyLoss()
-            masked_lm_loss = loss_fct(prediction_scores.view(-1, self.config.vocab_size), labels.view(-1))
+            masked_lm_loss = loss_fct(
+                prediction_scores.view(-1, self.config.vocab_size),
+                labels.view(-1))
 
         if not return_dict:
-            output = (prediction_scores,) + outputs[2:]
-            return ((masked_lm_loss,) + output) if masked_lm_loss is not None else output
+            output = (prediction_scores, ) + outputs[2:]
+            return ((masked_lm_loss, ) +
+                    output) if masked_lm_loss is not None else output
 
         return MaskedLMOutput(
             loss=masked_lm_loss,
@@ -262,20 +277,22 @@ class AlbertForMaskedLM(AlbertPreTrainedModel):
             attentions=outputs.attentions,
         )
 
+
 """
 Function: Use MLM to pre-train RoFormer
 Notes:
 - The label of non-masked token is -100, which can be used for cross-entropy function (only calculate loss at not -100)
 """
+
+
 class RoFormerForMaskedLM(RoFormerPreTrainedModel):
     def __init__(self, config):
         super().__init__(config)
 
         if config.is_decoder:
             logger.warning(
-                "If you want to use `RoFormerForMaskedLM` make sure `config.is_decoder=False` for "
-                "bi-directional self-attention."
-            )
+                'If you want to use `RoFormerForMaskedLM` make sure `config.is_decoder=False` for '
+                'bi-directional self-attention.')
 
         self.roformer = RoFormerModel(config)
         self.cls = RoFormerOnlyMLMHead(config)
@@ -324,11 +341,14 @@ class RoFormerForMaskedLM(RoFormerPreTrainedModel):
         masked_lm_loss = None
         if labels is not None:
             loss_fct = CrossEntropyLoss()  # -100 index = padding token
-            masked_lm_loss = loss_fct(prediction_scores.view(-1, self.config.vocab_size), labels.view(-1))
+            masked_lm_loss = loss_fct(
+                prediction_scores.view(-1, self.config.vocab_size),
+                labels.view(-1))
 
         if not return_dict:
-            output = (prediction_scores,) + outputs[1:]
-            return ((masked_lm_loss,) + output) if masked_lm_loss is not None else output
+            output = (prediction_scores, ) + outputs[1:]
+            return ((masked_lm_loss, ) +
+                    output) if masked_lm_loss is not None else output
 
         return MaskedLMOutput(
             loss=masked_lm_loss,
@@ -338,14 +358,14 @@ class RoFormerForMaskedLM(RoFormerPreTrainedModel):
         )
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     from transformers.models.bert.tokenization_bert import BertTokenizer
-    tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
-    model = BertForMaskedLM.from_pretrained("bert-base-uncased")
-    input_text = "Today is a nice day, I will [MASK] to play [MASK] with my friends."
+    tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+    model = BertForMaskedLM.from_pretrained('bert-base-uncased')
+    input_text = 'Today is a nice day, I will [MASK] to play [MASK] with my friends.'
     inputs = tokenizer(input_text, return_tensors='pt')
-    masked_positions = inputs["input_ids"] == tokenizer.mask_token_id
-    print("inputs=", inputs)
+    masked_positions = inputs['input_ids'] == tokenizer.mask_token_id
+    print('inputs=', inputs)
     """
     inputs= {'input_ids': tensor([[ 101, 2651, 2003, 1037, 3835, 2154, 1010, 1045, 2097,  103, 2000, 2377,
           103, 2007, 2026, 2814, 1012,  102]]), 'token_type_ids': tensor([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]), 'attention_mask': tensor([[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]])}
@@ -353,7 +373,7 @@ if __name__ == "__main__":
     outputs = model(**inputs)
     masked_results = outputs.logits.argmax(-1)[masked_positions]
     masked_results = tokenizer.convert_ids_to_tokens(masked_results)
-    print("masked_results=", masked_results)
+    print('masked_results=', masked_results)
     """
     masked_results= ['have', 'football']
     """

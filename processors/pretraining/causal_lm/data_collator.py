@@ -7,6 +7,7 @@ from typing import Optional
 from dataclasses import dataclass
 from transformers.models.gpt2.tokenization_gpt2_fast import GPT2TokenizerFast
 
+
 @dataclass
 class DataCollatorForCausalLM:
     tokenizer: GPT2TokenizerFast
@@ -20,19 +21,20 @@ class DataCollatorForCausalLM:
         self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
         batch = []
         for f in features:
-            input_ids = [self.tokenizer.bos_token_id] + f["input_ids"] + [self.tokenizer.eos_token_id]
+            input_ids = [self.tokenizer.bos_token_id
+                         ] + f['input_ids'] + [self.tokenizer.eos_token_id]
             labels = input_ids
             # label_masks = [0] + f["label_masks"] + [0]
-            if "attention_mask" in f.keys():
-                attention_mask = [1] + f["attention_mask"] + [0]
+            if 'attention_mask' in f.keys():
+                attention_mask = [1] + f['attention_mask'] + [0]
             else:
-                attention_mask = [1] + [1] * len(f["input_ids"]) + [0]
-            
-            if "token_type_ids" in f.keys():
-                token_type_ids = [1] + f["token_type_ids"] + [0]
+                attention_mask = [1] + [1] * len(f['input_ids']) + [0]
+
+            if 'token_type_ids' in f.keys():
+                token_type_ids = [1] + f['token_type_ids'] + [0]
             else:
-                token_type_ids = [0] + [0] * len(f["input_ids"]) + [0]
-            
+                token_type_ids = [0] + [0] * len(f['input_ids']) + [0]
+
             num_padding = self.max_length - len(input_ids)
             input_ids += [self.tokenizer.pad_token_id] * num_padding
             labels += [-100] * num_padding
@@ -53,11 +55,15 @@ class DataCollatorForCausalLM:
             assert len(input_ids) == len(token_type_ids)
 
             batch.append({
-                'input_ids': input_ids, 
-                'labels': labels, 
+                'input_ids': input_ids,
+                'labels': labels,
                 'attention_mask': attention_mask,
                 'token_type_ids': token_type_ids,
                 # 'label_masks': label_masks,
-                })
-        batch = {key: torch.tensor([feature[key] for feature in batch], dtype=torch.long) for key in batch[0].keys()}
+            })
+        batch = {
+            key: torch.tensor([feature[key] for feature in batch],
+                              dtype=torch.long)
+            for key in batch[0].keys()
+        }
         return batch

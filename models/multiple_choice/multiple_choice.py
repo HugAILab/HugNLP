@@ -26,20 +26,18 @@ class MegatronBertForMultipleChoice(MegatronBertPreTrainedModel):
         # Initialize weights and apply final processing
         self.post_init()
 
-    def forward(
-            self,
-            input_ids=None,
-            attention_mask=None,
-            token_type_ids=None,
-            position_ids=None,
-            head_mask=None,
-            inputs_embeds=None,
-            labels=None,
-            output_attentions=None,
-            output_hidden_states=None,
-            return_dict=None,
-            pseudo=None
-    ):
+    def forward(self,
+                input_ids=None,
+                attention_mask=None,
+                token_type_ids=None,
+                position_ids=None,
+                head_mask=None,
+                inputs_embeds=None,
+                labels=None,
+                output_attentions=None,
+                output_hidden_states=None,
+                return_dict=None,
+                pseudo=None):
         r"""
         labels (`torch.LongTensor` of shape `(batch_size,)`, *optional*):
             Labels for computing the multiple choice classification loss. Indices should be in `[0, ...,
@@ -47,17 +45,22 @@ class MegatronBertForMultipleChoice(MegatronBertPreTrainedModel):
             `input_ids` above)
         """
         return_dict = return_dict if return_dict is not None else self.config.use_return_dict
-        num_choices = input_ids.shape[1] if input_ids is not None else inputs_embeds.shape[1]
+        num_choices = input_ids.shape[
+            1] if input_ids is not None else inputs_embeds.shape[1]
 
-        input_ids = input_ids.view(-1, input_ids.size(-1)) if input_ids is not None else None
-        attention_mask = attention_mask.view(-1, attention_mask.size(-1)) if attention_mask is not None else None
-        token_type_ids = token_type_ids.view(-1, token_type_ids.size(-1)) if token_type_ids is not None else None
-        position_ids = position_ids.view(-1, position_ids.size(-1)) if position_ids is not None else None
-        inputs_embeds = (
-            inputs_embeds.view(-1, inputs_embeds.size(-2), inputs_embeds.size(-1))
-            if inputs_embeds is not None
-            else None
-        )
+        input_ids = input_ids.view(
+            -1, input_ids.size(-1)) if input_ids is not None else None
+        attention_mask = attention_mask.view(
+            -1,
+            attention_mask.size(-1)) if attention_mask is not None else None
+        token_type_ids = token_type_ids.view(
+            -1,
+            token_type_ids.size(-1)) if token_type_ids is not None else None
+        position_ids = position_ids.view(
+            -1, position_ids.size(-1)) if position_ids is not None else None
+        inputs_embeds = (inputs_embeds.view(-1, inputs_embeds.size(-2),
+                                            inputs_embeds.size(-1))
+                         if inputs_embeds is not None else None)
 
         outputs = self.bert(
             input_ids,
@@ -71,11 +74,12 @@ class MegatronBertForMultipleChoice(MegatronBertPreTrainedModel):
             return_dict=return_dict,
         )
 
-        pooled_output = outputs[1] # [batch_size, num_choices, hidden_dim]
+        pooled_output = outputs[1]  # [batch_size, num_choices, hidden_dim]
 
         pooled_output = self.dropout(pooled_output)
-        logits = self.classifier(pooled_output) # [batch_size, num_choices, 1]
-        reshaped_logits = logits.view(-1, num_choices) # [batch_size, num_choices]
+        logits = self.classifier(pooled_output)  # [batch_size, num_choices, 1]
+        reshaped_logits = logits.view(-1,
+                                      num_choices)  # [batch_size, num_choices]
 
         loss = None
         if labels is not None:
@@ -90,8 +94,8 @@ class MegatronBertForMultipleChoice(MegatronBertPreTrainedModel):
                 loss = loss.mean()
 
         if not return_dict:
-            output = (reshaped_logits,) + outputs[2:]
-            return ((loss,) + output) if loss is not None else output
+            output = (reshaped_logits, ) + outputs[2:]
+            return ((loss, ) + output) if loss is not None else output
 
         return MultipleChoiceModelOutput(
             loss=loss,
@@ -117,18 +121,17 @@ class MegatronBertRDropForMultipleChoice(MegatronBertPreTrainedModel):
         self.post_init()
 
     def forward(
-            self,
-            input_ids=None,
-            attention_mask=None,
-            token_type_ids=None,
-            position_ids=None,
-            head_mask=None,
-            inputs_embeds=None,
-            labels=None,
-            output_attentions=None,
-            output_hidden_states=None,
-            return_dict=None,
-
+        self,
+        input_ids=None,
+        attention_mask=None,
+        token_type_ids=None,
+        position_ids=None,
+        head_mask=None,
+        inputs_embeds=None,
+        labels=None,
+        output_attentions=None,
+        output_hidden_states=None,
+        return_dict=None,
     ):
         r"""
         labels (`torch.LongTensor` of shape `(batch_size,)`, *optional*):
@@ -137,17 +140,22 @@ class MegatronBertRDropForMultipleChoice(MegatronBertPreTrainedModel):
             `input_ids` above)
         """
         return_dict = return_dict if return_dict is not None else self.config.use_return_dict
-        num_choices = input_ids.shape[1] if input_ids is not None else inputs_embeds.shape[1]
+        num_choices = input_ids.shape[
+            1] if input_ids is not None else inputs_embeds.shape[1]
 
-        input_ids = input_ids.view(-1, input_ids.size(-1)) if input_ids is not None else None
-        attention_mask = attention_mask.view(-1, attention_mask.size(-1)) if attention_mask is not None else None
-        token_type_ids = token_type_ids.view(-1, token_type_ids.size(-1)) if token_type_ids is not None else None
-        position_ids = position_ids.view(-1, position_ids.size(-1)) if position_ids is not None else None
-        inputs_embeds = (
-            inputs_embeds.view(-1, inputs_embeds.size(-2), inputs_embeds.size(-1))
-            if inputs_embeds is not None
-            else None
-        )
+        input_ids = input_ids.view(
+            -1, input_ids.size(-1)) if input_ids is not None else None
+        attention_mask = attention_mask.view(
+            -1,
+            attention_mask.size(-1)) if attention_mask is not None else None
+        token_type_ids = token_type_ids.view(
+            -1,
+            token_type_ids.size(-1)) if token_type_ids is not None else None
+        position_ids = position_ids.view(
+            -1, position_ids.size(-1)) if position_ids is not None else None
+        inputs_embeds = (inputs_embeds.view(-1, inputs_embeds.size(-2),
+                                            inputs_embeds.size(-1))
+                         if inputs_embeds is not None else None)
 
         logits_list = []
         for i in range(2):
@@ -188,9 +196,7 @@ class MegatronBertRDropForMultipleChoice(MegatronBertPreTrainedModel):
             reverse_kl_loss = F.kl_div(q, p_tec, reduction='none').sum()
             loss += 0.5 * (kl_loss + reverse_kl_loss) / 2.
 
-        return MultipleChoiceModelOutput(
-            loss=loss,
-            logits=logits_list[0],
-            hidden_states=None,
-            attentions=None
-        )
+        return MultipleChoiceModelOutput(loss=loss,
+                                         logits=logits_list[0],
+                                         hidden_states=None,
+                                         attentions=None)

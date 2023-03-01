@@ -8,14 +8,14 @@ try:
     from sklearn.metrics import matthews_corrcoef, f1_score
     _has_sklearn = True
 except (AttributeError, ImportError) as e:
-    logger.warning("To use data.metrics please install scikit-learn. See https://scikit-learn.org/stable/index.html")
+    logger.warning(
+        'To use data.metrics please install scikit-learn. See https://scikit-learn.org/stable/index.html'
+    )
     _has_sklearn = False
 
 
 class PearsonMetric(Metric):
-    """
-    use pearson metric
-    """
+    """use pearson metric."""
     def __init__(self):
         super(PearsonMetric, self).__init__()
 
@@ -29,7 +29,7 @@ class PearsonMetric(Metric):
         pearson_corr = pearsonr(prediction_list, golden_list)[0]
         spearman_corr = spearmanr(prediction_list, golden_list)[0]
         return {
-            "pearson": pearson_corr,
-            "spearmanr": spearman_corr,
-            "corr": (pearson_corr + spearman_corr) / 2,
+            'pearson': pearson_corr,
+            'spearmanr': spearman_corr,
+            'corr': (pearson_corr + spearman_corr) / 2,
         }
