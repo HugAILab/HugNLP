@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-"""Evaluation script for CMRC 2018.
-
+"""
+Evaluation script for CMRC 2018
 version: v5 - special
 Note:
 v5 - special: Evaluate on SQuAD-style CMRC 2018 Datasets
@@ -14,19 +14,17 @@ import nltk
 # split Chinese with English
 def mixed_segmentation(in_str, rm_punc=False):
     return list(in_str)
-
-
 # def mixed_segmentation(in_str, rm_punc=False):
 #     in_str = str(in_str).lower().strip()
 #     segs_out = []
 #     temp_str = ""
-#     sp_char = ['-', ':', '_', '*', '^', '/', '\\', '~', '`', '+', '=',
-#                '，', '。', '：', '？', '！', '“', '”', '；', '’', '《', '》', '……', '·', '、',
-#                '「', '」', '（', '）', '－', '～', '『', '』']
+#     sp_char = ["-", ":", "_", "*", "^", "/", "\\", "~", "`", "+", "=",
+#                "，", "。", "：", "？", "！", "“", "”", "；", "’", "《", "》", "……", "·", "、",
+#                "「", "」", "（", "）", "－", "～", "『", "』"]
 #     for char in in_str:
 #         if rm_punc and char in sp_char:
 #             continue
-#         if re.search('[\u4e00-\u9fa5]', char) or char in sp_char:
+#         if re.search("[\u4e00-\u9fa5]", char) or char in sp_char:
 #             if temp_str != "":
 #                 ss = nltk.word_tokenize(temp_str)
 #                 segs_out.extend(ss)
@@ -45,18 +43,16 @@ def mixed_segmentation(in_str, rm_punc=False):
 # remove punctuation
 def remove_punctuation(in_str):
     in_str = str(in_str).lower().strip()
-    sp_char = [
-        '-', ':', '_', '*', '^', '/', '\\', '~', '`', '+', '=', '，', '。', '：',
-        '？', '！', '“', '”', '；', '’', '《', '》', '……', '·', '、', '「', '」', '（',
-        '）', '－', '～', '『', '』'
-    ]
+    sp_char = ["-", ":", "_", "*", "^", "/", "\\", "~", "`", "+", "=",
+               "，", "。", "：", "？", "！", "“", "”", "；", "’", "《", "》", "……", "·", "、",
+               "「", "」", "（", "）", "－", "～", "『", "』"]
     out_segs = []
     for char in in_str:
         if char in sp_char:
             continue
         else:
             out_segs.append(char)
-    return ''.join(out_segs)
+    return "".join(out_segs)
 
 
 # find longest common string
@@ -88,18 +84,17 @@ def evaluate2(prediction, ground_truth):
 
     f1_score = 100.0 * f1 / total_count
     em_score = 100.0 * em / total_count
-    return {'f1': round(f1_score, 4), 'em': round(em_score, 4)}
-
+    return {"f1": round(f1_score, 4), "em": round(em_score, 4)}
 
 def evaluate(prediction, ground_truth):
     f1 = 0
     em = 0
     total_count = 0
     skip_count = 0
-    prediction = {p['id']: p['prediction_text'] for p in prediction}
+    prediction = {p["id"]: p["prediction_text"] for p in prediction}
     for i in ground_truth:
-        id1 = i['id']
-        answers = i['answers']['text']
+        id1 = i["id"]
+        answers = i["answers"]["text"]
         pred = prediction[id1]
         f1 += calc_f1_score(answers, pred)
         em += calc_em_score(answers, pred)
@@ -107,7 +102,7 @@ def evaluate(prediction, ground_truth):
 
     f1_score = 100.0 * f1 / total_count
     em_score = 100.0 * em / total_count
-    return {'f1': round(f1_score, 4), 'em': round(em_score, 4)}
+    return {"f1": round(f1_score, 4), "em": round(em_score, 4)}
 
 
 def calc_f1_score(answers, prediction):

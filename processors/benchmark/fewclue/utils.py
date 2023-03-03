@@ -5,7 +5,8 @@ import json
 
 
 class InputExample(object):
-    """A single training/test example for simple sequence classification.
+    """
+    A single training/test example for simple sequence classification.
 
     Args:
         guid: Unique id for the example.
@@ -32,11 +33,12 @@ class InputExample(object):
 
     def to_json_string(self):
         """Serializes this instance to a JSON string."""
-        return json.dumps(self.to_dict(), indent=2, sort_keys=True) + '\n'
+        return json.dumps(self.to_dict(), indent=2, sort_keys=True) + "\n"
 
 
 class InputFeatures(object):
-    """A single set of features of data.
+    """
+    A single set of features of data.
 
     Args:
         input_ids: Indices of input sequence tokens in the vocabulary.
@@ -46,8 +48,8 @@ class InputFeatures(object):
         token_type_ids: Segment token indices to indicate first and second portions of the inputs.
         label: Label corresponding to the input
     """
-    def __init__(self, input_ids, attention_mask, token_type_ids, label,
-                 input_len):
+
+    def __init__(self, input_ids, attention_mask, token_type_ids, label,input_len):
         self.input_ids = input_ids
         self.attention_mask = attention_mask
         self.token_type_ids = token_type_ids
@@ -64,11 +66,12 @@ class InputFeatures(object):
 
     def to_json_string(self):
         """Serializes this instance to a JSON string."""
-        return json.dumps(self.to_dict(), indent=2, sort_keys=True) + '\n'
+        return json.dumps(self.to_dict(), indent=2, sort_keys=True) + "\n"
 
 
 class DataProcessor(object):
     """Base class for data converters for sequence classification data sets."""
+
     def get_train_examples(self, data_dir):
         """Gets a collection of `InputExample`s for the train set."""
         raise NotImplementedError()
@@ -84,8 +87,8 @@ class DataProcessor(object):
     @classmethod
     def _read_tsv(cls, input_file, quotechar=None):
         """Reads a tab separated value file."""
-        with open(input_file, 'r', encoding='utf-8-sig') as f:
-            reader = csv.reader(f, delimiter='\t', quotechar=quotechar)
+        with open(input_file, "r", encoding="utf-8-sig") as f:
+            reader = csv.reader(f, delimiter="\t", quotechar=quotechar)
             lines = []
             for line in reader:
                 lines.append(line)
@@ -94,7 +97,7 @@ class DataProcessor(object):
     @classmethod
     def _read_json(cls, input_file):
         """Reads a json list file."""
-        with open(input_file, 'r', encoding='utf-8') as f:
+        with open(input_file, "r", encoding="utf-8") as f:
             reader = f.readlines()
             lines = []
             for line in reader:

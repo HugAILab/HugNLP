@@ -17,11 +17,10 @@ class DebertaV2ForSemEval7MultiTask(DebertaV2PreTrainedModel):
         self.pooler = ContextPooler(config)
         output_dim = self.pooler.output_dim
         self.num_labels = 3
-        self.dense = nn.Linear(config.pooler_hidden_size * 2,
-                               config.pooler_hidden_size)
+        self.dense = nn.Linear(config.pooler_hidden_size*2, config.pooler_hidden_size)
         self.classifier = nn.Linear(output_dim, self.num_labels)
         self.regression = nn.Linear(output_dim, 1)
-        drop_out = getattr(config, 'cls_dropout', None)
+        drop_out = getattr(config, "cls_dropout", None)
         drop_out = self.config.hidden_dropout_prob if drop_out is None else drop_out
 
         self.dropout = StableDropout(drop_out)
@@ -33,17 +32,19 @@ class DebertaV2ForSemEval7MultiTask(DebertaV2PreTrainedModel):
     def set_input_embeddings(self, new_embeddings):
         self.deberta.set_input_embeddings(new_embeddings)
 
-    def forward(self,
-                input_ids=None,
-                attention_mask=None,
-                token_type_ids=None,
-                position_ids=None,
-                inputs_embeds=None,
-                labels=None,
-                output_attentions=None,
-                output_hidden_states=None,
-                return_dict=None,
-                score=None):
+    def forward(
+            self,
+            input_ids=None,
+            attention_mask=None,
+            token_type_ids=None,
+            position_ids=None,
+            inputs_embeds=None,
+            labels=None,
+            output_attentions=None,
+            output_hidden_states=None,
+            return_dict=None,
+            score=None
+    ):
         r"""
         labels (`torch.LongTensor` of shape `(batch_size,)`, *optional*):
             Labels for computing the sequence classification/regression loss. Indices should be in `[0, ...,
@@ -62,14 +63,10 @@ class DebertaV2ForSemEval7MultiTask(DebertaV2PreTrainedModel):
             output_hidden_states=output_hidden_states,
             return_dict=return_dict,
         )
-        w = torch.logical_and(input_ids >= min(self.config.start_token_ids),
-                              input_ids <= max(self.config.start_token_ids))
+        w = torch.logical_and(input_ids >= min(self.config.start_token_ids), input_ids <= max(self.config.start_token_ids))
         start_index = w.nonzero()[:, 1].view(-1, 2)
         # <start_entity> + <end_entity> 进分类
-        pooler_output = torch.cat([
-            torch.cat([x[y[0], :], x[y[1], :]]).unsqueeze(0)
-            for x, y in zip(outputs.last_hidden_state, start_index)
-        ])
+        pooler_output = torch.cat([torch.cat([x[y[0], :], x[y[1], :]]).unsqueeze(0) for x, y in zip(outputs.last_hidden_state, start_index)])
         # [CLS] + <start_entity> + <end_entity> 进分类
         # pooler_output = torch.cat([torch.cat([z, x[y[0], :], x[y[1], :]]).unsqueeze(0)
         #                            for x, y, z in zip(outputs.last_hidden_state, start_index, outputs.last_hidden_state[:, 0])])
@@ -87,13 +84,10 @@ class DebertaV2ForSemEval7MultiTask(DebertaV2PreTrainedModel):
             re_loss = re_loss_func(re_logits.squeeze(), score.squeeze())
 
             cls_loss_func = CrossEntropyLoss()
-            cls_loss = cls_loss_func(cls_logits.view(-1, self.num_labels),
-                                     labels.view(-1))
+            cls_loss = cls_loss_func(cls_logits.view(-1, self.num_labels), labels.view(-1))
 
             loss = re_loss + cls_loss
 
-        return SequenceClassifierOutput(loss=loss,
-                                        logits=torch.cat(
-                                            (cls_logits, re_logits), 1),
-                                        hidden_states=outputs.hidden_states,
-                                        attentions=outputs.attentions)
+        return SequenceClassifierOutput(
+            loss=loss, logits=torch.cat((cls_logits, re_logits), 1), hidden_states=outputs.hidden_states, attentions=outputs.attentions
+        )

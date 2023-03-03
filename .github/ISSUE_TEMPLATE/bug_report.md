@@ -2,9 +2,9 @@ ______________________________________________________________________
 
 name: Bug report
 about: Create a report to help us improve
-title: ''
-labels: ''
-assignees: ''
+title: ""
+labels: ""
+assignees: ""
 
 ______________________________________________________________________
 
@@ -14,9 +14,9 @@ A clear and concise description of what the bug is.
 **To Reproduce**
 Steps to reproduce the behavior:
 
-1. Go to '...'
-1. Click on '....'
-1. Scroll down to '....'
+1. Go to "..."
+1. Click on "...."
+1. Scroll down to "...."
 1. See error
 
 **Expected behavior**

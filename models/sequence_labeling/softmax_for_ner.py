@@ -9,7 +9,6 @@ from torch.nn import CrossEntropyLoss
 from loss.focal_loss import FocalLoss
 from loss.label_smoothing import LabelSmoothingCrossEntropy
 
-
 class BertSoftmaxForNer(BertPreTrainedModel):
     def __init__(self, config):
         super(BertSoftmaxForNer, self).__init__(config)
@@ -20,26 +19,18 @@ class BertSoftmaxForNer(BertPreTrainedModel):
         self.loss_type = config.loss_type
         self.init_weights()
 
-    def forward(self,
-                input_ids,
-                attention_mask=None,
-                token_type_ids=None,
-                position_ids=None,
-                head_mask=None,
-                labels=None):
-        outputs = self.bert(input_ids=input_ids,
-                            attention_mask=attention_mask,
-                            token_type_ids=token_type_ids)
+    def forward(self, input_ids, attention_mask=None, token_type_ids=None,
+                position_ids=None, head_mask=None, labels=None):
+        outputs = self.bert(input_ids = input_ids,attention_mask=attention_mask,token_type_ids=token_type_ids)
         sequence_output = outputs[0]
         sequence_output = self.dropout(sequence_output)
         logits = self.classifier(sequence_output)
-        outputs = (logits, ) + outputs[
-            2:]  # add hidden states and attention if they are here
+        outputs = (logits,) + outputs[2:]  # add hidden states and attention if they are here
         if labels is not None:
-            assert self.loss_type in ['lsr', 'focal', 'ce']
-            if self.loss_type == 'lsr':
+            assert self.loss_type in ["lsr", "focal", "ce"]
+            if self.loss_type == "lsr":
                 loss_fct = LabelSmoothingCrossEntropy(ignore_index=0)
-            elif self.loss_type == 'focal':
+            elif self.loss_type == "focal":
                 loss_fct = FocalLoss(ignore_index=0)
             else:
                 loss_fct = CrossEntropyLoss(ignore_index=0)
@@ -50,11 +41,9 @@ class BertSoftmaxForNer(BertPreTrainedModel):
                 active_labels = labels.view(-1)[active_loss]
                 loss = loss_fct(active_logits, active_labels)
             else:
-                loss = loss_fct(logits.view(-1, self.num_labels),
-                                labels.view(-1))
-            outputs = (loss, ) + outputs
+                loss = loss_fct(logits.view(-1, self.num_labels), labels.view(-1))
+            outputs = (loss,) + outputs
         return outputs  # (loss), scores, (hidden_states), (attentions)
-
 
 class RobertaSoftmaxForNer(RobertaPreTrainedModel):
     def __init__(self, config):
@@ -66,26 +55,18 @@ class RobertaSoftmaxForNer(RobertaPreTrainedModel):
         self.loss_type = config.loss_type
         self.init_weights()
 
-    def forward(self,
-                input_ids,
-                attention_mask=None,
-                token_type_ids=None,
-                position_ids=None,
-                head_mask=None,
-                labels=None):
-        outputs = self.roberta(input_ids=input_ids,
-                               attention_mask=attention_mask,
-                               token_type_ids=token_type_ids)
+    def forward(self, input_ids, attention_mask=None, token_type_ids=None,
+                position_ids=None, head_mask=None, labels=None):
+        outputs = self.roberta(input_ids = input_ids,attention_mask=attention_mask,token_type_ids=token_type_ids)
         sequence_output = outputs[0]
         sequence_output = self.dropout(sequence_output)
         logits = self.classifier(sequence_output)
-        outputs = (logits, ) + outputs[
-            2:]  # add hidden states and attention if they are here
+        outputs = (logits,) + outputs[2:]  # add hidden states and attention if they are here
         if labels is not None:
-            assert self.loss_type in ['lsr', 'focal', 'ce']
-            if self.loss_type == 'lsr':
+            assert self.loss_type in ["lsr", "focal", "ce"]
+            if self.loss_type == "lsr":
                 loss_fct = LabelSmoothingCrossEntropy(ignore_index=0)
-            elif self.loss_type == 'focal':
+            elif self.loss_type == "focal":
                 loss_fct = FocalLoss(ignore_index=0)
             else:
                 loss_fct = CrossEntropyLoss(ignore_index=0)
@@ -96,11 +77,9 @@ class RobertaSoftmaxForNer(RobertaPreTrainedModel):
                 active_labels = labels.view(-1)[active_loss]
                 loss = loss_fct(active_logits, active_labels)
             else:
-                loss = loss_fct(logits.view(-1, self.num_labels),
-                                labels.view(-1))
-            outputs = (loss, ) + outputs
+                loss = loss_fct(logits.view(-1, self.num_labels), labels.view(-1))
+            outputs = (loss,) + outputs
         return outputs  # (loss), scores, (hidden_states), (attentions)
-
 
 class AlbertSoftmaxForNer(AlbertPreTrainedModel):
     def __init__(self, config):
@@ -112,28 +91,19 @@ class AlbertSoftmaxForNer(AlbertPreTrainedModel):
         self.classifier = nn.Linear(config.hidden_size, config.num_labels)
         self.init_weights()
 
-    def forward(self,
-                input_ids,
-                attention_mask=None,
-                token_type_ids=None,
-                position_ids=None,
-                head_mask=None,
-                labels=None):
-        outputs = self.bert(input_ids=input_ids,
-                            attention_mask=attention_mask,
-                            token_type_ids=token_type_ids,
-                            position_ids=position_ids,
-                            head_mask=head_mask)
+    def forward(self, input_ids, attention_mask=None, token_type_ids=None,
+                position_ids=None, head_mask=None, labels=None):
+        outputs = self.bert(input_ids = input_ids,attention_mask=attention_mask,token_type_ids=token_type_ids,
+                            position_ids=position_ids,head_mask=head_mask)
         sequence_output = outputs[0]
         sequence_output = self.dropout(sequence_output)
         logits = self.classifier(sequence_output)
-        outputs = (logits, ) + outputs[
-            2:]  # add hidden states and attention if they are here
+        outputs = (logits,) + outputs[2:]  # add hidden states and attention if they are here
         if labels is not None:
-            assert self.loss_type in ['lsr', 'focal', 'ce']
-            if self.loss_type == 'lsr':
+            assert self.loss_type in ["lsr", "focal", "ce"]
+            if self.loss_type =="lsr":
                 loss_fct = LabelSmoothingCrossEntropy(ignore_index=0)
-            elif self.loss_type == 'focal':
+            elif self.loss_type == "focal":
                 loss_fct = FocalLoss(ignore_index=0)
             else:
                 loss_fct = CrossEntropyLoss(ignore_index=0)
@@ -144,11 +114,9 @@ class AlbertSoftmaxForNer(AlbertPreTrainedModel):
                 active_labels = labels.view(-1)[active_loss]
                 loss = loss_fct(active_logits, active_labels)
             else:
-                loss = loss_fct(logits.view(-1, self.num_labels),
-                                labels.view(-1))
-            outputs = (loss, ) + outputs
+                loss = loss_fct(logits.view(-1, self.num_labels), labels.view(-1))
+            outputs = (loss,) + outputs
         return outputs  # (loss), scores, (hidden_states), (attentions)
-
 
 class MegatronBertSoftmaxForNer(MegatronBertPreTrainedModel):
     def __init__(self, config):
@@ -160,26 +128,18 @@ class MegatronBertSoftmaxForNer(MegatronBertPreTrainedModel):
         self.loss_type = config.loss_type
         self.init_weights()
 
-    def forward(self,
-                input_ids,
-                attention_mask=None,
-                token_type_ids=None,
-                position_ids=None,
-                head_mask=None,
-                labels=None):
-        outputs = self.bert(input_ids=input_ids,
-                            attention_mask=attention_mask,
-                            token_type_ids=token_type_ids)
+    def forward(self, input_ids, attention_mask=None, token_type_ids=None,
+                position_ids=None, head_mask=None, labels=None):
+        outputs = self.bert(input_ids = input_ids,attention_mask=attention_mask,token_type_ids=token_type_ids)
         sequence_output = outputs[0]
         sequence_output = self.dropout(sequence_output)
         logits = self.classifier(sequence_output)
-        outputs = (logits, ) + outputs[
-            2:]  # add hidden states and attention if they are here
+        outputs = (logits,) + outputs[2:]  # add hidden states and attention if they are here
         if labels is not None:
-            assert self.loss_type in ['lsr', 'focal', 'ce']
-            if self.loss_type == 'lsr':
+            assert self.loss_type in ["lsr", "focal", "ce"]
+            if self.loss_type == "lsr":
                 loss_fct = LabelSmoothingCrossEntropy(ignore_index=0)
-            elif self.loss_type == 'focal':
+            elif self.loss_type == "focal":
                 loss_fct = FocalLoss(ignore_index=0)
             else:
                 loss_fct = CrossEntropyLoss(ignore_index=0)
@@ -190,7 +150,6 @@ class MegatronBertSoftmaxForNer(MegatronBertPreTrainedModel):
                 active_labels = labels.view(-1)[active_loss]
                 loss = loss_fct(active_logits, active_labels)
             else:
-                loss = loss_fct(logits.view(-1, self.num_labels),
-                                labels.view(-1))
-            outputs = (loss, ) + outputs
+                loss = loss_fct(logits.view(-1, self.num_labels), labels.view(-1))
+            outputs = (loss,) + outputs
         return outputs  # (loss), scores, (hidden_states), (attentions)
