@@ -3,6 +3,7 @@ datasets
 jieba
 mlflow
 pymysql
+pytest
 roformer
 sentence-transformers
 sklearn
