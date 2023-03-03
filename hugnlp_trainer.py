@@ -24,10 +24,7 @@ from models.adversarial import FGM
 
 class LengthGroupedSampler(LengthGroupedSamplerOri):
     def __iter__(self):
-        indices = get_length_grouped_indices(self.lengths,
-                                             self.batch_size,
-                                             generator=self.generator,
-                                             mega_batch_mult=256)
+        indices = get_length_grouped_indices(self.lengths, self.batch_size, generator=self.generator, mega_batch_mult=256)
         return iter(indices)
 
 
@@ -36,21 +33,18 @@ class DistributedLengthGroupedSampler(DistributedLengthGroupedSamplerOri):
         # Deterministically shuffle based on epoch and seed
         g = torch.Generator()
         g.manual_seed(self.seed + self.epoch)
-        indices = get_length_grouped_indices(self.lengths,
-                                             self.batch_size,
-                                             generator=g,
-                                             mega_batch_mult=400)
+        indices = get_length_grouped_indices(self.lengths, self.batch_size, generator=g, mega_batch_mult=400)
 
         if not self.drop_last:
             # add extra samples to make it evenly divisible
-            indices += indices[:(self.total_size - len(indices))]
+            indices += indices[: (self.total_size - len(indices))]
         else:
             # remove tail of data to make it evenly divisible.
-            indices = indices[:self.total_size]
+            indices = indices[: self.total_size]
         assert len(indices) == self.total_size
 
         # subsample
-        indices = indices[self.rank:self.total_size:self.num_replicas]
+        indices = indices[self.rank: self.total_size: self.num_replicas]
         assert len(indices) == self.num_samples
 
         return iter(indices)
@@ -58,23 +52,19 @@ class DistributedLengthGroupedSampler(DistributedLengthGroupedSamplerOri):
 
 class HugTrainer(Trainer):
     def __init__(
-        self,
-        model: Union[PreTrainedModel, nn.Module] = None,
-        args: TrainingArguments = None,
-        data_collator: Optional[DataCollator] = None,
-        train_dataset: Optional[Dataset] = None,
-        eval_dataset: Optional[Dataset] = None,
-        tokenizer: Optional[PreTrainedTokenizerBase] = None,
-        model_init: Callable[[], PreTrainedModel] = None,
-        compute_metrics: Optional[Callable[[EvalPrediction], Dict]] = None,
-        callbacks: Optional[List[TrainerCallback]] = None,
-        optimizers: Tuple[torch.optim.Optimizer,
-                          torch.optim.lr_scheduler.LambdaLR] = (None, None),
+            self,
+            model: Union[PreTrainedModel, nn.Module] = None,
+            args: TrainingArguments = None,
+            data_collator: Optional[DataCollator] = None,
+            train_dataset: Optional[Dataset] = None,
+            eval_dataset: Optional[Dataset] = None,
+            tokenizer: Optional[PreTrainedTokenizerBase] = None,
+            model_init: Callable[[], PreTrainedModel] = None,
+            compute_metrics: Optional[Callable[[EvalPrediction], Dict]] = None,
+            callbacks: Optional[List[TrainerCallback]] = None,
+            optimizers: Tuple[torch.optim.Optimizer, torch.optim.lr_scheduler.LambdaLR] = (None, None),
     ):
-        super(HugTrainer,
-              self).__init__(model, args, data_collator, train_dataset,
-                             eval_dataset, tokenizer, model_init,
-                             compute_metrics, callbacks, optimizers)
+        super(HugTrainer, self).__init__(model, args, data_collator, train_dataset, eval_dataset, tokenizer, model_init, compute_metrics, callbacks, optimizers)
         if self.args.do_adv:
             self.fgm = FGM(self.model)
         for callback in callbacks:
@@ -82,10 +72,9 @@ class HugTrainer(Trainer):
 
         self.global_step_ = 0
 
-    def training_step(
-            self, model: nn.Module,
-            inputs: Dict[str, Union[torch.Tensor, Any]]) -> torch.Tensor:
-        """Perform a training step on a batch of inputs.
+    def training_step(self, model: nn.Module, inputs: Dict[str, Union[torch.Tensor, Any]]) -> torch.Tensor:
+        """
+        Perform a training step on a batch of inputs.
 
         Subclass and override to inject custom behavior.
 
@@ -96,7 +85,7 @@ class HugTrainer(Trainer):
                 The inputs and targets of the model.
 
                 The dictionary will be unpacked before being fed to the model. Most models expect the targets under the
-                argument `labels`. Check your model's documentation for all accepted arguments.
+                argument `labels`. Check your model"s documentation for all accepted arguments.
 
         Return:
             `torch.Tensor`: The tensor with training loss on this batch.
@@ -110,15 +99,14 @@ class HugTrainer(Trainer):
 
         if self.args.n_gpu > 1 or len(loss.shape) > 0:
             # 如果是多GPU，或者当前的loss是一个tensor列表
-            loss = loss.mean(
-            )  # mean() to average on multi-gpu parallel training
+            loss = loss.mean()  # mean() to average on multi-gpu parallel training
 
         if self.args.gradient_accumulation_steps > 1 and not self.deepspeed:
             # deepspeed handles loss scaling by gradient_accumulation_steps in its `backward`
             loss = loss / self.args.gradient_accumulation_steps
 
         if self.global_step_ % 10 == 0:
-            print('[step={}, loss={}]'.format(self.global_step_, loss))
+            print("[step={}, loss={}]".format(self.global_step_, loss))
 
         if self.do_grad_scaling:
             self.scaler.scale(loss).backward()
@@ -152,24 +140,22 @@ class HugTrainer(Trainer):
         generator = None
         if self.args.world_size <= 1 and _is_torch_generator_available:
             generator = torch.Generator()
-            generator.manual_seed(
-                int(torch.empty((), dtype=torch.int64).random_().item()))
+            generator.manual_seed(int(torch.empty((), dtype=torch.int64).random_().item()))
 
         # Build the sampler.
         if self.args.group_by_length:
-            if is_datasets_available() and isinstance(self.train_dataset,
-                                                      datasets.Dataset):
-                lengths = (self.train_dataset[self.args.length_column_name]
-                           if self.args.length_column_name
-                           in self.train_dataset.column_names else None)
+            if is_datasets_available() and isinstance(self.train_dataset, datasets.Dataset):
+                lengths = (
+                    self.train_dataset[self.args.length_column_name]
+                    if self.args.length_column_name in self.train_dataset.column_names
+                    else None
+                )
             else:
                 lengths = None
-            model_input_name = self.tokenizer.model_input_names[
-                0] if self.tokenizer is not None else None
+            model_input_name = self.tokenizer.model_input_names[0] if self.tokenizer is not None else None
             if self.args.world_size <= 1:
                 return LengthGroupedSampler(
-                    self.args.train_batch_size *
-                    self.args.gradient_accumulation_steps,
+                    self.args.train_batch_size * self.args.gradient_accumulation_steps,
                     dataset=self.train_dataset,
                     lengths=lengths,
                     model_input_name=model_input_name,
@@ -177,8 +163,7 @@ class HugTrainer(Trainer):
                 )
             else:
                 return DistributedLengthGroupedSampler(
-                    self.args.train_batch_size *
-                    self.args.gradient_accumulation_steps,
+                    self.args.train_batch_size * self.args.gradient_accumulation_steps,
                     dataset=self.train_dataset,
                     num_replicas=self.args.world_size,
                     rank=self.args.process_index,
@@ -190,12 +175,12 @@ class HugTrainer(Trainer):
         else:
             if self.args.world_size <= 1:
                 if _is_torch_generator_available:
-                    return RandomSampler(self.train_dataset,
-                                         generator=generator)
+                    return RandomSampler(self.train_dataset, generator=generator)
                 return RandomSampler(self.train_dataset)
-            elif (self.args.parallel_mode
-                  in [ParallelMode.TPU, ParallelMode.SAGEMAKER_MODEL_PARALLEL]
-                  and not self.args.dataloader_drop_last):
+            elif (
+                    self.args.parallel_mode in [ParallelMode.TPU, ParallelMode.SAGEMAKER_MODEL_PARALLEL]
+                    and not self.args.dataloader_drop_last
+            ):
                 # Use a loop for TPUs when drop_last is False to have all batches have the same size.
                 return DistributedSamplerWithLoop(
                     self.train_dataset,

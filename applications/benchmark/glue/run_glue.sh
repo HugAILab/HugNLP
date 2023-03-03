@@ -1,9 +1,9 @@
 #### pre-trained lm path
-# path=/wjn/pre-trained-lm/bert-base-uncased
-path=/wjn/pre-trained-lm/roberta-base
+path=/wjn/pre-trained-lm/bert-base-uncased
+# path=/wjn/pre-trained-lm/roberta-base
 
-# MODEL_TYPE=bert
-MODEL_TYPE=roberta
+MODEL_TYPE=bert
+# MODEL_TYPE=roberta
 
 #### task name
 TASK_NAME=glue
