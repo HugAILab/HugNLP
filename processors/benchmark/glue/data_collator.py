@@ -47,8 +47,7 @@ class DataCollatorForGLUE:
         # add mask_pos (when using prompt-tuning, need to record the masked position for each input_ids)
 
         if "mask_pos" in features[0].keys():
-            batch["mask_pos"] = torch.Tensor([f["mask_pos"]
-                                              for f in features]).long()
+            batch["mask_pos"] = torch.Tensor([f["mask_pos"] for f in features]).long()
 
         # add answer span (when using mrc for classifying)
         if self.is_segment_spans:

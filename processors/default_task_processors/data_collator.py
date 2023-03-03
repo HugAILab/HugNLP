@@ -21,12 +21,19 @@ class DataCollatorForDefaultSequenceClassification:
         # is_train = features[0]["is_train"] > 0
         batch = []
         for f in features:
-            batch.append(
-                {
-                    "input_ids": f["input_ids"],
-                    "token_type_ids": f["token_type_ids"],
-                    "attention_mask": f["attention_mask"]
-                }, )
+            if "token_type_ids" in f.keys():
+                batch.append(
+                    {
+                        "input_ids": f["input_ids"],
+                        "token_type_ids": f["token_type_ids"],
+                        "attention_mask": f["attention_mask"]
+                    }, )
+            else:
+                batch.append(
+                    {
+                        "input_ids": f["input_ids"],
+                        "attention_mask": f["attention_mask"]
+                    }, )
         batch = self.tokenizer.pad(
             batch,
             padding=
@@ -37,6 +44,9 @@ class DataCollatorForDefaultSequenceClassification:
 
         # add labels
         batch["labels"] = torch.Tensor([f["label"] for f in features]).long()
+
+        if "mask_pos" in features[0].keys():
+            batch["mask_pos"] = torch.Tensor([f["mask_pos"] for f in features]).long()
 
         # add by wjn: 获得每个example每个segment的区间
         if self.is_segment_spans:

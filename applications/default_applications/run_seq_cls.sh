@@ -5,8 +5,8 @@ MODEL_TYPE=bert
 #### task data path (use should change this path)
 data_path=/wjn/frameworks/HugNLP/datasets/data_example/cls
 
-TASK_TYPE=head_cls
-# TASK_TYPE=masked_prompt_prefix_cls
+# TASK_TYPE=head_cls
+TASK_TYPE=masked_prompt_prefix_cls
 
 len=196
 bz=4 # 8
@@ -52,4 +52,4 @@ python3 -m torch.distributed.launch --nproc_per_node=2 --master_port=6014 hugnlp
 --label_names=labels \
 --keep_predict_labels \
 --user_defined="label_names=entailment,neutral,contradiction" \
-# --use_prompt_for_cls
+--use_prompt_for_cls
