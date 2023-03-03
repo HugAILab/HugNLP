@@ -7,7 +7,6 @@ from transformers.models.albert.modeling_albert import AlbertPreTrainedModel, Al
 from transformers.models.megatron_bert.modeling_megatron_bert import MegatronBertPreTrainedModel, MegatronBertModel
 from models.basic_modules.crf import CRF
 
-
 class BertCrfForNer(BertPreTrainedModel):
     def __init__(self, config):
         super(BertCrfForNer, self).__init__(config)
@@ -17,24 +16,16 @@ class BertCrfForNer(BertPreTrainedModel):
         self.crf = CRF(num_tags=config.num_labels, batch_first=True)
         self.init_weights()
 
-    def forward(self,
-                input_ids,
-                token_type_ids=None,
-                attention_mask=None,
-                labels=None,
-                input_lens=None):
-        outputs = self.bert(input_ids=input_ids,
-                            attention_mask=attention_mask,
-                            token_type_ids=token_type_ids)
+    def forward(self, input_ids, token_type_ids=None, attention_mask=None,labels=None,input_lens=None):
+        outputs =self.bert(input_ids = input_ids,attention_mask=attention_mask,token_type_ids=token_type_ids)
         sequence_output = outputs[0]
         sequence_output = self.dropout(sequence_output)
         logits = self.classifier(sequence_output)
-        outputs = (logits, )
+        outputs = (logits,)
         if labels is not None:
-            loss = self.crf(emissions=logits, tags=labels, mask=attention_mask)
-            outputs = (-1 * loss, ) + outputs
-        return outputs  # (loss), scores
-
+            loss = self.crf(emissions = logits, tags=labels, mask=attention_mask)
+            outputs =(-1*loss,)+outputs
+        return outputs # (loss), scores
 
 class RobertaCrfForNer(RobertaPreTrainedModel):
     def __init__(self, config):
@@ -45,24 +36,16 @@ class RobertaCrfForNer(RobertaPreTrainedModel):
         self.crf = CRF(num_tags=config.num_labels, batch_first=True)
         self.init_weights()
 
-    def forward(self,
-                input_ids,
-                token_type_ids=None,
-                attention_mask=None,
-                labels=None,
-                input_lens=None):
-        outputs = self.roberta(input_ids=input_ids,
-                               attention_mask=attention_mask,
-                               token_type_ids=token_type_ids)
+    def forward(self, input_ids, token_type_ids=None, attention_mask=None,labels=None,input_lens=None):
+        outputs =self.roberta(input_ids = input_ids,attention_mask=attention_mask,token_type_ids=token_type_ids)
         sequence_output = outputs[0]
         sequence_output = self.dropout(sequence_output)
         logits = self.classifier(sequence_output)
-        outputs = (logits, )
+        outputs = (logits,)
         if labels is not None:
-            loss = self.crf(emissions=logits, tags=labels, mask=attention_mask)
-            outputs = (-1 * loss, ) + outputs
-        return outputs  # (loss), scores
-
+            loss = self.crf(emissions = logits, tags=labels, mask=attention_mask)
+            outputs =(-1*loss,)+outputs
+        return outputs # (loss), scores
 
 class AlbertCrfForNer(AlbertPreTrainedModel):
     def __init__(self, config):
@@ -73,24 +56,16 @@ class AlbertCrfForNer(AlbertPreTrainedModel):
         self.crf = CRF(num_tags=config.num_labels, batch_first=True)
         self.init_weights()
 
-    def forward(self,
-                input_ids,
-                token_type_ids=None,
-                attention_mask=None,
-                labels=None,
-                input_lens=None):
-        outputs = self.bert(input_ids=input_ids,
-                            attention_mask=attention_mask,
-                            token_type_ids=token_type_ids)
+    def forward(self, input_ids, token_type_ids=None, attention_mask=None,labels=None,input_lens=None):
+        outputs = self.bert(input_ids = input_ids,attention_mask=attention_mask,token_type_ids=token_type_ids)
         sequence_output = outputs[0]
         sequence_output = self.dropout(sequence_output)
         logits = self.classifier(sequence_output)
-        outputs = (logits, )
+        outputs = (logits,)
         if labels is not None:
-            loss = self.crf(emissions=logits, tags=labels, mask=attention_mask)
-            outputs = (-1 * loss, ) + outputs
-        return outputs  # (loss), scores
-
+            loss = self.crf(emissions = logits, tags=labels, mask=attention_mask)
+            outputs =(-1*loss,)+outputs
+        return outputs # (loss), scores
 
 class MegatronBertCrfForNer(MegatronBertPreTrainedModel):
     def __init__(self, config):
@@ -101,20 +76,13 @@ class MegatronBertCrfForNer(MegatronBertPreTrainedModel):
         self.crf = CRF(num_tags=config.num_labels, batch_first=True)
         self.init_weights()
 
-    def forward(self,
-                input_ids,
-                token_type_ids=None,
-                attention_mask=None,
-                labels=None,
-                input_lens=None):
-        outputs = self.bert(input_ids=input_ids,
-                            attention_mask=attention_mask,
-                            token_type_ids=token_type_ids)
+    def forward(self, input_ids, token_type_ids=None, attention_mask=None,labels=None,input_lens=None):
+        outputs =self.bert(input_ids = input_ids,attention_mask=attention_mask,token_type_ids=token_type_ids)
         sequence_output = outputs[0]
         sequence_output = self.dropout(sequence_output)
         logits = self.classifier(sequence_output)
-        outputs = (logits, )
+        outputs = (logits,)
         if labels is not None:
-            loss = self.crf(emissions=logits, tags=labels, mask=attention_mask)
-            outputs = (-1 * loss, ) + outputs
-        return outputs  # (loss), scores
+            loss = self.crf(emissions = logits, tags=labels, mask=attention_mask)
+            outputs =(-1*loss,)+outputs
+        return outputs # (loss), scores

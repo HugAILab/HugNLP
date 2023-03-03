@@ -29,7 +29,7 @@ class AddPromptIntoExample:
         if self.tokenizer is not None:
             self.special_token_mapping = get_special_token_mapping(
                 tokenizer=self.tokenizer)
-        '''
+        """
         template: [<template for sentence1>, <template for sentence2>]
         <template for sentence1>: {"prefix_template": xx, "suffix_template": xx}
         <template for sentence2>: {"prefix_template": xx, "suffix_template": xx}
@@ -40,7 +40,7 @@ class AddPromptIntoExample:
         sentence2_key: hypothesis
         template: [None, {"prefix_template": " ? <mask> , ", "suffix_template": ""}],
 
-        '''
+        """
 
     def set_tokenizer(self, tokenizer: AutoTokenizer):
         assert tokenizer is not None
@@ -50,47 +50,33 @@ class AddPromptIntoExample:
 
     def prompt_preprocess_function(self, examples):
         def replace_mask_token(template):
-            return template.replace(
-                '<mask>',
-                self.tokenizer.convert_ids_to_tokens(
-                    self.special_token_mapping['mask']))
+            return template.replace("<mask>", self.tokenizer.convert_ids_to_tokens(self.special_token_mapping["mask"]))
 
         sequence1_prefix_template = replace_mask_token(
-            self.template[0]['prefix_template'] if self.
-            template[0] is not None else '')
+            self.template[0]["prefix_template"] if self.template[0] is not None else ""
+        )
         sequence1_suffix_template = replace_mask_token(
-            self.template[0]['suffix_template'] if self.
-            template[0] is not None else '')
+            self.template[0]["suffix_template"] if self.template[0] is not None else ""
+        )
         sequence2_prefix_template = replace_mask_token(
-            self.template[1]['prefix_template'] if self.
-            template[1] is not None else '')
+            self.template[1]["prefix_template"] if self.template[1] is not None else ""
+        )
         sequence2_suffix_template = replace_mask_token(
-            self.template[1]['suffix_template'] if self.
-            template[1] is not None else '')
+            self.template[1]["suffix_template"] if self.template[1] is not None else ""
+        )
         example_num = len(examples[self.sentence1_key])
         for example_id in range(example_num):
             sequence1 = examples[self.sentence1_key][example_id]
             if self.sentence2_key is None:
-                sequence1 = sequence1[:self.data_args.max_seq_length -
-                                      len(sequence1_suffix_template) - 10]
+                sequence1 = sequence1[:self.data_args.max_seq_length - len(sequence1_suffix_template) - 10]
             else:
-                sequence1 = sequence1[:self.data_args.max_seq_length // 2 -
-                                      len(sequence1_suffix_template) - 10]
-
-            examples[self.sentence1_key][example_id] = '{}{}{}'.format(
-                sequence1_prefix_template, sequence1,
-                sequence1_suffix_template)
+                sequence1 = sequence1[:self.data_args.max_seq_length // 2 - len(sequence1_suffix_template) - 10]
+            examples[self.sentence1_key][example_id] = "{}{}{}".format(sequence1_prefix_template, sequence1, sequence1_suffix_template)
 
             if self.sentence2_key is not None:
                 sequence2 = examples[self.sentence2_key][example_id]
-                sequence2 = sequence2[:self.data_args.max_seq_length -
-                                      len(sequence1) -
-                                      len(sequence1_prefix_template) -
-                                      len(sequence1_suffix_template) -
-                                      len(sequence2_prefix_template) - 10]
-                examples[self.sentence2_key][example_id] = '{}{}{}'.format(
-                    sequence2_prefix_template, sequence2,
-                    sequence2_suffix_template)
+                sequence2 = sequence2[:self.data_args.max_seq_length - len(sequence1) - len(sequence1_prefix_template) - len(sequence1_suffix_template) - len(sequence2_prefix_template) - 10]
+                examples[self.sentence2_key][example_id] = "{}{}{}".format(sequence2_prefix_template, sequence2, sequence2_suffix_template)
         return examples
 
     def obtain_label_word_list(self):
@@ -103,11 +89,11 @@ class AddPromptIntoExample:
 
         for key in label_to_word:
             # For RoBERTa/BART/T5, tokenization also considers space, so we use space+word as label words.
-            if label_to_word[key][0] not in ['<', '[', '.', ',']:
+            if label_to_word[key][0] not in ["<", "[", ".", ","]:
                 # Make sure space+word is in the vocabulary
-                # assert len(self.tokenizer.tokenize(' ' + label_to_word[key])) == 1
+                # assert len(self.tokenizer.tokenize(" " + label_to_word[key])) == 1
                 label_to_word[key] = self.tokenizer.convert_tokens_to_ids(
-                    self.tokenizer.tokenize(' ' + label_to_word[key])[0])
+                    self.tokenizer.tokenize(" " + label_to_word[key])[0])
             else:
                 label_to_word[key] = self.tokenizer.convert_tokens_to_ids(
                     label_to_word[key])
@@ -116,6 +102,6 @@ class AddPromptIntoExample:
             label_word_list = [label_to_word[label] for label in label_list]
         else:
             # Regression task
-            # '0' represents low polarity and '1' represents high polarity.
-            label_word_list = [label_to_word[label] for label in ['0', '1']]
+            # "0" represents low polarity and "1" represents high polarity.
+            label_word_list = [label_to_word[label] for label in ["0", "1"]]
         return label_word_list

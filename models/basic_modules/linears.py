@@ -2,7 +2,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-
 # A simple MLP layer
 class FeedForwardNetwork(nn.Module):
     def __init__(self, input_size, hidden_size, output_size, dropout_rate=0):
@@ -12,12 +11,9 @@ class FeedForwardNetwork(nn.Module):
         self.linear2 = nn.Linear(hidden_size, output_size)
 
     def forward(self, x):
-        x_proj = F.dropout(F.relu(self.linear1(x)),
-                           p=self.dropout_rate,
-                           training=self.training)
+        x_proj = F.dropout(F.relu(self.linear1(x)), p=self.dropout_rate, training=self.training)
         x_proj = self.linear2(x_proj)
         return x_proj
-
 
 # Span Prediction for Start Position
 class PoolerStartLogits(nn.Module):
@@ -28,7 +24,6 @@ class PoolerStartLogits(nn.Module):
     def forward(self, hidden_states, p_mask=None):
         x = self.dense(hidden_states)
         return x
-
 
 # Span Prediction for End Position
 class PoolerEndLogits(nn.Module):

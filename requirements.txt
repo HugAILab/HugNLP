@@ -6,7 +6,7 @@ pymysql
 roformer
 sentence-transformers
 sklearn
-torch==1.7.1
+torch==1.8.1
 tqdm
 transformers==4.21.2
 ujson

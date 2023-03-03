@@ -11,8 +11,9 @@ logger = logging.getLogger(__name__)
 
 
 class LoggerCallback(TrainerCallback):
+
     def __init__(self):
-        """processbar有一份输出，loss等的变化只写到filehandler中."""
+        """processbar有一份输出，loss等的变化只写到filehandler中"""
         for handler in logger.parent.handlers:
             if type(handler) == logging.FileHandler:
                 logger.addHandler(handler)
@@ -22,6 +23,5 @@ class LoggerCallback(TrainerCallback):
         if state.is_world_process_zero:
             logger.info(str(logs))
 
-    def on_step_end(self, args: TrainingArguments, state: TrainerState,
-                    control: TrainerControl, **kwargs):
+    def on_step_end(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, **kwargs):
         pass

@@ -1,4 +1,6 @@
-"""Head Tuning with Prefix / Adapter."""
+"""
+Head Tuning with Prefix / Adapter
+"""
 import torch
 from torch._C import NoopLogger
 import torch.nn
@@ -16,10 +18,11 @@ from models.basic_modules.prefix_encoder import PrefixEncoder
 from models.basic_modules.adapter import BertAdaModel, RobertaAdaModel, init_adapter
 from tools.model_utils.parameter_freeze import ParameterFreeze
 
+
+
 freezer = ParameterFreeze()
 
 ## ======== BERT ========
-
 
 #  Vanilla Fine-tuning For BERT
 class BertForSequenceClassification(BertPreTrainedModel):
@@ -33,12 +36,11 @@ class BertForSequenceClassification(BertPreTrainedModel):
             self.bert = freezer.freeze_lm(self.bert)
 
         self.dropout = torch.nn.Dropout(config.hidden_dropout_prob)
-        self.classifier = torch.nn.Linear(config.hidden_size,
-                                          config.num_labels)
+        self.classifier = torch.nn.Linear(config.hidden_size, config.num_labels)
 
         self.init_weights()
 
-    def freeze_backbone(self, use_freezing: bool = True):
+    def freeze_backbone(self, use_freezing: bool=True):
         if use_freezing:
             self.bert = freezer.freeze_lm(self.bert)
         else:
@@ -90,29 +92,27 @@ class BertForSequenceClassification(BertPreTrainedModel):
         if labels is not None:
             if self.config.problem_type is None:
                 if self.num_labels == 1:
-                    self.config.problem_type = 'regression'
-                elif self.num_labels > 1 and (labels.dtype == torch.long
-                                              or labels.dtype == torch.int):
-                    self.config.problem_type = 'single_label_classification'
+                    self.config.problem_type = "regression"
+                elif self.num_labels > 1 and (labels.dtype == torch.long or labels.dtype == torch.int):
+                    self.config.problem_type = "single_label_classification"
                 else:
-                    self.config.problem_type = 'multi_label_classification'
+                    self.config.problem_type = "multi_label_classification"
 
-            if self.config.problem_type == 'regression':
+            if self.config.problem_type == "regression":
                 loss_fct = MSELoss()
                 if self.num_labels == 1:
                     loss = loss_fct(logits.squeeze(), labels.squeeze())
                 else:
                     loss = loss_fct(logits, labels)
-            elif self.config.problem_type == 'single_label_classification':
+            elif self.config.problem_type == "single_label_classification":
                 loss_fct = CrossEntropyLoss()
-                loss = loss_fct(logits.view(-1, self.num_labels),
-                                labels.view(-1))
-            elif self.config.problem_type == 'multi_label_classification':
+                loss = loss_fct(logits.view(-1, self.num_labels), labels.view(-1))
+            elif self.config.problem_type == "multi_label_classification":
                 loss_fct = BCEWithLogitsLoss()
                 loss = loss_fct(logits, labels)
         if not return_dict:
-            output = (logits, ) + outputs[2:]
-            return ((loss, ) + output) if loss is not None else output
+            output = (logits,) + outputs[2:]
+            return ((loss,) + output) if loss is not None else output
 
         return SequenceClassifierOutput(
             loss=loss,
@@ -120,7 +120,6 @@ class BertForSequenceClassification(BertPreTrainedModel):
             hidden_states=outputs.hidden_states,
             attentions=outputs.attentions,
         )
-
 
 #  Prefix-tuning For BERT
 class BertPrefixForSequenceClassification(BertPreTrainedModel):
@@ -130,8 +129,7 @@ class BertPrefixForSequenceClassification(BertPreTrainedModel):
         self.config = config
         self.bert = BertModel(config)
         self.dropout = torch.nn.Dropout(config.hidden_dropout_prob)
-        self.classifier = torch.nn.Linear(config.hidden_size,
-                                          config.num_labels)
+        self.classifier = torch.nn.Linear(config.hidden_size, config.num_labels)
 
         # for param in self.bert.parameters():
         #     param.requires_grad = False
@@ -155,22 +153,25 @@ class BertPrefixForSequenceClassification(BertPreTrainedModel):
         for name, param in self.named_parameters():
             all_param += param.numel()
         total_param = all_param - bert_param
-        print('total param is {}'.format(total_param))  # 9860105
+        print("total param is {}".format(total_param)) # 9860105
 
-    def freeze_backbone(self, use_freezing: bool = True):
+    def freeze_backbone(self, use_freezing: bool=True):
         if use_freezing:
             self.bert = freezer.freeze_lm(self.bert)
         else:
             self.bert = freezer.unfreeze_lm(self.bert)
 
     def get_prompt(self, batch_size):
-        prefix_tokens = self.prefix_tokens.unsqueeze(0).expand(
-            batch_size, -1).to(self.bert.device)
+        prefix_tokens = self.prefix_tokens.unsqueeze(0).expand(batch_size, -1).to(self.bert.device)
         past_key_values = self.prefix_encoder(prefix_tokens)
         # bsz, seqlen, _ = past_key_values.shape
-        past_key_values = past_key_values.view(batch_size, self.pre_seq_len,
-                                               self.n_layer * 2, self.n_head,
-                                               self.n_embd)
+        past_key_values = past_key_values.view(
+            batch_size,
+            self.pre_seq_len,
+            self.n_layer * 2,
+            self.n_head,
+            self.n_embd
+        )
         past_key_values = self.dropout(past_key_values)
         past_key_values = past_key_values.permute([2, 0, 3, 1, 4]).split(2)
         return past_key_values
@@ -196,15 +197,11 @@ class BertPrefixForSequenceClassification(BertPreTrainedModel):
 
         batch_size = input_ids.shape[0]
         past_key_values = self.get_prompt(batch_size=batch_size)
-        prefix_attention_mask = torch.ones(batch_size, self.pre_seq_len).to(
-            self.bert.device)
-        attention_mask = torch.cat((prefix_attention_mask, attention_mask),
-                                   dim=1)
+        prefix_attention_mask = torch.ones(batch_size, self.pre_seq_len).to(self.bert.device)
+        attention_mask = torch.cat((prefix_attention_mask, attention_mask), dim=1)
 
         if position_ids is None:
-            position_ids = torch.tensor([
-                i for i in range(input_ids.shape[-1])
-            ]).expand(batch_size, -1).to(self.bert.device)
+            position_ids = torch.tensor([i for i in range(input_ids.shape[-1])]).expand(batch_size, -1).to(self.bert.device)
 
         outputs = self.bert(
             input_ids,
@@ -228,29 +225,27 @@ class BertPrefixForSequenceClassification(BertPreTrainedModel):
         if labels is not None:
             if self.config.problem_type is None:
                 if self.num_labels == 1:
-                    self.config.problem_type = 'regression'
-                elif self.num_labels > 1 and (labels.dtype == torch.long
-                                              or labels.dtype == torch.int):
-                    self.config.problem_type = 'single_label_classification'
+                    self.config.problem_type = "regression"
+                elif self.num_labels > 1 and (labels.dtype == torch.long or labels.dtype == torch.int):
+                    self.config.problem_type = "single_label_classification"
                 else:
-                    self.config.problem_type = 'multi_label_classification'
+                    self.config.problem_type = "multi_label_classification"
 
-            if self.config.problem_type == 'regression':
+            if self.config.problem_type == "regression":
                 loss_fct = MSELoss()
                 if self.num_labels == 1:
                     loss = loss_fct(logits.squeeze(), labels.squeeze())
                 else:
                     loss = loss_fct(logits, labels)
-            elif self.config.problem_type == 'single_label_classification':
+            elif self.config.problem_type == "single_label_classification":
                 loss_fct = CrossEntropyLoss()
-                loss = loss_fct(logits.view(-1, self.num_labels),
-                                labels.view(-1))
-            elif self.config.problem_type == 'multi_label_classification':
+                loss = loss_fct(logits.view(-1, self.num_labels), labels.view(-1))
+            elif self.config.problem_type == "multi_label_classification":
                 loss_fct = BCEWithLogitsLoss()
                 loss = loss_fct(logits, labels)
         if not return_dict:
-            output = (logits, ) + outputs[2:]
-            return ((loss, ) + output) if loss is not None else output
+            output = (logits,) + outputs[2:]
+            return ((loss,) + output) if loss is not None else output
 
         return SequenceClassifierOutput(
             loss=loss,
@@ -268,8 +263,7 @@ class BertPtuningForSequenceClassification(BertPreTrainedModel):
         self.bert = BertModel(config)
         self.embeddings = self.bert.embeddings
         self.dropout = torch.nn.Dropout(config.hidden_dropout_prob)
-        self.classifier = torch.nn.Linear(config.hidden_size,
-                                          config.num_labels)
+        self.classifier = torch.nn.Linear(config.hidden_size, config.num_labels)
 
         # for param in self.bert.parameters():
         #     param.requires_grad = False
@@ -283,18 +277,16 @@ class BertPtuningForSequenceClassification(BertPreTrainedModel):
         self.n_embd = config.hidden_size // config.num_attention_heads
 
         self.prefix_tokens = torch.arange(self.pre_seq_len).long()
-        self.prefix_encoder = torch.nn.Embedding(self.pre_seq_len,
-                                                 config.hidden_size)
+        self.prefix_encoder = torch.nn.Embedding(self.pre_seq_len, config.hidden_size)
 
-    def freeze_backbone(self, use_freezing: bool = True):
+    def freeze_backbone(self, use_freezing: bool=True):
         if use_freezing:
             self.bert = freezer.freeze_lm(self.bert)
         else:
             self.bert = freezer.unfreeze_lm(self.bert)
 
     def get_prompt(self, batch_size):
-        prefix_tokens = self.prefix_tokens.unsqueeze(0).expand(
-            batch_size, -1).to(self.bert.device)
+        prefix_tokens = self.prefix_tokens.unsqueeze(0).expand(batch_size, -1).to(self.bert.device)
         prompts = self.prefix_encoder(prefix_tokens)
         return prompts
 
@@ -321,10 +313,8 @@ class BertPtuningForSequenceClassification(BertPreTrainedModel):
         )
         prompts = self.get_prompt(batch_size=batch_size)
         inputs_embeds = torch.cat((prompts, raw_embedding), dim=1)
-        prefix_attention_mask = torch.ones(batch_size, self.pre_seq_len).to(
-            self.bert.device)
-        attention_mask = torch.cat((prefix_attention_mask, attention_mask),
-                                   dim=1)
+        prefix_attention_mask = torch.ones(batch_size, self.pre_seq_len).to(self.bert.device)
+        attention_mask = torch.cat((prefix_attention_mask, attention_mask), dim=1)
 
         outputs = self.bert(
             # input_ids,
@@ -353,29 +343,27 @@ class BertPtuningForSequenceClassification(BertPreTrainedModel):
         if labels is not None:
             if self.config.problem_type is None:
                 if self.num_labels == 1:
-                    self.config.problem_type = 'regression'
-                elif self.num_labels > 1 and (labels.dtype == torch.long
-                                              or labels.dtype == torch.int):
-                    self.config.problem_type = 'single_label_classification'
+                    self.config.problem_type = "regression"
+                elif self.num_labels > 1 and (labels.dtype == torch.long or labels.dtype == torch.int):
+                    self.config.problem_type = "single_label_classification"
                 else:
-                    self.config.problem_type = 'multi_label_classification'
+                    self.config.problem_type = "multi_label_classification"
 
-            if self.config.problem_type == 'regression':
+            if self.config.problem_type == "regression":
                 loss_fct = MSELoss()
                 if self.num_labels == 1:
                     loss = loss_fct(logits.squeeze(), labels.squeeze())
                 else:
                     loss = loss_fct(logits, labels)
-            elif self.config.problem_type == 'single_label_classification':
+            elif self.config.problem_type == "single_label_classification":
                 loss_fct = CrossEntropyLoss()
-                loss = loss_fct(logits.view(-1, self.num_labels),
-                                labels.view(-1))
-            elif self.config.problem_type == 'multi_label_classification':
+                loss = loss_fct(logits.view(-1, self.num_labels), labels.view(-1))
+            elif self.config.problem_type == "multi_label_classification":
                 loss_fct = BCEWithLogitsLoss()
                 loss = loss_fct(logits, labels)
         if not return_dict:
-            output = (logits, ) + outputs[2:]
-            return ((loss, ) + output) if loss is not None else output
+            output = (logits,) + outputs[2:]
+            return ((loss,) + output) if loss is not None else output
 
         return SequenceClassifierOutput(
             loss=loss,
@@ -383,7 +371,6 @@ class BertPtuningForSequenceClassification(BertPreTrainedModel):
             hidden_states=outputs.hidden_states,
             attentions=outputs.attentions,
         )
-
 
 #  Adapter-tuning For BERT
 class BertAdapterForSequenceClassification(BertPreTrainedModel):
@@ -393,19 +380,19 @@ class BertAdapterForSequenceClassification(BertPreTrainedModel):
         self.bert = BertAdaModel(config)
         self.embeddings = self.bert.embeddings
         self.dropout = torch.nn.Dropout(config.hidden_dropout_prob)
-        self.classifier = torch.nn.Linear(config.hidden_size,
-                                          config.num_labels)
+        self.classifier = torch.nn.Linear(config.hidden_size, config.num_labels)
 
         # for param in self.bert.parameters():
         #     param.requires_grad = False
         if self.config.use_freezing:
-            self.bert = freezer.freeze_lm_component(self.bert, 'adapter')
+            self.bert = freezer.freeze_lm_component(self.bert, "adapter")
 
-    def freeze_backbone(self, use_freezing: bool = True):
+    def freeze_backbone(self, use_freezing: bool=True):
         if use_freezing:
-            self.bert = freezer.freeze_lm_component(self.bert, 'adapter')
+            self.bert = freezer.freeze_lm_component(self.bert, "adapter")
         else:
             self.bert = freezer.unfreeze_lm(self.bert)
+
 
     def forward(
         self,
@@ -455,29 +442,27 @@ class BertAdapterForSequenceClassification(BertPreTrainedModel):
         if labels is not None:
             if self.config.problem_type is None:
                 if self.num_labels == 1:
-                    self.config.problem_type = 'regression'
-                elif self.num_labels > 1 and (labels.dtype == torch.long
-                                              or labels.dtype == torch.int):
-                    self.config.problem_type = 'single_label_classification'
+                    self.config.problem_type = "regression"
+                elif self.num_labels > 1 and (labels.dtype == torch.long or labels.dtype == torch.int):
+                    self.config.problem_type = "single_label_classification"
                 else:
-                    self.config.problem_type = 'multi_label_classification'
+                    self.config.problem_type = "multi_label_classification"
 
-            if self.config.problem_type == 'regression':
+            if self.config.problem_type == "regression":
                 loss_fct = MSELoss()
                 if self.num_labels == 1:
                     loss = loss_fct(logits.squeeze(), labels.squeeze())
                 else:
                     loss = loss_fct(logits, labels)
-            elif self.config.problem_type == 'single_label_classification':
+            elif self.config.problem_type == "single_label_classification":
                 loss_fct = CrossEntropyLoss()
-                loss = loss_fct(logits.view(-1, self.num_labels),
-                                labels.view(-1))
-            elif self.config.problem_type == 'multi_label_classification':
+                loss = loss_fct(logits.view(-1, self.num_labels), labels.view(-1))
+            elif self.config.problem_type == "multi_label_classification":
                 loss_fct = BCEWithLogitsLoss()
                 loss = loss_fct(logits, labels)
         if not return_dict:
-            output = (logits, ) + outputs[2:]
-            return ((loss, ) + output) if loss is not None else output
+            output = (logits,) + outputs[2:]
+            return ((loss,) + output) if loss is not None else output
 
         return SequenceClassifierOutput(
             loss=loss,
@@ -487,8 +472,8 @@ class BertAdapterForSequenceClassification(BertPreTrainedModel):
         )
 
 
-# ========= RoBERTa =========
 
+# ========= RoBERTa =========
 
 #  Vanilla Fine-tuning For RoBERTa
 class RobertaForSequenceClassification(RobertaPreTrainedModel):
@@ -500,11 +485,10 @@ class RobertaForSequenceClassification(RobertaPreTrainedModel):
         if self.config.use_freezing:
             self.roberta = freezer.freeze_lm(self.roberta)
         self.dropout = torch.nn.Dropout(config.hidden_dropout_prob)
-        self.classifier = torch.nn.Linear(config.hidden_size,
-                                          config.num_labels)
+        self.classifier = torch.nn.Linear(config.hidden_size, config.num_labels)
         self.init_weights()
 
-    def freeze_backbone(self, use_freezing: bool = True):
+    def freeze_backbone(self, use_freezing: bool=True):
         if use_freezing:
             self.roberta = freezer.freeze_lm(self.roberta)
         else:
@@ -552,29 +536,27 @@ class RobertaForSequenceClassification(RobertaPreTrainedModel):
         if labels is not None:
             if self.config.problem_type is None:
                 if self.num_labels == 1:
-                    self.config.problem_type = 'regression'
-                elif self.num_labels > 1 and (labels.dtype == torch.long
-                                              or labels.dtype == torch.int):
-                    self.config.problem_type = 'single_label_classification'
+                    self.config.problem_type = "regression"
+                elif self.num_labels > 1 and (labels.dtype == torch.long or labels.dtype == torch.int):
+                    self.config.problem_type = "single_label_classification"
                 else:
-                    self.config.problem_type = 'multi_label_classification'
+                    self.config.problem_type = "multi_label_classification"
 
-            if self.config.problem_type == 'regression':
+            if self.config.problem_type == "regression":
                 loss_fct = MSELoss()
                 if self.num_labels == 1:
                     loss = loss_fct(logits.squeeze(), labels.squeeze())
                 else:
                     loss = loss_fct(logits, labels)
-            elif self.config.problem_type == 'single_label_classification':
+            elif self.config.problem_type == "single_label_classification":
                 loss_fct = CrossEntropyLoss()
-                loss = loss_fct(logits.view(-1, self.num_labels),
-                                labels.view(-1))
-            elif self.config.problem_type == 'multi_label_classification':
+                loss = loss_fct(logits.view(-1, self.num_labels), labels.view(-1))
+            elif self.config.problem_type == "multi_label_classification":
                 loss_fct = BCEWithLogitsLoss()
                 loss = loss_fct(logits, labels)
         if not return_dict:
-            output = (logits, ) + outputs[2:]
-            return ((loss, ) + output) if loss is not None else output
+            output = (logits,) + outputs[2:]
+            return ((loss,) + output) if loss is not None else output
 
         return SequenceClassifierOutput(
             loss=loss,
@@ -582,7 +564,6 @@ class RobertaForSequenceClassification(RobertaPreTrainedModel):
             hidden_states=outputs.hidden_states,
             attentions=outputs.attentions,
         )
-
 
 #  Prefix-tuning For RoBERTa
 class RobertaPrefixForSequenceClassification(RobertaPreTrainedModel):
@@ -592,8 +573,7 @@ class RobertaPrefixForSequenceClassification(RobertaPreTrainedModel):
         self.config = config
         self.roberta = RobertaModel(config)
         self.dropout = torch.nn.Dropout(config.hidden_dropout_prob)
-        self.classifier = torch.nn.Linear(config.hidden_size,
-                                          config.num_labels)
+        self.classifier = torch.nn.Linear(config.hidden_size, config.num_labels)
         self.init_weights()
 
         for param in self.roberta.parameters():
@@ -614,23 +594,27 @@ class RobertaPrefixForSequenceClassification(RobertaPreTrainedModel):
         for name, param in self.named_parameters():
             all_param += param.numel()
         total_param = all_param - bert_param
-        print('total param is {}'.format(total_param))  # 9860105
+        print("total param is {}".format(total_param)) # 9860105
 
-    def freeze_backbone(self, use_freezing: bool = True):
+    def freeze_backbone(self, use_freezing: bool=True):
         if use_freezing:
             self.roberta = freezer.freeze_lm(self.roberta)
         else:
             self.roberta = freezer.unfreeze_lm(self.roberta)
 
+
     def get_prompt(self, batch_size):
-        prefix_tokens = self.prefix_tokens.unsqueeze(0).expand(
-            batch_size, -1).to(self.roberta.device)
+        prefix_tokens = self.prefix_tokens.unsqueeze(0).expand(batch_size, -1).to(self.roberta.device)
         # print("prefix_tokens.shape=", prefix_tokens.shape)
         past_key_values = self.prefix_encoder(prefix_tokens)
         # print("past_key_values[0].shape=", past_key_values[0].shape)
-        past_key_values = past_key_values.view(batch_size, self.pre_seq_len,
-                                               self.n_layer * 2, self.n_head,
-                                               self.n_embd)
+        past_key_values = past_key_values.view(
+            batch_size,
+            self.pre_seq_len,
+            self.n_layer * 2,
+            self.n_head,
+            self.n_embd
+        )
         # print("past_key_values[0].shape=", past_key_values[0].shape)
         past_key_values = self.dropout(past_key_values)
         past_key_values = past_key_values.permute([2, 0, 3, 1, 4]).split(2)
@@ -654,15 +638,11 @@ class RobertaPrefixForSequenceClassification(RobertaPreTrainedModel):
 
         batch_size = input_ids.shape[0]
         past_key_values = self.get_prompt(batch_size=batch_size)
-        prefix_attention_mask = torch.ones(batch_size, self.pre_seq_len).to(
-            self.roberta.device)
-        attention_mask = torch.cat((prefix_attention_mask, attention_mask),
-                                   dim=1)
+        prefix_attention_mask = torch.ones(batch_size, self.pre_seq_len).to(self.roberta.device)
+        attention_mask = torch.cat((prefix_attention_mask, attention_mask), dim=1)
 
         if position_ids is None:
-            position_ids = torch.tensor([
-                i for i in range(input_ids.shape[-1])
-            ]).expand(batch_size, -1).to(self.roberta.device)
+            position_ids = torch.tensor([i for i in range(input_ids.shape[-1])]).expand(batch_size, -1).to(self.roberta.device)
 
         outputs = self.roberta(
             input_ids,
@@ -688,29 +668,27 @@ class RobertaPrefixForSequenceClassification(RobertaPreTrainedModel):
 
             if self.config.problem_type is None:
                 if self.num_labels == 1:
-                    self.config.problem_type = 'regression'
-                elif self.num_labels > 1 and (labels.dtype == torch.long
-                                              or labels.dtype == torch.int):
-                    self.config.problem_type = 'single_label_classification'
+                    self.config.problem_type = "regression"
+                elif self.num_labels > 1 and (labels.dtype == torch.long or labels.dtype == torch.int):
+                    self.config.problem_type = "single_label_classification"
                 else:
-                    self.config.problem_type = 'multi_label_classification'
+                    self.config.problem_type = "multi_label_classification"
 
-            if self.config.problem_type == 'regression':
+            if self.config.problem_type == "regression":
                 loss_fct = MSELoss()
                 if self.num_labels == 1:
                     loss = loss_fct(logits.squeeze(), labels.squeeze())
                 else:
                     loss = loss_fct(logits, labels)
-            elif self.config.problem_type == 'single_label_classification':
+            elif self.config.problem_type == "single_label_classification":
                 loss_fct = CrossEntropyLoss()
-                loss = loss_fct(logits.view(-1, self.num_labels),
-                                labels.view(-1))
-            elif self.config.problem_type == 'multi_label_classification':
+                loss = loss_fct(logits.view(-1, self.num_labels), labels.view(-1))
+            elif self.config.problem_type == "multi_label_classification":
                 loss_fct = BCEWithLogitsLoss()
                 loss = loss_fct(logits, labels)
         if not return_dict:
-            output = (logits, ) + outputs[2:]
-            return ((loss, ) + output) if loss is not None else output
+            output = (logits,) + outputs[2:]
+            return ((loss,) + output) if loss is not None else output
 
         return SequenceClassifierOutput(
             loss=loss,
@@ -718,7 +696,6 @@ class RobertaPrefixForSequenceClassification(RobertaPreTrainedModel):
             hidden_states=outputs.hidden_states,
             attentions=outputs.attentions,
         )
-
 
 #  Prompt-tuning For RoBERTa
 class RobertaPtuningForSequenceClassification(RobertaPreTrainedModel):
@@ -728,8 +705,7 @@ class RobertaPtuningForSequenceClassification(RobertaPreTrainedModel):
         self.roberta = RobertaModel(config)
         self.embeddings = self.roberta.embeddings
         self.dropout = torch.nn.Dropout(config.hidden_dropout_prob)
-        self.classifier = torch.nn.Linear(config.hidden_size,
-                                          config.num_labels)
+        self.classifier = torch.nn.Linear(config.hidden_size, config.num_labels)
 
         # for param in self.roberta.parameters():
         #     param.requires_grad = False
@@ -743,18 +719,16 @@ class RobertaPtuningForSequenceClassification(RobertaPreTrainedModel):
         self.n_embd = config.hidden_size // config.num_attention_heads
 
         self.prefix_tokens = torch.arange(self.pre_seq_len).long()
-        self.prefix_encoder = torch.nn.Embedding(self.pre_seq_len,
-                                                 config.hidden_size)
+        self.prefix_encoder = torch.nn.Embedding(self.pre_seq_len, config.hidden_size)
 
-    def freeze_backbone(self, use_freezing: bool = True):
+    def freeze_backbone(self, use_freezing: bool=True):
         if use_freezing:
             self.roberta = freezer.freeze_lm(self.roberta)
         else:
             self.roberta = freezer.unfreeze_lm(self.roberta)
 
     def get_prompt(self, batch_size):
-        prefix_tokens = self.prefix_tokens.unsqueeze(0).expand(
-            batch_size, -1).to(self.roberta.device)
+        prefix_tokens = self.prefix_tokens.unsqueeze(0).expand(batch_size, -1).to(self.roberta.device)
         prompts = self.prefix_encoder(prefix_tokens)
         return prompts
 
@@ -783,10 +757,8 @@ class RobertaPtuningForSequenceClassification(RobertaPreTrainedModel):
         inputs_embeds = torch.cat((prompts, raw_embedding), dim=1)
         # print(input_embeddings.shape)
         # exit()
-        prefix_attention_mask = torch.ones(batch_size, self.pre_seq_len).to(
-            self.roberta.device)
-        attention_mask = torch.cat((prefix_attention_mask, attention_mask),
-                                   dim=1)
+        prefix_attention_mask = torch.ones(batch_size, self.pre_seq_len).to(self.roberta.device)
+        attention_mask = torch.cat((prefix_attention_mask, attention_mask), dim=1)
 
         outputs = self.roberta(
             # input_ids,
@@ -815,29 +787,27 @@ class RobertaPtuningForSequenceClassification(RobertaPreTrainedModel):
         if labels is not None:
             if self.config.problem_type is None:
                 if self.num_labels == 1:
-                    self.config.problem_type = 'regression'
-                elif self.num_labels > 1 and (labels.dtype == torch.long
-                                              or labels.dtype == torch.int):
-                    self.config.problem_type = 'single_label_classification'
+                    self.config.problem_type = "regression"
+                elif self.num_labels > 1 and (labels.dtype == torch.long or labels.dtype == torch.int):
+                    self.config.problem_type = "single_label_classification"
                 else:
-                    self.config.problem_type = 'multi_label_classification'
+                    self.config.problem_type = "multi_label_classification"
 
-            if self.config.problem_type == 'regression':
+            if self.config.problem_type == "regression":
                 loss_fct = MSELoss()
                 if self.num_labels == 1:
                     loss = loss_fct(logits.squeeze(), labels.squeeze())
                 else:
                     loss = loss_fct(logits, labels)
-            elif self.config.problem_type == 'single_label_classification':
+            elif self.config.problem_type == "single_label_classification":
                 loss_fct = CrossEntropyLoss()
-                loss = loss_fct(logits.view(-1, self.num_labels),
-                                labels.view(-1))
-            elif self.config.problem_type == 'multi_label_classification':
+                loss = loss_fct(logits.view(-1, self.num_labels), labels.view(-1))
+            elif self.config.problem_type == "multi_label_classification":
                 loss_fct = BCEWithLogitsLoss()
                 loss = loss_fct(logits, labels)
         if not return_dict:
-            output = (logits, ) + outputs[2:]
-            return ((loss, ) + output) if loss is not None else output
+            output = (logits,) + outputs[2:]
+            return ((loss,) + output) if loss is not None else output
 
         return SequenceClassifierOutput(
             loss=loss,
@@ -845,7 +815,6 @@ class RobertaPtuningForSequenceClassification(RobertaPreTrainedModel):
             hidden_states=outputs.hidden_states,
             attentions=outputs.attentions,
         )
-
 
 #  Adapter-tuning For RoBERTa
 class RobertaAdapterForSequenceClassification(RobertaPreTrainedModel):
@@ -855,18 +824,17 @@ class RobertaAdapterForSequenceClassification(RobertaPreTrainedModel):
         self.roberta = RobertaAdaModel(config)
         self.embeddings = self.roberta.embeddings
         self.dropout = torch.nn.Dropout(config.hidden_dropout_prob)
-        self.classifier = torch.nn.Linear(config.hidden_size,
-                                          config.num_labels)
+        self.classifier = torch.nn.Linear(config.hidden_size, config.num_labels)
         self.init_weights()
         # for param in self.roberta.parameters():
         #     param.requires_grad = False
         self.roberta = init_adapter(self.roberta)
         if self.config.use_freezing:
-            self.roberta = freezer.freeze_lm_component(self.roberta, 'adapter')
+            self.roberta = freezer.freeze_lm_component(self.roberta, "adapter")
 
-    def freeze_backbone(self, use_freezing: bool = True):
+    def freeze_backbone(self, use_freezing: bool=True):
         if use_freezing:
-            self.roberta = freezer.freeze_lm_component(self.roberta, 'adapter')
+            self.roberta = freezer.freeze_lm_component(self.roberta, "adapter")
         else:
             self.roberta = freezer.unfreeze_lm(self.roberta)
 
@@ -919,29 +887,27 @@ class RobertaAdapterForSequenceClassification(RobertaPreTrainedModel):
         if labels is not None:
             if self.config.problem_type is None:
                 if self.num_labels == 1:
-                    self.config.problem_type = 'regression'
-                elif self.num_labels > 1 and (labels.dtype == torch.long
-                                              or labels.dtype == torch.int):
-                    self.config.problem_type = 'single_label_classification'
+                    self.config.problem_type = "regression"
+                elif self.num_labels > 1 and (labels.dtype == torch.long or labels.dtype == torch.int):
+                    self.config.problem_type = "single_label_classification"
                 else:
-                    self.config.problem_type = 'multi_label_classification'
+                    self.config.problem_type = "multi_label_classification"
 
-            if self.config.problem_type == 'regression':
+            if self.config.problem_type == "regression":
                 loss_fct = MSELoss()
                 if self.num_labels == 1:
                     loss = loss_fct(logits.squeeze(), labels.squeeze())
                 else:
                     loss = loss_fct(logits, labels)
-            elif self.config.problem_type == 'single_label_classification':
+            elif self.config.problem_type == "single_label_classification":
                 loss_fct = CrossEntropyLoss()
-                loss = loss_fct(logits.view(-1, self.num_labels),
-                                labels.view(-1))
-            elif self.config.problem_type == 'multi_label_classification':
+                loss = loss_fct(logits.view(-1, self.num_labels), labels.view(-1))
+            elif self.config.problem_type == "multi_label_classification":
                 loss_fct = BCEWithLogitsLoss()
                 loss = loss_fct(logits, labels)
         if not return_dict:
-            output = (logits, ) + outputs[2:]
-            return ((loss, ) + output) if loss is not None else output
+            output = (logits,) + outputs[2:]
+            return ((loss,) + output) if loss is not None else output
 
         return SequenceClassifierOutput(
             loss=loss,
@@ -952,7 +918,6 @@ class RobertaAdapterForSequenceClassification(RobertaPreTrainedModel):
 
 
 # ========= DeBERTa =========
-
 
 #  Prefix-tuning For DeBERTa
 class DebertaPrefixForSequenceClassification(DebertaPreTrainedModel):
@@ -988,22 +953,25 @@ class DebertaPrefixForSequenceClassification(DebertaPreTrainedModel):
         for name, param in self.named_parameters():
             all_param += param.numel()
         total_param = all_param - deberta_param
-        print('total param is {}'.format(total_param))  # 9860105
+        print("total param is {}".format(total_param)) # 9860105
 
-    def freeze_backbone(self, use_freezing: bool = True):
+    def freeze_backbone(self, use_freezing: bool=True):
         if use_freezing:
             self.deberta = freezer.freeze_lm(self.deberta)
         else:
             self.deberta = freezer.unfreeze_lm(self.deberta)
 
     def get_prompt(self, batch_size):
-        prefix_tokens = self.prefix_tokens.unsqueeze(0).expand(
-            batch_size, -1).to(self.deberta.device)
+        prefix_tokens = self.prefix_tokens.unsqueeze(0).expand(batch_size, -1).to(self.deberta.device)
         past_key_values = self.prefix_encoder(prefix_tokens)
         # bsz, seqlen, _ = past_key_values.shape
-        past_key_values = past_key_values.view(batch_size, self.pre_seq_len,
-                                               self.n_layer * 2, self.n_head,
-                                               self.n_embd)
+        past_key_values = past_key_values.view(
+            batch_size,
+            self.pre_seq_len,
+            self.n_layer * 2,
+            self.n_head,
+            self.n_embd
+        )
         past_key_values = self.dropout(past_key_values)
         past_key_values = past_key_values.permute([2, 0, 3, 1, 4]).split(2)
         return past_key_values
@@ -1025,10 +993,8 @@ class DebertaPrefixForSequenceClassification(DebertaPreTrainedModel):
 
         batch_size = input_ids.shape[0]
         past_key_values = self.get_prompt(batch_size=batch_size)
-        prefix_attention_mask = torch.ones(batch_size, self.pre_seq_len).to(
-            self.deberta.device)
-        attention_mask = torch.cat((prefix_attention_mask, attention_mask),
-                                   dim=1)
+        prefix_attention_mask = torch.ones(batch_size, self.pre_seq_len).to(self.deberta.device)
+        attention_mask = torch.cat((prefix_attention_mask, attention_mask), dim=1)
 
         outputs = self.deberta(
             input_ids,
@@ -1058,23 +1024,18 @@ class DebertaPrefixForSequenceClassification(DebertaPreTrainedModel):
                 label_index = (labels >= 0).nonzero()
                 labels = labels.long()
                 if label_index.size(0) > 0:
-                    labeled_logits = torch.gather(
-                        logits, 0,
-                        label_index.expand(label_index.size(0),
-                                           logits.size(1)))
+                    labeled_logits = torch.gather(logits, 0, label_index.expand(label_index.size(0), logits.size(1)))
                     labels = torch.gather(labels, 0, label_index.view(-1))
                     loss_fct = CrossEntropyLoss()
-                    loss = loss_fct(
-                        labeled_logits.view(-1, self.num_labels).float(),
-                        labels.view(-1))
+                    loss = loss_fct(labeled_logits.view(-1, self.num_labels).float(), labels.view(-1))
                 else:
                     loss = torch.tensor(0).to(logits)
             else:
                 log_softmax = torch.nn.LogSoftmax(-1)
                 loss = -((log_softmax(logits) * labels).sum(-1)).mean()
         if not return_dict:
-            output = (logits, ) + outputs[1:]
-            return ((loss, ) + output) if loss is not None else output
+            output = (logits,) + outputs[1:]
+            return ((loss,) + output) if loss is not None else output
         else:
             return SequenceClassifierOutput(
                 loss=loss,

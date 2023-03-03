@@ -4,7 +4,9 @@ from sklearn.metrics import matthews_corrcoef, f1_score
 
 
 class ClassificationMetric(Metric):
-    """use Accuracy/Micro-F1 as classification metric."""
+    """
+    use Accuracy/Micro-F1 as classification metric
+    """
     def __init__(self):
         super(ClassificationMetric, self).__init__()
 
@@ -18,12 +20,10 @@ class ClassificationMetric(Metric):
             correctness += 1. if golden_v == predictions[golden_k] else 0.
             golden_list.append(golden_v)
             prediction_list.append(predictions[golden_k])
-        acc = round((correctness / total), 4)
-        f1 = f1_score(y_true=golden_list,
-                      y_pred=prediction_list,
-                      average='macro')
+        acc = round((correctness/total), 4)
+        f1 = f1_score(y_true=golden_list, y_pred=prediction_list, average="macro")
         return {
-            'acc': acc,
-            'f1': f1,
-            'acc_and_f1': (acc + f1) / 2,
+            "acc": acc,
+            "f1": f1,
+            "acc_and_f1": (acc + f1) / 2,
         }

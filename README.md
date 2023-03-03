@@ -64,7 +64,7 @@ We integrate some novel approaches into HugNLP, such as PET, P-tuning, etc.
 ### Instruction Tuning & In-Context Learning
 
 Instruction-tuning and in-context learning enable few/zero-shot learning without parameter update, which aims to concatenate the task-aware instructions or example-based demonstrations to prompt GPT-style PLMs to generate reliable responses.
-So, all the NLP tasks can be unified into the same format and can substantially improve the models' generalization.
+So, all the NLP tasks can be unified into the same format and can substantially improve the models" generalization.
 Inspired by this idea, we extend it into other two paradigms:
 
 1. extractive-style paradigm: we unify various NLP tasks into span extraction, which is the same as extractive question answering.
@@ -137,9 +137,9 @@ Quick use HugIE for Chinese information extraction：
 
 ```python
 from applications.information_extraction.HugIE.api_test import HugIEAPI
-model_type = 'bert'
-hugie_model_name_or_path = 'wjn1996/wjn1996-hugnlp-hugie-large-zh'
-hugie = HugIEAPI('bert', hugie_model_name_or_path)
+model_type = "bert"
+hugie_model_name_or_path = "wjn1996/wjn1996-hugnlp-hugie-large-zh"
+hugie = HugIEAPI("bert", hugie_model_name_or_path)
 text = "央广网北京2月23日消息 据中国地震台网正式测定，2月23日8时37分在塔吉克斯坦发生7.2级地震，震源深度10公里，震中位于北纬37.98度，东经73.29度，距我国边境线最近约82公里，地震造成新疆喀什等地震感强烈。"
 
 entity = "塔吉克斯坦地震"
@@ -154,9 +154,9 @@ print("\n\n")
 # 事件信息输出结果：
 entity:塔吉克斯坦地震, relation:震源位置
 predictions:
-{0: ['10公里', '距我国边境线最近约82公里', '北纬37.98度，东经73.29度', '北纬37.98度，东经73.29度，距我国边境线最近约82公里']}
+{0: ["10公里", "距我国边境线最近约82公里", "北纬37.98度，东经73.29度", "北纬37.98度，东经73.29度，距我国边境线最近约82公里"]}
 topk_predictions:
-{0: [{'answer': '10公里', 'prob': 0.9895901083946228, 'pos': [(80, 84)]}, {'answer': '距我国边境线最近约82公里', 'prob': 0.8584909439086914, 'pos': [(107, 120)]}, {'answer': '北纬37.98度，东经73.29度', 'prob': 0.7202121615409851, 'pos': [(89, 106)]}, {'answer': '北纬37.98度，东经73.29度，距我国边境线最近约82公里', 'prob': 0.11628123372793198, 'pos': [(89, 120)]}]}
+{0: [{"answer": "10公里", "prob": 0.9895901083946228, "pos": [(80, 84)]}, {"answer": "距我国边境线最近约82公里", "prob": 0.8584909439086914, "pos": [(107, 120)]}, {"answer": "北纬37.98度，东经73.29度", "prob": 0.7202121615409851, "pos": [(89, 106)]}, {"answer": "北纬37.98度，东经73.29度，距我国边境线最近约82公里", "prob": 0.11628123372793198, "pos": [(89, 120)]}]}
 """
 
 entity = "塔吉克斯坦地震"
@@ -171,9 +171,9 @@ print("\n\n")
 # 事件信息输出结果：
 entity:塔吉克斯坦地震, relation:时间
 predictions:
-{0: ['2月23日8时37分']}
+{0: ["2月23日8时37分"]}
 topk_predictions:
-{0: [{'answer': '2月23日8时37分', 'prob': 0.9999995231628418, 'pos': [(49, 59)]}]}
+{0: [{"answer": "2月23日8时37分", "prob": 0.9999995231628418, "pos": [(49, 59)]}]}
 """
 ```
 
