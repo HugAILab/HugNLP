@@ -4,8 +4,8 @@ jieba
 mlflow
 pymysql
 roformer
+scikit-learn
 sentence-transformers
-sklearn
 torch==1.8.1
 tqdm
 transformers==4.21.2
