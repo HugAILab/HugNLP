@@ -7,7 +7,7 @@
 <p align="center" style="font-size:22px;"> <b> Welcome to use HugNLP. 🤗 Hugging for NLP! </b>
 <p>
 
-[![Build Status](https://app.travis-ci.com/nchen909/HugNLP.svg?branch=main)](https://app.travis-ci.com/github/wjn1996/HugNLP)[![GitHub pull-requests](https://img.shields.io/github/issues-pr/wjn1996/HugNLP.svg)](https://github.com/wjn1996/HugNLP/pull/)[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/wjn1996/HugNLP/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/wjn1996/HugNLP/tree/main)  [![GitHub pull-requests](https://img.shields.io/github/issues-pr/wjn1996/HugNLP.svg)](https://github.com/wjn1996/HugNLP/pull/)  [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 
 # About HugNLP
 
