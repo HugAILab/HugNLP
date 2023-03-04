@@ -23,6 +23,8 @@ freezer = ParameterFreeze()
 
 logger = logging.getLogger(__name__)
 
+# Note: 如果mask_pos为None，请检查输入的模板是否有<mask>标记，是否修改data_collator文件
+
 """
 Vanilla Prompt-tuning BERT
 """
@@ -440,6 +442,8 @@ class PromptBertPrefixForSequenceClassification(BertPreTrainedModel):
         # Exit early and only return mask logits.
         if return_full_softmax:
             return prediction_mask_scores
+
+        # print("prediction_mask_scores.shape=", prediction_mask_scores.shape) # [batch_size, seq_len, vocab_size]
 
         # Return logits for each label
         logits = []

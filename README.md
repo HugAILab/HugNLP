@@ -81,7 +81,7 @@ Thus, we present uncertainty-aware self-training. Specifically, we train a teach
 To improve the training efficiency of HugNLP, we also implement parameter-efficient learning, which aims to freeze some parameters in the backbone so that we only tune a few parameters during model training.
 We develop some novel parameter-efficient learning approaches, such as Prefix-tuning, Adapter-tuning, BitFit and LoRA, etc.
 
-# Quick Use
+# Installation
 
 > git clone https://github.com/wjn1996/HugNLP.git
 >
@@ -90,6 +90,80 @@ We develop some novel parameter-efficient learning approaches, such as Prefix-tu
 > python3 setup.py install
 
 At present, the project is still being developed and improved, and there may be some `bugs` in use, please understand. We also look forward to your being able to ask issues or committing some valuable pull requests.
+
+
+# Quick Use
+
+If you want to perform a classification task on user-defined dataset, you can prepare three json files (```train.json```, ```dev.json```, ```test.json```) on a directory. And you can run the script file
+> bash ./application/default_applications/run_seq_cls.sh
+
+Before the experiment, you must define the following parameters in the script file ```run_seq_cls.sh```.
+- --model_name_or_path: the pre-trained model name or path. e.g. bert-base-uncased
+- --data_path: the path of the dataset (including ```train.json```, ```dev.json``` and ```test.json```), e.g. ```./datasets/data_example/cls/```.
+- --user_defined: you must define label_names if there is not exist a ```label_names.txt```.
+
+If you want to use prompt-based fine-tuning, you can add the following parameters:
+- --use_prompt_for_cls
+- ---task_type: one of ```masked_prompt_cls```, ```masked_prompt_prefix_cls```,```masked_prompt_ptuning_cls```, ```masked_prompt_adapter_cls```.
+
+You also should add ```template.json``` and ```label_words_mapping.json```.
+
+If you wang to use parameter-efficient learning, you can add the following parameter:
+- --use_freezing
+
+The example of ```run_seq_cls.sh``` is:
+
+```
+path=chinese-macbert-base
+MODEL_TYPE=bert
+data_path=/wjn/frameworks/HugNLP/datasets/data_example/cls
+TASK_TYPE=head_cls
+len=196
+bz=4 # 8
+epoch=10
+eval_step=50
+wr_step=10
+lr=1e-05
+
+export CUDA_VISIBLE_DEVICES=0,1
+python3 -m torch.distributed.launch --nproc_per_node=2 --master_port=6014 hugnlp_runner.py \
+--model_name_or_path=$path \
+--data_dir=$data_path \
+--output_dir=./outputs/default/sequence_classification\
+--seed=42 \
+--exp_name=default-cls \
+--max_seq_length=$len \
+--max_eval_seq_length=$len \
+--do_train \
+--do_eval \
+--do_predict \
+--per_device_train_batch_size=$bz \
+--per_device_eval_batch_size=4 \
+--gradient_accumulation_steps=1 \
+--evaluation_strategy=steps \
+--learning_rate=$lr \
+--num_train_epochs=$epoch \
+--logging_steps=100000000 \
+--eval_steps=$eval_step \
+--save_steps=$eval_step \
+--save_total_limit=1 \
+--warmup_steps=$wr_step \
+--load_best_model_at_end \
+--report_to=none \
+--task_name=default_cls \
+--task_type=$TASK_TYPE \
+--model_type=$MODEL_TYPE \
+--metric_for_best_model=acc \
+--pad_to_max_length=True \
+--remove_unused_columns=False \
+--overwrite_output_dir \
+--fp16 \
+--label_names=labels \
+--keep_predict_labels \
+--user_defined="label_names=entailment,neutral,contradiction"
+```
+
+More details of how to use other pre-built applications can be found in the [HugNLP Documents]().
 
 # Quick Develop
 
