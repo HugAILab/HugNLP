@@ -15,6 +15,8 @@ from transformers.models.bert import BertTokenizerFast, BertForTokenClassificati
 from transformers.models.roberta.tokenization_roberta import RobertaTokenizer
 # from transformers.models.bert.modeling_bert import BertForSequenceClassification
 from transformers.models.gpt2.tokenization_gpt2_fast import GPT2TokenizerFast
+from transformers.models.bart.tokenization_bart import BartTokenizer
+from transformers.models.t5.tokenization_t5 import T5Tokenizer
 
 
 # from models.deberta import DebertaV2ForMultipleChoice, DebertaForMultipleChoice
@@ -41,7 +43,8 @@ from models.sequence_classification.head_cls import (
     BertForSequenceClassification, BertPrefixForSequenceClassification,
     BertPtuningForSequenceClassification, BertAdapterForSequenceClassification,
     RobertaForSequenceClassification, RobertaPrefixForSequenceClassification,
-    RobertaPtuningForSequenceClassification,RobertaAdapterForSequenceClassification
+    RobertaPtuningForSequenceClassification,RobertaAdapterForSequenceClassification,
+    BartForSequenceClassification
 )
 
 from models.sequence_classification.masked_prompt_cls import (
@@ -75,6 +78,7 @@ CLASSIFICATION_MODEL_CLASSES = {
     "head_cls": {
         "bert": BertForSequenceClassification,
         "roberta": RobertaForSequenceClassification,
+        "bart": BartForSequenceClassification,
     }, # use standard fine-tuning head for cls, e.g., bert+mlp
     "head_prefix_cls": {
         "bert": BertPrefixForSequenceClassification,
@@ -213,5 +217,7 @@ TOKENIZER_CLASSES = {
     "deberta": BertTokenizer,
     "roformer_v2": BertTokenizerFast,
     "gpt2": GPT2TokenizerFast,
-    "megatronbert": BertTokenizerFast
+    "megatronbert": BertTokenizerFast,
+    "bart": BartTokenizer,
+    "t5": T5Tokenizer,
 }

@@ -1,6 +1,8 @@
 #### pre-trained lm path
-path=/wjn/pre-trained-lm/chinese-macbert-base/
-MODEL_TYPE=bert
+# path=/wjn/pre-trained-lm/chinese-macbert-base/
+# MODEL_TYPE=bert
+path=/wjn/pre-trained-lm/bart-base/
+MODEL_TYPE=bart
 
 #### task data path (use should change this path)
 data_path=/wjn/frameworks/HugNLP/datasets/data_example/cls

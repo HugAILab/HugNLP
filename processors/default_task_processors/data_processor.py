@@ -227,10 +227,12 @@ class DefaultSequenceClassificationProcessor(CLSProcessor):
         return func
 
     def get_predict_result(self, logits, examples, stage="dev"):
+        if type(logits) == tuple:
+            logits = logits[0]
         # logits: [test_data_num, label_num]
-        predictions = dict()  # 获取概率最大的作为预测结果
-        topk_result = dict()  # 根据概率取TopK个
-        pseudo_data = list()  # 根据预测的概率生成伪标签数据
+        predictions = dict() # 获取概率最大的作为预测结果
+        topk_result = dict() # 根据概率取TopK个
+        pseudo_data = list() # 根据预测的概率生成伪标签数据
         preds = logits
         preds = np.argmax(preds, axis=1)
 
