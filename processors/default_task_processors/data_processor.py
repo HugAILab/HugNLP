@@ -193,6 +193,8 @@ class DefaultSequenceClassificationProcessor(CLSProcessor):
         # Tokenize the texts
         tokenizer = self.tokenizer
         max_seq_length = self.data_args.max_seq_length
+        if self.model_args.model_type in ["gpt2"]:
+            tokenizer.pad_token = tokenizer.eos_token
 
         def func(examples):
 

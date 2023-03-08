@@ -44,7 +44,7 @@ from models.sequence_classification.head_cls import (
     BertPtuningForSequenceClassification, BertAdapterForSequenceClassification,
     RobertaForSequenceClassification, RobertaPrefixForSequenceClassification,
     RobertaPtuningForSequenceClassification,RobertaAdapterForSequenceClassification,
-    BartForSequenceClassification
+    BartForSequenceClassification, GPT2ForSequenceClassification
 )
 
 from models.sequence_classification.masked_prompt_cls import (
@@ -79,6 +79,7 @@ CLASSIFICATION_MODEL_CLASSES = {
         "bert": BertForSequenceClassification,
         "roberta": RobertaForSequenceClassification,
         "bart": BartForSequenceClassification,
+        "gpt2": GPT2ForSequenceClassification
     }, # use standard fine-tuning head for cls, e.g., bert+mlp
     "head_prefix_cls": {
         "bert": BertPrefixForSequenceClassification,
@@ -121,6 +122,10 @@ CLASSIFICATION_MODEL_CLASSES = {
     }, # use causal lm head for prompt-tuning, e.g., gpt2+lm
 }
 
+TOKEN_CLASSIFICATION_MODEL_CLASSES = {
+
+}
+
 SPAN_EXTRACTION_MODEL_CLASSES = {
     "global_pointer": {
         "bert": BertForEffiGlobalPointer,
@@ -139,7 +144,7 @@ FEWSHOT_MODEL_CLASSES = {
 
 
 CODE_MODEL_CLASSES = {
-
+    "ner": AutoModelForTokenClassification,
 }
 
 # task_type 负责对应model类型
