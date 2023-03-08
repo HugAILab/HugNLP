@@ -7,7 +7,7 @@
 from processors.benchmark.cluemrc.chid_mlm import ChidMLMProcessor
 from processors.benchmark.cluemrc.c3 import C3Processor
 from processors.benchmark.cluemrc.chid import ChidTagProcessor
-from processors.benchmark.cluemrc.cmrc2018 import CMRCProcessor, CMRCGPProcessor
+from processors.benchmark.cluemrc.cmrc2018 import CMRCProcessor, CMRCForGlobalPointerProcessor
 from processors.benchmark.cluemrc.data_processor import CLUEMRCProcessor
 from processors.benchmark.clue.data_processor import CLUEProcessor, TnewsEFLProcessor, CSLEFLProcessor
 from processors.benchmark.cluener.data_processor import CLUENERProcessor
@@ -17,7 +17,7 @@ from processors.benchmark.glue.data_processor import GLUEProcessor
 from processors.pretraining.mlm.data_processor import MLMTextLineProcessor
 # from processor.pretraining.mlm.data_processor import MLMGroupProcessor, MLMFromDisk, MLMLineByLineProcessor, WWMFromDisk
 from processors.pretraining.kg_enhance_plm.data_process import WikiKPPLMSupervisedJsonProcessor
-from processors.pretraining.causal_lm.data_processor import CausalLMITextLineProcessor
+from processors.pretraining.causal_lm.data_processor import CausalLMITextLineProcessor, CausalLMInContextProcessor
 # few-shot ner
 from processors.ner.fewshot_ner.data_processor import SpanProtoFewNERDProcessor, SpanProtoCrossNERProcessor, TokenProtoFewNERDProcessor
 # chinese instruction-tuning
@@ -49,12 +49,13 @@ BENCHMARKS_PROCESSORS = {
     "cmrc": CMRCProcessor,  # clue的cmrc任务
     "chid_mlm": ChidMLMProcessor,
     "clue_mrc_style": CLUEMRCProcessor,  # clue任务转换为mrc模式
+    "cmrc18_global_pointer": CMRCForGlobalPointerProcessor,
     "fewclue_instruction": InstructionMRCForFewCLUEProcessor,
     "glue": GLUEProcessor,  # glue
 }
 
 INSTRUCTION_PROCESSORS = {
-    "zh_mrc_instruction": ChineseExtractiveInstructionProcessor,
+    "zh_mrc_instruction": ChineseExtractiveInstructionProcessor, # 使用mrc
 }
 
 OTHER_PROCESSORS = {
@@ -64,7 +65,7 @@ OTHER_PROCESSORS = {
     # "wwm_from_disk": WWMFromDisk,
     # "mlm_line_by_line": MLMLineByLineProcessor,
     # "mlm_group": MLMGroupProcessor,
-    # "causal_lm_incontext": CausalLMInContextProcessor,
+    "causal_lm_incontext": CausalLMInContextProcessor,
     # "kgpretrain": PretrainWithKGFromDisk,
     # "kgpretrain_v2": KgV2Processor,
 
