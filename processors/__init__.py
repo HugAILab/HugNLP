@@ -58,6 +58,17 @@ INSTRUCTION_PROCESSORS = {
     "zh_mrc_instruction": ChineseExtractiveInstructionProcessor, # 使用mrc
 }
 
+
+
+CODE_PROCESSORS = {
+    "code_clone": None,
+    "code_defect": None,
+    "code_refine": None,
+    "code_translation": None,
+    "code_summarization": None,
+
+}
+
 OTHER_PROCESSORS = {
     "default_cls": DefaultSequenceClassificationProcessor,
     # pre-training language model
