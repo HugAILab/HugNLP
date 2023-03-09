@@ -17,6 +17,7 @@ from transformers.models.roberta.tokenization_roberta import RobertaTokenizer
 from transformers.models.gpt2.tokenization_gpt2_fast import GPT2TokenizerFast
 from transformers.models.bart.tokenization_bart import BartTokenizer
 from transformers.models.t5.tokenization_t5 import T5Tokenizer
+from transformers.models.plbart.tokenization_plbart import PLBartTokenizer
 
 
 # from models.deberta import DebertaV2ForMultipleChoice, DebertaForMultipleChoice
@@ -123,7 +124,7 @@ CLASSIFICATION_MODEL_CLASSES = {
 }
 
 TOKEN_CLASSIFICATION_MODEL_CLASSES = {
-
+    "ner": AutoModelForTokenClassification,
 }
 
 SPAN_EXTRACTION_MODEL_CLASSES = {
@@ -144,7 +145,16 @@ FEWSHOT_MODEL_CLASSES = {
 
 
 CODE_MODEL_CLASSES = {
-    "ner": AutoModelForTokenClassification,
+    "code_cls": {
+        "roberta": None,
+        "codebert": None,
+        "graphcodebert": None,
+        "codet5": None,
+        "plbart": None,
+    },
+    "code_generation": {
+
+    },
 }
 
 # task_type 负责对应model类型
@@ -213,6 +223,7 @@ for model_class in MODEL_CLASSES_LIST:
 
 # model_type 负责对应tokenizer
 TOKENIZER_CLASSES = {
+    # for natural language processing
     "bert": BertTokenizerFast,
     "roberta": RobertaTokenizer,
     "wobert": RoFormerTokenizer,
@@ -225,4 +236,9 @@ TOKENIZER_CLASSES = {
     "megatronbert": BertTokenizerFast,
     "bart": BartTokenizer,
     "t5": T5Tokenizer,
+    # for programming language processing
+    "codebert": BertTokenizer,
+    "graphcodebert": BertTokenizer,
+    "codet5": T5Tokenizer,
+    "plbart": PLBartTokenizer
 }
