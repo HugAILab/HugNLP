@@ -15,6 +15,9 @@ from transformers.models.bert import BertTokenizerFast, BertForTokenClassificati
 from transformers.models.roberta.tokenization_roberta import RobertaTokenizer
 # from transformers.models.bert.modeling_bert import BertForSequenceClassification
 from transformers.models.gpt2.tokenization_gpt2_fast import GPT2TokenizerFast
+from transformers.models.bart.tokenization_bart import BartTokenizer
+from transformers.models.t5.tokenization_t5 import T5Tokenizer
+from transformers.models.plbart.tokenization_plbart import PLBartTokenizer
 
 
 # from models.deberta import DebertaV2ForMultipleChoice, DebertaForMultipleChoice
@@ -41,7 +44,8 @@ from models.sequence_classification.head_cls import (
     BertForSequenceClassification, BertPrefixForSequenceClassification,
     BertPtuningForSequenceClassification, BertAdapterForSequenceClassification,
     RobertaForSequenceClassification, RobertaPrefixForSequenceClassification,
-    RobertaPtuningForSequenceClassification,RobertaAdapterForSequenceClassification
+    RobertaPtuningForSequenceClassification,RobertaAdapterForSequenceClassification,
+    BartForSequenceClassification, GPT2ForSequenceClassification
 )
 
 from models.sequence_classification.masked_prompt_cls import (
@@ -75,6 +79,8 @@ CLASSIFICATION_MODEL_CLASSES = {
     "head_cls": {
         "bert": BertForSequenceClassification,
         "roberta": RobertaForSequenceClassification,
+        "bart": BartForSequenceClassification,
+        "gpt2": GPT2ForSequenceClassification
     }, # use standard fine-tuning head for cls, e.g., bert+mlp
     "head_prefix_cls": {
         "bert": BertPrefixForSequenceClassification,
@@ -117,6 +123,10 @@ CLASSIFICATION_MODEL_CLASSES = {
     }, # use causal lm head for prompt-tuning, e.g., gpt2+lm
 }
 
+TOKEN_CLASSIFICATION_MODEL_CLASSES = {
+    "ner": AutoModelForTokenClassification,
+}
+
 SPAN_EXTRACTION_MODEL_CLASSES = {
     "global_pointer": {
         "bert": BertForEffiGlobalPointer,
@@ -135,9 +145,16 @@ FEWSHOT_MODEL_CLASSES = {
 
 
 CODE_MODEL_CLASSES = {
-    "code_classfication":{
-        "codebert":,
-    }
+    "code_cls": {
+        "roberta": None,
+        "codebert": None,
+        "graphcodebert": None,
+        "codet5": None,
+        "plbart": None,
+    },
+    "code_generation": {
+
+    },
 }
 
 # task_type 负责对应model类型
@@ -206,6 +223,7 @@ for model_class in MODEL_CLASSES_LIST:
 
 # model_type 负责对应tokenizer
 TOKENIZER_CLASSES = {
+    # for natural language processing
     "bert": BertTokenizerFast,
     "roberta": RobertaTokenizer,
     "wobert": RoFormerTokenizer,
@@ -215,5 +233,12 @@ TOKENIZER_CLASSES = {
     "deberta": BertTokenizer,
     "roformer_v2": BertTokenizerFast,
     "gpt2": GPT2TokenizerFast,
-    "megatronbert": BertTokenizerFast
+    "megatronbert": BertTokenizerFast,
+    "bart": BartTokenizer,
+    "t5": T5Tokenizer,
+    # for programming language processing
+    "codebert": BertTokenizer,
+    "graphcodebert": BertTokenizer,
+    "codet5": T5Tokenizer,
+    "plbart": PLBartTokenizer
 }

@@ -278,7 +278,7 @@ class DataCollatorForGlobalPointer:
             return batch
 
 
-class CMRCGPProcessor(CMRCProcessor):
+class CMRCForGlobalPointerProcessor(CMRCProcessor):
     def __init__(self, data_args, training_args, model_args):
         super().__init__(data_args, training_args, model_args, keep_raw_data=True)
         self.sentence1_key = None

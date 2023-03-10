@@ -31,8 +31,8 @@ python3 -m torch.distributed.launch --nproc_per_node=2 --master_port=6013 hugnlp
   --warmup_steps=50 \
   --load_best_model_at_end \
   --report_to=none \
-  --task_name=cmrc_gp \
-  --task_type=bert_global_pointer \
+  --task_name=cmrc18_global_pointer \
+  --task_type=global_pointer \
   --model_type=bert \
   --metric_for_best_model=f1 \
   --pad_to_max_length=True \
