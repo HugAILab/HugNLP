@@ -135,7 +135,9 @@ FEWSHOT_MODEL_CLASSES = {
 
 
 CODE_MODEL_CLASSES = {
-
+    "code_classfication":{
+        "codebert":,
+    }
 }
 
 # task_type 负责对应model类型
