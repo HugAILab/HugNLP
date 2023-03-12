@@ -55,6 +55,11 @@ from models.sequence_classification.masked_prompt_cls import (
     PromptRobertaPrefixForSequenceClassification, PromptRobertaAdapterForSequenceClassification
 )
 
+from models.code.code_classification import (
+    RobertaForCodeClassification, CodeBERTForCodeClassification,
+    GraphCodeBERTForCodeClassification, PLBARTForCodeClassification, CodeT5ForCodeClassification
+)
+
 from models.language_modeling.mlm import BertForMaskedLM
 
 # Models for pre-training
@@ -146,14 +151,18 @@ FEWSHOT_MODEL_CLASSES = {
 
 CODE_MODEL_CLASSES = {
     "code_cls": {
-        "roberta": None,
-        "codebert": None,
-        "graphcodebert": None,
-        "codet5": None,
-        "plbart": None,
+        "roberta": RobertaForCodeClassification,
+        "codebert": CodeBERTForCodeClassification,
+        "graphcodebert": GraphCodeBERTForCodeClassification,
+        "codet5": CodeT5ForCodeClassification,
+        "plbart": PLBARTForCodeClassification,
     },
     "code_generation": {
-
+        # "roberta": RobertaForConditionalGeneration,
+        # "codebert": BertForConditionalGeneration,
+        # "graphcodebert": BertForConditionalGeneration,
+        # "codet5": T5ForConditionalGeneration,
+        # "plbart": BartForConditionalGeneration,
     },
 }
 
@@ -237,8 +246,8 @@ TOKENIZER_CLASSES = {
     "bart": BartTokenizer,
     "t5": T5Tokenizer,
     # for programming language processing
-    "codebert": BertTokenizer,
-    "graphcodebert": BertTokenizer,
-    "codet5": T5Tokenizer,
+    "codebert": RobertaTokenizer,
+    "graphcodebert": RobertaTokenizer,
+    "codet5": RobertaTokenizer,
     "plbart": PLBartTokenizer
 }

@@ -22,7 +22,9 @@ from processors.pretraining.causal_lm.data_processor import CausalLMITextLinePro
 from processors.ner.fewshot_ner.data_processor import SpanProtoFewNERDProcessor, SpanProtoCrossNERProcessor, TokenProtoFewNERDProcessor
 # chinese instruction-tuning
 from processors.instruction_prompting.chinese_extractive_instruction.data_processor import ChineseExtractiveInstructionProcessor
-
+# code
+from processors.code.code_clone.data_processor import CodeCloneProcessor
+from processors.code.code_defect.data_processor import CodeDefectProcessor
 # default applications
 from processors.default_task_processors.data_processor import DefaultSequenceClassificationProcessor
 
@@ -61,8 +63,8 @@ INSTRUCTION_PROCESSORS = {
 
 
 CODE_PROCESSORS = {
-    "code_clone": None,
-    "code_defect": None,
+    "code_clone": CodeCloneProcessor,
+    "code_defect": CodeDefectProcessor,
     "code_refine": None,
     "code_translation": None,
     "code_summarization": None,
@@ -90,6 +92,7 @@ PROCESSORS_LIST = [
     IE_PROCESSORS,
     INSTRUCTION_PROCESSORS,
     BENCHMARKS_PROCESSORS,
+    CODE_PROCESSORS,
     OTHER_PROCESSORS,
 ]
 
