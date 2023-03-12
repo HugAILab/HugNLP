@@ -1,5 +1,5 @@
 #### pre-trained lm path
-path=bert-base-uncased
+path=/wjn/pre-trained-lm/bert-base-uncased
 # path=/wjn/pre-trained-lm/roberta-base
 
 MODEL_TYPE=bert
@@ -13,7 +13,7 @@ TASK_NAME=glue
 # glue_task=mnli
 #glue_task=mnli-mm
 # glue_task=mrpc
-# glue_task=sst-2
+#glue_task=sst-2
 #glue_task=sts-b
 # glue_task=qqp
 #glue_task=qnli
@@ -35,11 +35,11 @@ TASK_TYPE=head_prefix_cls
 
 ### hyper-parameter
 len=128
-bz=4
-epoch=20
+bz=8
+epoch=100
 eval_step=50
 wr_step=50
-lr=5e-05
+lr=1e-05
 
 
 
@@ -66,8 +66,8 @@ lr=5e-05
 #rm -rf /root/.cache/huggingface/datasets/clue/cache_"$task_name_"_"$clue_task"_train.arrow
 
 
-export CUDA_VISIBLE_DEVICES=3
-python -m torch.distributed.launch --nproc_per_node=1 --master_port=6018 hugnlp_runner.py \
+export CUDA_VISIBLE_DEVICES=0,1
+python -m torch.distributed.launch --nproc_per_node=2 --master_port=6014 hugnlp_runner.py \
   --model_name_or_path=$path \
   --data_dir=$data_path \
   --output_dir=./outputs/glue/$glue_task \
