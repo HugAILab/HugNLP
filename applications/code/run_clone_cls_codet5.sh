@@ -1,11 +1,11 @@
 #### pre-trained lm path
-path=bert-base-cased
-MODEL_TYPE=bert
+path=/code/cn/CodePrompt/data/huggingface_models/codet5-base/
+MODEL_TYPE=codet5
 
 #### task data path (use should change this path)
-data_path=/code/cn/HugNLP/datasets/data_example/cls/
+data_path=/code/cn/HugNLP/datasets/data_example/clone/
 
-TASK_TYPE=head_cls
+TASK_TYPE=code_cls
 # TASK_TYPE=masked_prompt_prefix_cls
 
 len=196
@@ -41,15 +41,13 @@ python3 -m torch.distributed.launch --nproc_per_node=2 --master_port=6014 hugnlp
 --warmup_steps=$wr_step \
 --load_best_model_at_end \
 --report_to=none \
---task_name=default_cls \
+--task_name=code_clone \
 --task_type=$TASK_TYPE \
 --model_type=$MODEL_TYPE \
 --metric_for_best_model=acc \
 --pad_to_max_length=True \
 --remove_unused_columns=False \
 --overwrite_output_dir \
---fp16 \
 --label_names=labels \
 --keep_predict_labels \
---user_defined="label_names=entailment,neutral,contradiction" \
-# --use_prompt_for_cls
+--user_defined="label_names=0,1" \
