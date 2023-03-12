@@ -14,7 +14,7 @@ from processors.ProcessorBase import CLSProcessor
 from processors.benchmark.clue.clue_processor import clue_processors, clue_output_modes
 from metrics import datatype2metrics
 from processors.default_task_processors.data_collator import DataCollatorForDefaultSequenceClassification
-from processors.basic_processors.prompt_processor import AddPromptIntoExample
+from processors.basic_processors.prompt_processor import PromptBaseProcessor
 from tools.processing_utils.tokenizer.tokenizer_utils import get_special_token_mapping
 
 
@@ -99,7 +99,7 @@ class CodeDefectProcessor(CLSProcessor):
             label_words_mapping = json.load(open(self.label_words_mapping_file, "r", encoding="utf-8"))
 
 
-            self.prompt_engineering = AddPromptIntoExample(
+            self.prompt_engineering = PromptBaseProcessor(
                 data_args=self.data_args,
                 task_name=self.data_name,
                 tokenizer=self.tokenizer,
