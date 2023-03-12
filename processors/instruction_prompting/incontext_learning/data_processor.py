@@ -223,9 +223,6 @@ class ClassificationInContextLearningProcessor(CLSProcessor):
             logits=probs,
         )
 
-
-
-
         probs = probs.squeeze(1)  # topk结果的概率
         indices = indices.squeeze(1)  # topk结果的索引
         # print("probs=", probs) # [n, m]
