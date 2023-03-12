@@ -15,6 +15,7 @@ from transformers import RobertaModel, RobertaPreTrainedModel
 from transformers.models.deberta.modeling_deberta import DebertaModel, DebertaPreTrainedModel, ContextPooler, StableDropout
 from transformers.models.gpt2.modeling_gpt2 import GPT2Model, GPT2PreTrainedModel
 from transformers.models.bart.modeling_bart import BartPretrainedModel, BartClassificationHead, BartModel
+from transformers.models.roberta.modeling_roberta import RobertaClassificationHead
 from transformers.models.bart.configuration_bart import BartConfig
 from transformers.modeling_outputs import SequenceClassifierOutput, Seq2SeqSequenceClassifierOutput, SequenceClassifierOutputWithPast
 
@@ -491,7 +492,8 @@ class RobertaForSequenceClassification(RobertaPreTrainedModel):
         if self.config.use_freezing:
             self.roberta = freezer.freeze_lm(self.roberta)
         self.dropout = torch.nn.Dropout(config.hidden_dropout_prob)
-        self.classifier = torch.nn.Linear(config.hidden_size, config.num_labels)
+        # self.classifier = torch.nn.Linear(config.hidden_size, config.num_labels)
+        self.classifier = RobertaClassificationHead(config)
         self.init_weights()
 
     def freeze_backbone(self, use_freezing: bool=True):
@@ -579,7 +581,8 @@ class RobertaPrefixForSequenceClassification(RobertaPreTrainedModel):
         self.config = config
         self.roberta = RobertaModel(config)
         self.dropout = torch.nn.Dropout(config.hidden_dropout_prob)
-        self.classifier = torch.nn.Linear(config.hidden_size, config.num_labels)
+        # self.classifier = torch.nn.Linear(config.hidden_size, config.num_labels)
+        self.classifier = RobertaClassificationHead(config)
         self.init_weights()
 
         for param in self.roberta.parameters():
@@ -711,7 +714,8 @@ class RobertaPtuningForSequenceClassification(RobertaPreTrainedModel):
         self.roberta = RobertaModel(config)
         self.embeddings = self.roberta.embeddings
         self.dropout = torch.nn.Dropout(config.hidden_dropout_prob)
-        self.classifier = torch.nn.Linear(config.hidden_size, config.num_labels)
+        # self.classifier = torch.nn.Linear(config.hidden_size, config.num_labels)
+        self.classifier = RobertaClassificationHead(config)
 
         # for param in self.roberta.parameters():
         #     param.requires_grad = False
@@ -830,7 +834,9 @@ class RobertaAdapterForSequenceClassification(RobertaPreTrainedModel):
         self.roberta = RobertaAdaModel(config)
         self.embeddings = self.roberta.embeddings
         self.dropout = torch.nn.Dropout(config.hidden_dropout_prob)
-        self.classifier = torch.nn.Linear(config.hidden_size, config.num_labels)
+        # self.classifier = torch.nn.Linear(config.hidden_size, config.num_labels)
+        self.classifier = RobertaClassificationHead(config)
+
         self.init_weights()
         # for param in self.roberta.parameters():
         #     param.requires_grad = False
