@@ -55,6 +55,7 @@ from models.sequence_classification.masked_prompt_cls import (
     PromptRobertaPrefixForSequenceClassification, PromptRobertaAdapterForSequenceClassification
 )
 
+
 from models.sequence_classification.causal_prompt_cls import PromptGPT2ForSequenceClassification
 from models.code.code_classification import (
     RobertaForCodeClassification, CodeBERTForCodeClassification,
@@ -158,13 +159,13 @@ CODE_MODEL_CLASSES = {
         "codet5": CodeT5ForCodeClassification,
         "plbart": PLBARTForCodeClassification,
     },
-    # "code_generation": {
-    #     # "roberta": RobertaForConditionalGeneration,
-    #     # "codebert": BertForConditionalGeneration,
-    #     # "graphcodebert": BertForConditionalGeneration,
-    #     # "codet5": T5ForConditionalGeneration,
-    #     # "plbart": BartForConditionalGeneration,
-    # },
+    "code_generation": {
+        # "roberta": RobertaForConditionalGeneration,
+        # "codebert": BertForConditionalGeneration,
+        # "graphcodebert": BertForConditionalGeneration,
+        # "codet5": T5ForConditionalGeneration,
+        # "plbart": BartForConditionalGeneration,
+    },
 }
 
 # task_type 负责对应model类型
