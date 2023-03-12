@@ -14,7 +14,7 @@ from processors.ProcessorBase import CLSProcessor
 from processors.benchmark.glue.glue_processor import glue_processors, glue_output_modes, task_to_keys
 from metrics import datatype2metrics
 from processors.benchmark.glue.data_collator import DataCollatorForGLUE
-from processors.basic_processors.prompt_processor import AddPromptIntoExample
+from processors.basic_processors.prompt_processor import PromptBaseProcessor
 from processors.benchmark.glue.task_engineering import label_words_mapping
 from tools.processing_utils.tokenizer.tokenizer_utils import get_special_token_mapping
 from processors.benchmark.glue.task_engineering import task_to_template
@@ -60,7 +60,7 @@ class GLUEProcessor(CLSProcessor):
         if self.model_args.use_prompt_for_cls:
             # if use prompt, please first perform task prompt engineering in task_engineering.py
 
-            self.prompt_engineering = AddPromptIntoExample(
+            self.prompt_engineering = PromptBaseProcessor(
                 data_args=self.data_args,
                 task_name=self.data_name,
                 tokenizer=self.tokenizer,
@@ -132,7 +132,7 @@ class GLUEProcessor(CLSProcessor):
             # adding prompt into each example
             if self.model_args.use_prompt_for_cls:
                 # if use prompt, insert template into example
-                examples = self.prompt_engineering.prompt_preprocess_function(examples)
+                examples = self.prompt_engineering.add_prompt_into_example(examples)
 
             # Tokenize the texts
             args = ((examples[self.sentence1_key], )if self.sentence2_key is None else (examples[self.sentence1_key], examples[self.sentence2_key]))

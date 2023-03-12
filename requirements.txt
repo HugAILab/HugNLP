@@ -2,6 +2,7 @@ bs4
 datasets
 jieba
 mlflow
+openai
 pymysql
 roformer
 scikit-learn

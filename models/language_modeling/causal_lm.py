@@ -230,10 +230,12 @@ class GPT2ForCausalLM(GPT2PreTrainedModel):
 
 if __name__ == "__main__":
     from transformers.models.gpt2.tokenization_gpt2 import GPT2Tokenizer
-    tokenizer = GPT2Tokenizer.from_pretrained("/Users/wangjianing/Desktop/开源代码与数据模型/模型/gpt2")
+    # model_path = "/Users/wangjianing/Desktop/开源代码与数据模型/模型/gpt2"
+    model_path = "/wjn/pre-trained-lm/gpt2"
+    tokenizer = GPT2Tokenizer.from_pretrained(model_path)
     tokenizer.pad_token_id = tokenizer.eos_token_id
     # print("tokenizer.eos_token_id=", tokenizer.eos_token_id) # 50256
-    model = GPT2ForCanusalLM.from_pretrained("/Users/wangjianing/Desktop/开源代码与数据模型/模型/gpt2")
+    model = GPT2LMHeadModel.from_pretrained(model_path)
     input_text = "My friend Jack invites me to play computer games with him, but my girl friend doesn't agree. I think"
     inputs = tokenizer(input_text, add_special_tokens=True, return_tensors="pt")
     inputs["labels"] = inputs["input_ids"]
@@ -267,6 +269,7 @@ if __name__ == "__main__":
         # bad_words_ids=[[628], [198]] if True else None,
         num_return_sequences=1,
     )
+    print("output_sequences=", output_sequences)
     # print("output_sequences=", output_sequences)
     results = tokenizer.decode(output_sequences[0])
     print("results=", results)

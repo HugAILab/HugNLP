@@ -55,6 +55,8 @@ from models.sequence_classification.masked_prompt_cls import (
     PromptRobertaPrefixForSequenceClassification, PromptRobertaAdapterForSequenceClassification
 )
 
+
+from models.sequence_classification.causal_prompt_cls import PromptGPT2ForSequenceClassification
 from models.code.code_classification import (
     RobertaForCodeClassification, CodeBERTForCodeClassification,
     GraphCodeBERTForCodeClassification, PLBARTForCodeClassification, CodeT5ForCodeClassification
@@ -122,7 +124,7 @@ CLASSIFICATION_MODEL_CLASSES = {
         "roberta": PromptRobertaAdapterForSequenceClassification,
     }, # use masked lm head with adapter-tuning technique for prompt-based cls, e.g., bert+mlm
     "causal_prompt_cls": {
-        "gpt2": None,
+        "gpt2": PromptGPT2ForSequenceClassification,
         "bart": None,
         "t5": None,
     }, # use causal lm head for prompt-tuning, e.g., gpt2+lm
