@@ -20,7 +20,7 @@ export CUDA_VISIBLE_DEVICES=0,1
 python3 -m torch.distributed.launch --nproc_per_node=2 --master_port=6014 hugnlp_runner.py \
 --model_name_or_path=$path \
 --data_dir=$data_path \
---output_dir=./outputs/default/sequence_classification\
+--output_dir=./outputs/code/clone_classification_codebert\
 --seed=42 \
 --exp_name=default-cls \
 --max_seq_length=$len \
