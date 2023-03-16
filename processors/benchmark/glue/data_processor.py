@@ -13,6 +13,7 @@ from collections import defaultdict
 from processors.ProcessorBase import CLSProcessor
 from processors.benchmark.glue.glue_processor import glue_processors, glue_output_modes, task_to_keys
 from metrics import datatype2metrics
+from tools.computations.softmax import softmax
 from processors.benchmark.glue.data_collator import DataCollatorForGLUE
 from processors.basic_processors.prompt_processor import PromptBaseProcessor
 from processors.benchmark.glue.task_engineering import label_words_mapping
@@ -22,11 +23,6 @@ from processors.benchmark.glue.task_engineering import task_to_template
 from tools.runner_utils.log_util import logging
 
 logger = logging.getLogger(__name__)
-
-
-def sofmax(logits):
-    probs = torch.softmax(torch.from_numpy(logits).float(), -1).numpy()
-    return probs
 
 
 class GLUEProcessor(CLSProcessor):
@@ -171,7 +167,7 @@ class GLUEProcessor(CLSProcessor):
             # 获取TopK结果
             # {"prob": prob, "answer": answer}
             # print("logit=", logit)
-            proba = sofmax(logit)  # 转换为概率
+            proba = softmax(logit)  # 转换为概率
             # print("proba=", proba)
             # print("========")
             indices = np.argsort(-proba)  # 获得降序排列后的索引
@@ -252,14 +248,7 @@ class GLUEProcessor(CLSProcessor):
                 res = id2label[v]
             answer.append({"id": k, "label": res})
 
-        # outfile = os.path.join(self.training_args.output_dir, "answer.json")
-        # with open(outfile, "w", encoding="utf8") as f:
-        # #     json.dump(predicts, f, ensure_ascii=False, indent=2)
-        #     for res in answer:
-        #         f.write("{}\n".format(str(res)))
-
-        output_submit_file = os.path.join(self.training_args.output_dir,
-                                          "answer.json")
+        output_submit_file = os.path.join(self.training_args.output_dir, "answer.json")
         # 保存标签结果
         with open(output_submit_file, "w") as writer:
             for i, pred in enumerate(answer):

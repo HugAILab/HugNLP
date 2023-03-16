@@ -13,14 +13,10 @@ from processors.dataset import DatasetK
 from processors.ProcessorBase import CLSProcessor
 from processors.benchmark.clue.clue_processor import clue_processors, clue_output_modes
 from metrics import datatype2metrics
+from tools.computations.softmax import softmax
 from processors.default_task_processors.data_collator import DataCollatorForDefaultSequenceClassification
 from processors.basic_processors.prompt_processor import PromptBaseProcessor
 from tools.processing_utils.tokenizer.tokenizer_utils import get_special_token_mapping
-
-
-def sofmax(logits):
-    probs = torch.softmax(torch.from_numpy(logits).float(), -1).numpy()
-    return probs
 
 
 """
@@ -245,7 +241,7 @@ class CodeDefectProcessor(CLSProcessor):
             # 获取TopK结果
             # {"prob": prob, "answer": answer}
             # print("logit=", logit)
-            proba = sofmax(logit)  # 转换为概率
+            proba = softmax(logit)  # 转换为概率
             # print("proba=", proba)
             # print("========")
             indices = np.argsort(-proba)  # 获得降序排列后的索引

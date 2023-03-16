@@ -15,10 +15,8 @@ from transformers.models.deberta.modeling_deberta import DebertaPreTrainedModel,
     ContextPooler, DebertaOnlyMLMHead
 from transformers.modeling_outputs import SequenceClassifierOutput
 from transformers.modeling_utils import PreTrainedModel
-# from loss import stable_kl, CeCriterion, KlCriterion, entropy, SymKlCriterion, ContrastiveLoss
-# from processors import processors_mapping, num_labels_mapping, output_modes_mapping, compute_metrics_mapping, \
-#     bound_mapping
 import logging
+
 
 logger = logging.getLogger(__name__)
 
@@ -30,12 +28,11 @@ def init_adapter(model, std=0.0002):
         for name, param in model.named_parameters():
             init_value = 0
             if "adapter_proj" in name:
-                # if self.model_args.adapter_choice == "simple":
-                # init_value = torch.eye(param.size(0))
                 if std > 0:
                     init_value += torch.normal(0, std, size=param.size())
                 param.copy_(init_value)
     return model
+
 
 # Adapter Layer
 class AdapeterLayer(nn.Module):
@@ -48,23 +45,21 @@ class AdapeterLayer(nn.Module):
         self.act_fun = None
 
         if self.adapter_choice == "LiST":
-
             self.adapter_dim = adapter_dim
-            # print("self.adapter_dim=", self.adapter_dim) # 128
             self.adapter_proj_1 = nn.Linear(n_out, adapter_dim, bias=False)
             nn.init.normal_(self.adapter_proj_1.weight, std=0.02)
             self.adapter_proj_2 = nn.Linear(adapter_dim, n_out, bias=False)
             nn.init.normal_(self.adapter_proj_2.weight, std=0.02)
-        elif self.adapter_choice == "houlsby":
 
+        elif self.adapter_choice == "houlsby":
             self.adapter_dim = adapter_dim
             self.adapter_proj_1 = nn.Linear(n_out, adapter_dim, bias=False)
             nn.init.normal_(self.adapter_proj_1.weight, std=0.02)
             self.act_fun  = torch.nn.ReLU()
             self.adapter_proj_2 = nn.Linear(adapter_dim, n_out, bias=False)
             nn.init.normal_(self.adapter_proj_2.weight, std=0.02)
-        else:
 
+        else:
             self.adapter_dim = adapter_dim
             self.adapter_proj_1 = nn.Linear(n_out, n_out, bias=False)
 
@@ -87,7 +82,6 @@ class AdapeterLayer(nn.Module):
 
 
 ## ======== Adapter For RoBERTa ========
-
 class RobertaAdaOutput(nn.Module):
     def __init__(self, config):
         super().__init__()
@@ -99,14 +93,10 @@ class RobertaAdaOutput(nn.Module):
         self.dropout = nn.Dropout(config.hidden_dropout_prob)
 
     def forward(self, hidden_states, input_tensor):
-
         hidden_states = self.dense(hidden_states)
         hidden_states = self.adaptation_layer(hidden_states)
-
-
         hidden_states = self.dropout(hidden_states)
         hidden_states = self.LayerNorm(hidden_states + input_tensor)
-        # hidden_states = self.adaptation_layer_skip(hidden_states)
         return hidden_states
 
 
@@ -121,15 +111,12 @@ class RobertaAdaSelfOutput(nn.Module):
         self.LayerNorm = nn.LayerNorm(config.hidden_size, eps=config.layer_norm_eps)
         self.dropout = nn.Dropout(config.hidden_dropout_prob)
 
-    def forward(self, hidden_states, input_tensor):
 
+    def forward(self, hidden_states, input_tensor):
         hidden_states = self.dense(hidden_states)
         hidden_states = self.adaptation_layer(hidden_states)
         hidden_states = self.dropout(hidden_states)
         hidden_states = self.LayerNorm(hidden_states + input_tensor)
-        # input_tensor = hidden_states
-        # hidden_states = self.adaptation_layer(hidden_states)
-        # hidden_states = self.LayerNorm(hidden_states + input_tensor)
         return hidden_states
 
 
@@ -140,6 +127,7 @@ class RobertaAdaAttention(nn.Module):
         self.self = RobertaSelfAttention(config)
         self.output = RobertaAdaSelfOutput(config)
         self.pruned_heads = set()
+
 
     def prune_heads(self, heads):
         if len(heads) == 0:
@@ -158,6 +146,7 @@ class RobertaAdaAttention(nn.Module):
         self.self.num_attention_heads = self.self.num_attention_heads - len(heads)
         self.self.all_head_size = self.self.attention_head_size * self.self.num_attention_heads
         self.pruned_heads = self.pruned_heads.union(heads)
+
 
     def forward(
         self,
@@ -198,6 +187,7 @@ class RobertaAdaLayer(nn.Module):
         self.intermediate = RobertaIntermediate(config)
         self.output = RobertaAdaOutput(config)
 
+
     def forward(
         self,
         hidden_states,
@@ -227,6 +217,7 @@ class RobertaAdaLayer(nn.Module):
             outputs = self_attention_outputs[1:]  # add self attentions if we output attention weights
 
         cross_attn_present_key_value = None
+
         if self.is_decoder and encoder_hidden_states is not None:
             assert hasattr(
                 self, "crossattention"
@@ -261,6 +252,7 @@ class RobertaAdaLayer(nn.Module):
 
         return outputs
 
+
     def feed_forward_chunk(self, attention_output):
         intermediate_output = self.intermediate(attention_output)
         layer_output = self.output(intermediate_output, attention_output)
@@ -275,6 +267,7 @@ class RobertaAdaEncoder(nn.Module):
         self.layer = nn.ModuleList([RobertaAdaLayer(config) for _ in range(config.num_hidden_layers)])
         self.skip = 2
 
+
     def learn_init(
             self,
             hidden_states,
@@ -288,7 +281,6 @@ class RobertaAdaEncoder(nn.Module):
             output_hidden_states=False,
             return_dict=True):
 
-
             all_hidden_states = () if output_hidden_states else None
             all_self_attentions = () if output_attentions else None
             all_cross_attentions = () if output_attentions and self.config.add_cross_attention else None
@@ -297,7 +289,6 @@ class RobertaAdaEncoder(nn.Module):
             self.skip_list = []
             for i, layer_module in enumerate(self.layer):
                 # if i+1 % self.skip
-
                 if output_hidden_states:
                     all_hidden_states = all_hidden_states + (hidden_states,)
 
@@ -361,6 +352,7 @@ class RobertaAdaEncoder(nn.Module):
                     ]
                     if v is not None
                 )
+
             return BaseModelOutputWithPastAndCrossAttentions(
                 last_hidden_state=hidden_states,
                 past_key_values=next_decoder_cache,
@@ -461,6 +453,7 @@ class RobertaAdaEncoder(nn.Module):
             cross_attentions=all_cross_attentions,
         )
 
+"""RoBERTa for Adapter"""
 class RobertaAdaModel(RobertaPreTrainedModel):
     """
     The model can behave as an encoder (with only self-attention) as well as a decoder, in which case a layer of
@@ -480,14 +473,9 @@ class RobertaAdaModel(RobertaPreTrainedModel):
     def __init__(self, config, add_pooling_layer=True):
         super().__init__(config)
         self.config = config
-
         self.embeddings = RobertaEmbeddings(config)
         self.encoder = RobertaAdaEncoder(config)
-
-
         self.pooler = RobertaPooler(config) if add_pooling_layer else None
-
-        #self.init_weights()
 
     def get_input_embeddings(self):
         return self.embeddings.word_embeddings
@@ -725,6 +713,7 @@ class BertAdaAttention(nn.Module):
         outputs = (attention_output,) + self_outputs[1:]  # add attentions if we output them
         return outputs
 
+
 class BertAdaLayer(nn.Module):
     def __init__(self, config):
         super().__init__()
@@ -806,6 +795,7 @@ class BertAdaLayer(nn.Module):
         intermediate_output = self.intermediate(attention_output)
         layer_output = self.output(intermediate_output, attention_output)
         return layer_output
+
 
 class BertAdaEncoder(nn.Module):
     def __init__(self, config):

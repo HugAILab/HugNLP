@@ -13,7 +13,6 @@ from transformers import AutoModelForTokenClassification, AutoModelForSequenceCl
 from transformers.models.roformer import RoFormerTokenizer
 from transformers.models.bert import BertTokenizerFast, BertForTokenClassification, BertTokenizer
 from transformers.models.roberta.tokenization_roberta import RobertaTokenizer
-# from transformers.models.bert.modeling_bert import BertForSequenceClassification
 from transformers.models.gpt2.tokenization_gpt2_fast import GPT2TokenizerFast
 from transformers.models.bart.tokenization_bart import BartTokenizer
 from transformers.models.t5.tokenization_t5 import T5Tokenizer
@@ -37,6 +36,7 @@ from models.sequence_labeling.softmax_for_ner import BertSoftmaxForNer, RobertaS
 from models.sequence_labeling.crf_for_ner import BertCrfForNer, RobertaCrfForNer, AlbertCrfForNer, MegatronBertCrfForNer
 from models.span_extraction.span_for_ner import BertSpanForNer, RobertaSpanForNer, AlbertSpanForNer, MegatronBertSpanForNer
 
+from models.language_modeling.mlm import BertForMaskedLM
 from models.language_modeling.kpplm import BertForWikiKGPLM, RoBertaKPPLMForProcessedWikiKGPLM, DeBertaKPPLMForProcessedWikiKGPLM
 from models.language_modeling.causal_lm import GPT2ForCausalLM
 
@@ -55,14 +55,13 @@ from models.sequence_classification.masked_prompt_cls import (
     PromptRobertaPrefixForSequenceClassification, PromptRobertaAdapterForSequenceClassification
 )
 
-
 from models.sequence_classification.causal_prompt_cls import PromptGPT2ForSequenceClassification
+
 from models.code.code_classification import (
     RobertaForCodeClassification, CodeBERTForCodeClassification,
     GraphCodeBERTForCodeClassification, PLBARTForCodeClassification, CodeT5ForCodeClassification
 )
 
-from models.language_modeling.mlm import BertForMaskedLM
 
 # Models for pre-training
 PRETRAIN_MODEL_CLASSES = {
@@ -79,6 +78,7 @@ PRETRAIN_MODEL_CLASSES = {
         "t5": None,
     },
 }
+
 
 CLASSIFICATION_MODEL_CLASSES = {
     "auto_cls": AutoModelForSequenceClassification, # huggingface cls
@@ -130,9 +130,11 @@ CLASSIFICATION_MODEL_CLASSES = {
     }, # use causal lm head for prompt-tuning, e.g., gpt2+lm
 }
 
+
 TOKEN_CLASSIFICATION_MODEL_CLASSES = {
     "ner": AutoModelForTokenClassification,
 }
+
 
 SPAN_EXTRACTION_MODEL_CLASSES = {
     "global_pointer": {
@@ -167,6 +169,7 @@ CODE_MODEL_CLASSES = {
         # "plbart": BartForConditionalGeneration,
     },
 }
+
 
 # task_type 负责对应model类型
 OTHER_MODEL_CLASSES = {
@@ -216,6 +219,7 @@ OTHER_MODEL_CLASSES = {
     # "fensheng_multi_choice": LongformerForMultipleChoice,
     # "chid_mlm": BertForChidMLM,
 }
+
 
 # MODEL_CLASSES = dict(list(PRETRAIN_MODEL_CLASSES.items()) + list(OTHER_MODEL_CLASSES.items()))
 MODEL_CLASSES_LIST = [

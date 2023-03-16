@@ -2,8 +2,8 @@
 # @Time    : 2022/1/7 3:07 下午
 # @Author  : JianingWang
 # @File    : HugTrainer
-from typing import Dict, Union, Any, Optional, Callable, List, Tuple, Iterator
 
+from typing import Dict, Union, Any, Optional, Callable, List, Tuple, Iterator
 import datasets
 from datasets import Dataset
 from torch.utils.data import RandomSampler, DistributedSampler
