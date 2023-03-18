@@ -21,9 +21,9 @@ logger = logging.getLogger(__name__)
 
 
 """
-Evaluator for the task of sequence classification with Masked PLMs.
+Evaluator for the task of language modeling with Masked PLMs.
 """
-class SequenceClassificationEvaluator(ClassificationEvaluator):
+class MaskedLanguageModelingEvaluator(ClassificationEvaluator):
 
     def __init__(
         self,
@@ -40,9 +40,10 @@ class SequenceClassificationEvaluator(ClassificationEvaluator):
 
 
 """
-Evaluator for the task of sequence classification with Causal PLMs.
+Evaluator for the task of language modeling with Causal PLMs.
+Note: the evaluation of causal LM is the same as Masked LM.
 """
-class CausalSequenceClassificationEvaluator(Evaluator):
+class CausalLanguageModelingEvaluator(ClassificationEvaluator):
 
     def __init__(
         self,
@@ -54,4 +55,4 @@ class CausalSequenceClassificationEvaluator(Evaluator):
         test_dataset: Optional[Dataset] = None,
     ) -> None:
         super().__init__(data_args, training_args, processor, trainer, eval_dataset, test_dataset)
-        self.paradigm = DO_GENERATE
+        self.paradigm = NO_GENERATE

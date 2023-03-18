@@ -15,6 +15,7 @@ from config import DataTrainingArguments, TrainingArguments
 from hugnlp_trainer import HugTrainer
 from processors.ProcessorBase import DataProcessor
 from metrics.classification_metric import ClassificationMetric
+from tools.computations.softmax import softmax
 from tools.runner_utils.log_util import logging
 
 logger = logging.getLogger(__name__)
@@ -74,16 +75,16 @@ class Evaluator(object):
         pass
 
 
-    def get_topk(self):
+    def get_best_and_topk(self):
         """
-        Obtain Top K predictions.
+        Obtain the best results and Top K predictions.
         """
         pass
 
 
 
 """
-Evaluator for the task of sequence classification.
+Evaluator for classification-style tasks.
 """
 class ClassificationEvaluator(Evaluator):
 
@@ -100,92 +101,47 @@ class ClassificationEvaluator(Evaluator):
         self.paradigm = NO_GENERATE
 
 
-    def get_predict_result(self, logits, examples, stage="dev"):
-        # logits: [test_data_num, label_num]
-        predictions = dict()  # 获取概率最大的作为预测结果
-        topk_result = dict()  # 根据概率取TopK个
-        preds = logits
-        if self.output_modes == "classification":
-            preds = np.argmax(preds, axis=1)
-        elif self.output_modes == "regression":
-            preds = np.squeeze(preds)
-
-        for pred, example, logit in zip(preds, examples, logits):
-            id_ = example["idx"]
-            predictions[id_] = pred  # 保存预测结果索引labelid
-            # 获取TopK结果
-            # {"prob": prob, "answer": answer}
-            # print("logit=", logit)
-            proba = softmax(logit)  # 转换为概率
-            # print("proba=", proba)
-            # print("========")
-            indices = np.argsort(-proba)  # 获得降序排列后的索引
-            out = list()
-            for index in indices[:20]:  # 依次取出相应的logit
-                prob = proba[index].tolist()
-                index = index.tolist()
-                out.append({"prob": prob, "answer": index})
-            topk_result[id_] = out
-
-        return predictions, topk_result
-
     def default_compute_metrics(self, eval_predictions):
         """
         Design for the default metrics calculation for the current task.
-        Note: If the task processor has attribution of 'compute_metrics', this function will not be used.
+        Note:
+        - If the task processor has attribution of 'compute_metrics', this function will not be used.
+        - If this pre-built function can match your demand, you can omit the definition of 'compute_metrics' in your processor.
         """
         examples = self.eval_dataset
         labels = examples["label"]
 
-        golden, dataname_map, dataname_type = {}, defaultdict(list), {}
-        predictions, _ = self.get_predict_result(
-            eval_predictions[0], examples, stage="dev")  # {"xx": "xxx", ...}
+        golden = {}
+        # predictions:  {"xx": "xxx", ...}
+        predictions, _ = self.get_best_and_topk(eval_predictions[0], examples, stage="dev")
         for example in examples:
-            data_type = self.output_modes
-            data_name = self.data_name
-            if data_name not in dataname_type:
-                dataname_type[data_name] = data_type
-            id_ = example["idx"]
-            dataname_map[data_name].append(id_)
-            golden[id_] = example["label"]
+            try:
+                idx = int(example["idx"])
+            except:
+                idx = int(example["idx"].split("-")[1]) # e.g.,  "dev-12" -> "12"
+
+            golden[idx] = example["label"]
 
         all_metrics = {
             "eval_macro_f1": 0.,
-            "eval_micro_f1": 0.,
-            "eval_num": 0,
             "eval_acc": 0.,
         }
 
-        for dataname, data_ids in dataname_map.items():
-            metric = ClassificationMetric()
-            gold = {k: v for k, v in golden.items() if k in data_ids}
-            pred = {k: v for k, v in predictions.items() if k in data_ids}
-            # pred = {"dev-{}".format(value["id"]): value["label"] for value in predictions if "dev-{}".format(value["id"]) in data_ids}
-            score = metric.calc_metric(golden=gold, predictions=pred)
-            acc, f1 = score["acc"], score["f1"]
-            if len(gold) != len(pred) or len(gold) < 20:
-                # print(dataname, dataname_type[dataname], round(acc, 4), len(gold), len(pred), data_ids)
-                print("len(gold)=", len(gold))
-                print("len(pred)=", len(pred))
-            all_metrics["eval_macro_f1"] += f1
-            all_metrics["eval_micro_f1"] += f1 * len(data_ids)
-            all_metrics["eval_num"] += len(data_ids)
-            all_metrics["eval_acc"] += acc
-            all_metrics[dataname] = round(f1, 4)
-        all_metrics["eval_macro_f1"] = round(
-            all_metrics["eval_macro_f1"] / len(dataname_map), 4)
-        all_metrics["eval_micro_f1"] = round(
-            all_metrics["eval_micro_f1"] / all_metrics["eval_num"], 4)
-        all_metrics["eval_macro_acc"] = round(
-            all_metrics["eval_acc"] / len(dataname_map), 4)
-
+        metric = ClassificationMetric()
+        gold = {k: v for k, v in golden.items()}
+        pred = {k: v for k, v in predictions.items()}
+        score = metric.calc_metric(golden=gold, predictions=pred)
+        acc, f1 = score["acc"], score["f1"]
+        all_metrics["eval_macro_f1"] += f1
+        all_metrics["eval_acc"] += acc
         return all_metrics
+
 
     def evaluate(self):
 
         # If has no compute_metrics for HugTrainer, we can choose default function.
         if not hasattr(self.trainer, "compute_metrics") or self.trainer.compute_metrics is None:
-
+            self.trainer.compute_metrics = self.default_compute_metrics
 
         metrics = self.trainer.evaluate()
         max_eval_samples = self.data_args.max_eval_samples if self.data_args.max_eval_samples is not None else len(self.eval_dataset)
@@ -200,32 +156,124 @@ class ClassificationEvaluator(Evaluator):
         self.trainer.log_metrics("eval", metrics)
         self.trainer.save_metrics("eval", metrics)
 
+
     def predict(self):
 
+        assert self.paradigm == NO_GENERATE, "classification only support no-generate model."
         if not self.data_args.keep_predict_labels:
             for l in ["labels", "label"]:
-                if l in test_dataset.column_names:
-                    test_dataset = test_dataset.remove_columns(l)
+                if l in self.test_dataset.column_names:
+                    self.test_dataset = self.test_dataset.remove_columns(l)
 
-        prediction = self.trainer.predict(test_dataset, metric_key_prefix="predict")
+        prediction = self.trainer.predict(self.test_dataset, metric_key_prefix="predict")
         logits = prediction.predictions
 
         if self.data_args.keep_predict_labels:
             label_ids = prediction.label_ids
 
+        # If you have defined save_result function in the processor.
         if hasattr(self.processor, "save_result"):
+            assert self.paradigm == NO_GENERATE, "default processor only support no-generate model."
             if self.trainer.is_world_process_zero():
                 if not self.data_args.keep_predict_labels:
                     self.processor.save_result(logits)
                 else:
                     self.processor.save_result(logits, label_ids)
         else:
-            predictions = np.argmax(logits, axis=1)
-            output_predict_file = os.path.join(self.training_args.output_dir, f"predict_results.txt")
-            if self.trainer.is_world_process_zero():
-                with open(output_predict_file, "w") as writer:
-                    logger.info(f"***** Predict results {self.data_args.task_name} *****")
-                    writer.write("index\tprediction\n")
-                    for index, item in enumerate(predictions):
-                        item = self.processor.labels[item]
-                        writer.write(f"{index}\t{item}\n")
+            # If you not define the save_result function.
+            examples = self.test_dataset
+            predicts, topk_predictions = self.get_best_and_topk(logits, examples, stage="test")
+            label_list = self.processor.labels
+            id2label = {i: label for i, label in enumerate(label_list)}
+
+            # submit
+            answer = list()
+            for k, v in predicts.items():
+                if v not in id2label.keys():
+                    res = ""
+                    print("unknown")
+                else:
+                    res = id2label[v]
+                answer.append({"id": k, "label": res})
+
+            output_submit_file = os.path.join(self.training_args.output_dir, "answer.json")
+            # Save the label results
+            with open(output_submit_file, "w") as writer:
+                for i, pred in enumerate(answer):
+                    json_d = {}
+                    json_d["id"] = i
+                    json_d["label"] = pred["label"]
+                    writer.write(json.dumps(json_d) + "\n")
+
+            # Save Top K results
+            topfile = os.path.join(self.training_args.output_dir, "top20_predict.json")
+            with open(topfile, "w", encoding="utf-8") as f2:
+                json.dump(topk_predictions, f2, ensure_ascii=False, indent=4)
+
+
+    def get_best_and_topk(self, logits, examples, stage="dev"):
+        """
+        Obtain the best results and Top K predictions.
+        """
+        if type(logits) == tuple:
+            logits = logits[0]
+        # logits: [test_data_num, label_num]
+        predictions = dict() # Obtain the best predictions
+        topk_result = dict() # Obtain the Top K predictions
+
+        preds = logits
+        preds = np.argmax(preds, axis=1)
+
+        for pred, example, logit in zip(preds, examples, logits):
+            id_ = example["idx"]
+            id_ = int(id_.split("-")[1])
+            predictions[id_] = pred
+            proba = softmax(logit) # Transform as probabilities.
+            indices = np.argsort(-proba)
+            out = list()
+            for index in indices[:20]:
+                prob = proba[index].tolist()
+                index = index.tolist()
+                out.append({"prob": prob, "answer": index})
+            topk_result[id_] = out
+
+        return predictions, topk_result
+
+
+"""
+Evaluator for generation-style tasks.
+"""
+class GenerationEvaluator(Evaluator):
+
+    def __init__(
+        self,
+        data_args: DataTrainingArguments,
+        training_args: TrainingArguments,
+        processor: DataProcessor,
+        trainer: Optional[HugTrainer],
+        eval_dataset: Optional[Dataset] = None,
+        test_dataset: Optional[Dataset] = None,
+    ) -> None:
+        super().__init__(data_args, training_args, processor, trainer, eval_dataset, test_dataset)
+        self.paradigm = NO_GENERATE
+
+
+    def default_compute_metrics(self, eval_predictions):
+        pass
+        # return all_metrics
+
+
+    def evaluate(self):
+        pass
+
+
+    def predict(self):
+
+        pass
+
+
+    def get_best_and_topk(self, logits, examples, stage="dev"):
+        """
+        Obtain the best results and Top K predictions.
+        """
+        pass

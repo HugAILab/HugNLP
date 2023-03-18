@@ -3,7 +3,7 @@ python3 -m torch.distributed.launch --nproc_per_node=4 --master_port 6010 hugnlp
 --data_dir=/wjn/nlp_trainer/pretrain_data/data/ \
 --train_file=/wjn/nlp_trainer/pretrain_data/features/data.json \
 --max_seq_length=512 \
---output_dir=/wjn/nlp_trainer/output \
+--output_dir=./outputs/pretrain/kg/ \
 --do_train \
 --do_eval \
 --per_device_train_batch_size=22 \

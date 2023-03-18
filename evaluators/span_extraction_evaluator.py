@@ -21,9 +21,9 @@ logger = logging.getLogger(__name__)
 
 
 """
-Evaluator for the task of sequence classification with Masked PLMs.
+Evaluator for the task of span extraction with Masked PLMs.
 """
-class SequenceClassificationEvaluator(ClassificationEvaluator):
+class SpanExtractionEvaluator(ClassificationEvaluator):
 
     def __init__(
         self,
@@ -36,22 +36,3 @@ class SequenceClassificationEvaluator(ClassificationEvaluator):
     ) -> None:
         super().__init__(data_args, training_args, processor, trainer, eval_dataset, test_dataset)
         self.paradigm = NO_GENERATE
-
-
-
-"""
-Evaluator for the task of sequence classification with Causal PLMs.
-"""
-class CausalSequenceClassificationEvaluator(Evaluator):
-
-    def __init__(
-        self,
-        data_args: DataTrainingArguments,
-        training_args: TrainingArguments,
-        processor: DataProcessor,
-        trainer: Optional[HugTrainer],
-        eval_dataset: Optional[Dataset] = None,
-        test_dataset: Optional[Dataset] = None,
-    ) -> None:
-        super().__init__(data_args, training_args, processor, trainer, eval_dataset, test_dataset)
-        self.paradigm = DO_GENERATE

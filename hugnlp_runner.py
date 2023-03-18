@@ -251,6 +251,9 @@ def main():
 
     # Obtain Evaluator
     evaluator = evaluator_class(
+        data_args=data_args,
+        training_args=training_args,
+        processor=processor,
         trainer=trainer,
         eval_dataset=eval_dataset,
         test_dataset=test_dataset,

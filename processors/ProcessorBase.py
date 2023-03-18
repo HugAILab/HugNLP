@@ -186,25 +186,25 @@ class CLSProcessor(DataProcessor):
     def get_examples(self, set_type):
         raise NotImplementedError()
 
-    def compute_metrics(self, p: EvalPrediction):
-        preds = np.argmax(p.predictions, axis=1)
-        labels = p.label_ids
-        acc = (preds == labels).mean()
-        f1 = f1_score(y_true=labels, y_pred=preds)
-        recall = recall_score(y_true=labels, y_pred=preds)
-        precision = precision_score(y_true=labels, y_pred=preds)
-        return {
-            "acc": round(acc, 4),
-            "eval_acc": round(acc, 4),
-            "f1": round(f1, 4),
-            "eval_f1": round(f1, 4),
-            "recall": round(recall, 4),
-            "eval_recall": round(recall, 4),
-            "precision": round(precision, 4),
-            "eval_precision": round(precision, 4),
-            "score": round(f1, 4),
-            "eval_score": round(f1, 4)
-        }
+    # def compute_metrics(self, p: EvalPrediction):
+    #     preds = np.argmax(p.predictions, axis=1)
+    #     labels = p.label_ids
+    #     acc = (preds == labels).mean()
+    #     f1 = f1_score(y_true=labels, y_pred=preds)
+    #     recall = recall_score(y_true=labels, y_pred=preds)
+    #     precision = precision_score(y_true=labels, y_pred=preds)
+    #     return {
+    #         "acc": round(acc, 4),
+    #         "eval_acc": round(acc, 4),
+    #         "f1": round(f1, 4),
+    #         "eval_f1": round(f1, 4),
+    #         "recall": round(recall, 4),
+    #         "eval_recall": round(recall, 4),
+    #         "precision": round(precision, 4),
+    #         "eval_precision": round(precision, 4),
+    #         "score": round(f1, 4),
+    #         "eval_score": round(f1, 4)
+    #     }
 
 
 

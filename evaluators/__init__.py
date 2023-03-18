@@ -3,49 +3,54 @@
 # @Author  : JianingWang
 # @File    : __init__.py
 
+from evaluators.language_modeling_evaluator import MaskedLanguageModelingEvaluator, CausalLanguageModelingEvaluator
+from evaluators.sequence_classification_evaluator import SequenceClassificationEvaluator, CausalSequenceClassificationEvaluator
+from evaluators.token_classification_evaluator import TokenClassificationEvaluator
+from evaluators.span_extraction_evaluator import SpanExtractionEvaluator
+from evaluators.multi_choice_evaluator import MultiChoiceEvaluator
 
 # Models for pre-training
 PRETRAIN_EVALUATOR_CLASSES = {
-    "mlm": None,
-    "auto_mlm": None,
-    "causal_lm": None,
+    "mlm": MaskedLanguageModelingEvaluator,
+    "auto_mlm": MaskedLanguageModelingEvaluator,
+    "causal_lm": CausalLanguageModelingEvaluator,
 }
 
 
 CLASSIFICATION_EVALUATOR_CLASSES = {
-    "auto_cls": None, # huggingface cls
-    "classification": None, # huggingface cls
-    "head_cls": None, # use standard fine-tuning head for cls, e.g., bert+mlp
-    "head_prefix_cls": None, # use standard fine-tuning head with prefix-tuning technique for cls, e.g., bert+mlp
-    "head_ptuning_cls": None, # use standard fine-tuning head with p-tuning technique for cls, e.g., bert+mlp
-    "head_adapter_cls": None, # use standard fine-tuning head with adapter-tuning technique for cls, e.g., bert+mlp
-    "masked_prompt_cls": None, # use masked lm head technique for prompt-based cls, e.g., bert+mlm
-    "masked_prompt_prefix_cls": None, # use masked lm head with prefix-tuning technique for prompt-based cls, e.g., bert+mlm
-    "masked_prompt_ptuning_cls": None, # use masked lm head with p-tuning technique for prompt-based cls, e.g., bert+mlm
-    "masked_prompt_adapter_cls": None, # use masked lm head with adapter-tuning technique for prompt-based cls, e.g., bert+mlm
-    "causal_prompt_cls": None, # use causal lm head for prompt-tuning, e.g., gpt2+lm
+    "auto_cls": SequenceClassificationEvaluator, # huggingface cls
+    "classification": SequenceClassificationEvaluator, # huggingface cls
+    "head_cls": SequenceClassificationEvaluator, # use standard fine-tuning head for cls, e.g., bert+mlp
+    "head_prefix_cls": SequenceClassificationEvaluator, # use standard fine-tuning head with prefix-tuning technique for cls, e.g., bert+mlp
+    "head_ptuning_cls": SequenceClassificationEvaluator, # use standard fine-tuning head with p-tuning technique for cls, e.g., bert+mlp
+    "head_adapter_cls": SequenceClassificationEvaluator, # use standard fine-tuning head with adapter-tuning technique for cls, e.g., bert+mlp
+    "masked_prompt_cls": SequenceClassificationEvaluator, # use masked lm head technique for prompt-based cls, e.g., bert+mlm
+    "masked_prompt_prefix_cls": SequenceClassificationEvaluator, # use masked lm head with prefix-tuning technique for prompt-based cls, e.g., bert+mlm
+    "masked_prompt_ptuning_cls": SequenceClassificationEvaluator, # use masked lm head with p-tuning technique for prompt-based cls, e.g., bert+mlm
+    "masked_prompt_adapter_cls": SequenceClassificationEvaluator, # use masked lm head with adapter-tuning technique for prompt-based cls, e.g., bert+mlm
+    "causal_prompt_cls": CausalSequenceClassificationEvaluator, # use causal lm head for prompt-tuning, e.g., gpt2+lm
 }
 
 
 TOKEN_CLASSIFICATION_EVALUATOR_CLASSES = {
-    "ner": None,
+    "ner": TokenClassificationEvaluator,
 }
 
 
 SPAN_EXTRACTION_EVALUATOR_CLASSES = {
-    "global_pointer": None,
+    "global_pointer": SpanExtractionEvaluator,
 }
 
 
 FEWSHOT_EVALUATOR_CLASSES = {
     "sequence_proto": None,
-    "span_proto": None,
-    "token_proto": None,
+    "span_proto": SpanExtractionEvaluator,
+    "token_proto": TokenClassificationEvaluator,
 }
 
 
 CODE_EVALUATOR_CLASSES = {
-    "code_cls": None,
+    "code_cls": SequenceClassificationEvaluator,
     "code_generation": None,
 }
 
@@ -53,43 +58,43 @@ CODE_EVALUATOR_CLASSES = {
 # task_type 负责对应model类型
 OTHER_EVALUATOR_CLASSES = {
     # sequence labeling
-    "ner": None,
-    "bert_softmax_ner": None,
-    "roberta_softmax_ner": None,
-    "albert_softmax_ner": None,
-    "megatronbert_softmax_ner": None,
-    "bert_crf_ner": None,
-    "roberta_crf_ner": None,
-    "albert_crf_ner": None,
-    "megatronbert_crf_ner": None,
-    "bert_span_ner": None,
-    "roberta_span_ner": None,
-    "albert_span_ner": None,
-    "megatronbert_span_ner": None,
+    "ner": TokenClassificationEvaluator,
+    "bert_softmax_ner": TokenClassificationEvaluator,
+    "roberta_softmax_ner": TokenClassificationEvaluator,
+    "albert_softmax_ner": TokenClassificationEvaluator,
+    "megatronbert_softmax_ner": TokenClassificationEvaluator,
+    "bert_crf_ner": TokenClassificationEvaluator,
+    "roberta_crf_ner": TokenClassificationEvaluator,
+    "albert_crf_ner": TokenClassificationEvaluator,
+    "megatronbert_crf_ner": TokenClassificationEvaluator,
+    "bert_span_ner": SpanExtractionEvaluator,
+    "roberta_span_ner": SpanExtractionEvaluator,
+    "albert_span_ner": SpanExtractionEvaluator,
+    "megatronbert_span_ner": SpanExtractionEvaluator,
     # sequence matching
-    "fusion_siamese": None,
+    "fusion_siamese": SequenceClassificationEvaluator,
     # multiple choice
-    "multi_choice": None,
-    "multi_choice_megatron": None,
-    "multi_choice_megatron_rdrop": None,
-    "megatron_multi_choice_tag": None,
-    "roformer_multi_choice_tag": None,
-    "multi_choice_tag": None,
-    "duma": None,
-    "duma_albert": None,
-    "duma_megatron": None,
+    "multi_choice": MultiChoiceEvaluator,
+    "multi_choice_megatron": MultiChoiceEvaluator,
+    "multi_choice_megatron_rdrop": MultiChoiceEvaluator,
+    "megatron_multi_choice_tag": MultiChoiceEvaluator,
+    "roformer_multi_choice_tag": MultiChoiceEvaluator,
+    "multi_choice_tag": MultiChoiceEvaluator,
+    "duma": MultiChoiceEvaluator,
+    "duma_albert": MultiChoiceEvaluator,
+    "duma_megatron": MultiChoiceEvaluator,
     # language modeling
 
     # "bert_mlm_acc": BertForMaskedLMWithACC,
     # "roformer_mlm_acc": RoFormerForMaskedLMWithACC,
-    "bert_pretrain_kg": None,
-    "bert_pretrain_kg_v2": None,
-    "kpplm_roberta": None,
-    "kpplm_deberta": None,
+    "bert_pretrain_kg": MaskedLanguageModelingEvaluator,
+    "bert_pretrain_kg_v2": MaskedLanguageModelingEvaluator,
+    "kpplm_roberta": MaskedLanguageModelingEvaluator,
+    "kpplm_deberta": MaskedLanguageModelingEvaluator,
 
     # other
-    "clue_wsc": None,
-    "semeval7multitask": None,
+    "clue_wsc": SequenceClassificationEvaluator,
+    "semeval7multitask": SequenceClassificationEvaluator,
 }
 
 

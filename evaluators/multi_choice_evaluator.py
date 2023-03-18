@@ -21,9 +21,9 @@ logger = logging.getLogger(__name__)
 
 
 """
-Evaluator for the task of sequence classification with Masked PLMs.
+Evaluator for the task of multi-choice classification with Masked PLMs.
 """
-class SequenceClassificationEvaluator(ClassificationEvaluator):
+class MultiChoiceEvaluator(ClassificationEvaluator):
 
     def __init__(
         self,
@@ -40,9 +40,9 @@ class SequenceClassificationEvaluator(ClassificationEvaluator):
 
 
 """
-Evaluator for the task of sequence classification with Causal PLMs.
+Evaluator for the task of multi-choice classification with Causal PLMs.
 """
-class CausalSequenceClassificationEvaluator(Evaluator):
+class CausalMultiChoiceEvaluator(Evaluator):
 
     def __init__(
         self,

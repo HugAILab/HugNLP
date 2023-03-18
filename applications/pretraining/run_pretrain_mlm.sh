@@ -15,7 +15,7 @@ python3 -m torch.distributed.launch --nproc_per_node=4 --master_port 6013 hugnlp
 --data_dir=$data_path \
 --train_file=$data_path/total_pretrain_data_10m.txt \
 --max_seq_length=512 \
---output_dir=/wjn/frameworks/HugNLP/output/pretrain/mlm_$model_name/ \
+--output_dir=./outputs/pretrain/mlm_$model_name/ \
 --do_train \
 --per_device_train_batch_size=16 \
 --per_device_eval_batch_size=16 \
