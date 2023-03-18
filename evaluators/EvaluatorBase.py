@@ -206,12 +206,12 @@ class ClassificationEvaluator(Evaluator):
                     writer.write(json.dumps(json_d) + "\n")
 
             # Save Top K results
-            topfile = os.path.join(self.training_args.output_dir, "top20_predict.json")
+            topfile = os.path.join(self.training_args.output_dir, "topk_predict.json")
             with open(topfile, "w", encoding="utf-8") as f2:
                 json.dump(topk_predictions, f2, ensure_ascii=False, indent=4)
 
 
-    def get_best_and_topk(self, logits, examples, stage="dev"):
+    def get_best_and_topk(self, logits, examples, topk=10):
         """
         Obtain the best results and Top K predictions.
         """
@@ -231,7 +231,7 @@ class ClassificationEvaluator(Evaluator):
             proba = softmax(logit) # Transform as probabilities.
             indices = np.argsort(-proba)
             out = list()
-            for index in indices[:20]:
+            for index in indices[:topk]:
                 prob = proba[index].tolist()
                 index = index.tolist()
                 out.append({"prob": prob, "answer": index})

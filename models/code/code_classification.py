@@ -29,10 +29,7 @@ import torch.nn.functional as F
 from torch import Tensor
 from torch.nn import CrossEntropyLoss, MSELoss, BCEWithLogitsLoss
 
-from transformers import BertModel, BertPreTrainedModel
 from transformers import RobertaModel, RobertaPreTrainedModel
-from transformers.models.deberta.modeling_deberta import DebertaModel, DebertaPreTrainedModel, ContextPooler, StableDropout
-from transformers.models.gpt2.modeling_gpt2 import GPT2Model, GPT2PreTrainedModel
 from transformers.models.plbart.modeling_plbart import PLBartPreTrainedModel, PLBartClassificationHead, PLBartModel
 from transformers.models.plbart.configuration_plbart import PLBartConfig
 from transformers.models.t5.modeling_t5 import T5PreTrainedModel#, T5ClassificationHead, T5Model
@@ -42,6 +39,8 @@ from models.basic_modules.prefix_encoder import PrefixEncoder
 
 from models.basic_modules.adapter import BertAdaModel, RobertaAdaModel, init_adapter
 from tools.model_utils.parameter_freeze import ParameterFreeze
+
+freezer = ParameterFreeze()
 
 ## ======== Roberta ========
 #  Vanilla Fine-tuning For Roberta
