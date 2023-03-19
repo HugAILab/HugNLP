@@ -112,7 +112,7 @@ class SpanExtractionEvaluator(ClassificationEvaluator):
 
 
 
-    def get_best_and_topk(self, logits, examples, topk=10):
+    def get_best_and_topk(self, logits, examples, topk=10, stage="dev"):
 
         def fush_multi_answer(self, has_answer, new_answer):
             # has {"ans": {"prob": float(prob[index_ids[ei]]), "pos": (s, e)}, ...}

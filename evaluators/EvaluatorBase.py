@@ -211,7 +211,7 @@ class ClassificationEvaluator(Evaluator):
                 json.dump(topk_predictions, f2, ensure_ascii=False, indent=4)
 
 
-    def get_best_and_topk(self, logits, examples, topk=10):
+    def get_best_and_topk(self, logits, examples, topk=10, stage="dev"):
         """
         Obtain the best results and Top K predictions.
         """
@@ -272,7 +272,7 @@ class GenerationEvaluator(Evaluator):
         pass
 
 
-    def get_best_and_topk(self, logits, examples, stage="dev"):
+    def get_best_and_topk(self, logits, examples, topk=10, stage="dev"):
         """
         Obtain the best results and Top K predictions.
         """
