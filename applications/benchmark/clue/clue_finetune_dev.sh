@@ -15,16 +15,16 @@ data_path=/wjn/nlp_task_datasets/CLUEdatasets # nas A100
 TASK_NAME=clue
 
 #### clue task
-#clue_task=wsc
+# clue_task=wsc
 # clue_task=afqmc
-#clue_task=ocnli
+# clue_task=ocnli
 # clue_task=csl
 #clue_task=csl_efl
-#clue_task=iflytek # mrc不适合类别数量太多的
-clue_task=tnews
+# clue_task=iflytek # mrc不适合类别数量太多的
+# clue_task=tnews
 #clue_task=tnews_efl
 #clue_task=cmnlic/cmnli_public
-# clue_task=qbqtc
+clue_task=qbqtc
 
 #clue_task=text_similarity
 
@@ -34,7 +34,7 @@ clue_task=tnews
 #task_type_=autocls
 # TASK_TYPE=classification
 # TASK_TYPE=head_cls
-TASK_TYPE=head_prefix_cls
+TASK_TYPE=head_adapter_cls
 
 #### inference model path
 #path=/wjn/nlp_runner/outputs/clue/ocnli/chinese-macbert-large/chinese-macbert-large/
@@ -46,7 +46,6 @@ if [ "$clue_task" = "wsc" ]; then
   eval_step=50
   wr_step=50
   lr=3e-05
-  TASK_TYPE=clue_wsc
   rm -rf /root/.cache/huggingface/datasets/clue/cache_"$task_name_"_"$clue_task"_validation.arrow
   rm -rf /root/.cache/huggingface/datasets/clue/cache_"$task_name_"_"$clue_task"_test.arrow
 
@@ -69,7 +68,6 @@ elif [ "$clue_task" = "ocnli" ]; then
   lr=3e-05
 
 elif [ "$clue_task" = "csl" ]; then
-#  path=/wjn/nlp_runner/outputs/clue/csl/chinese-macbert-large/chinese-macbert-large
   len=256
   bz=8
   epoch=20
@@ -78,7 +76,6 @@ elif [ "$clue_task" = "csl" ]; then
   lr=2e-05
 
 elif [ "$clue_task" = "csl_efl" ]; then
-#  path=/wjn/nlp_runner/outputs/clue/csl_efl/chinese-macbert-large/chinese-macbert-large
   len=256
   bz=8
   epoch=20
@@ -132,8 +129,8 @@ fi
 #rm -rf /root/.cache/huggingface/datasets/clue/cache_"$task_name_"_"$clue_task"_train.arrow
 
 
-export CUDA_VISIBLE_DEVICES=0,1
-python -m torch.distributed.launch --nproc_per_node=2 --master_port=6014 hugnlp_runner.py \
+export CUDA_VISIBLE_DEVICES=2,3
+python3 -m torch.distributed.launch --nproc_per_node=2 --master_port=6015 hugnlp_runner.py \
   --model_name_or_path=$path \
   --data_dir=$data_path/$clue_task \
   --output_dir=./outputs/clue/$clue_task \
@@ -164,10 +161,10 @@ python -m torch.distributed.launch --nproc_per_node=2 --master_port=6014 hugnlp_
   --pad_to_max_length=True \
   --remove_unused_columns=False \
   --overwrite_output_dir \
-  --fp16 \
   --label_names=labels \
   --keep_predict_labels \
   --user_defined="data_name=$clue_task" \
-  --pre_seq_len=4 \
-  --use_freezing
+  # --pre_seq_len=4 \
+  # --use_freezing
   # --do_adv
+  # --fp16 \

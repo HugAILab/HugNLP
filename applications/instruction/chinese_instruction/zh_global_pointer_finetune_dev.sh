@@ -11,7 +11,7 @@ path=/wjn/pre-trained-lm/chinese-macbert-large # 89
 # data_path=/wjn/nlp_task_datasets/zh_instruction
 data_path=/wjn/nlp_task_datasets/chinese_datahub
 
-export CUDA_VISIBLE_DEVICES=0,1
+export CUDA_VISIBLE_DEVICES=2,3
 python -m torch.distributed.launch --nproc_per_node=2 --master_port=6019 hugnlp_runner.py \
   --model_name_or_path=$path \
   --data_dir=$data_path\

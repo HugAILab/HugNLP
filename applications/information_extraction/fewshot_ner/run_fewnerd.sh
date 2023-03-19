@@ -22,7 +22,7 @@ K=5 # 1, 5, 1, 5
 python3 -m torch.distributed.launch --nproc_per_node=4 --master_port=6010 hugnlp_runner.py \
 --model_name_or_path=/wjn/pre-trained-lm/bert-base-uncased \
 --data_dir=/wjn/nlp_task_datasets/Few-NERD/episode-data/$mode \
---output_dir=./outputs/"$mode-$N-$K" \
+--output_dir=./outputs/information_extraction/fewshot_ner/$TASK_NAME/"$mode-$N-$K" \
 --seed=42 \
 --exp_name=few-nerd \
 --max_seq_length=64 \

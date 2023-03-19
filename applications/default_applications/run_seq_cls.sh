@@ -2,6 +2,8 @@
 path=/wjn/pre-trained-lm/chinese-macbert-base/
 MODEL_TYPE=bert
 
+DATA_NAME=default-cls
+
 #### task data path (use should change this path)
 data_path=/wjn/frameworks/HugNLP/datasets/data_example/cls
 
@@ -20,7 +22,7 @@ export CUDA_VISIBLE_DEVICES=0,1
 python3 -m torch.distributed.launch --nproc_per_node=2 --master_port=6014 hugnlp_runner.py \
 --model_name_or_path=$path \
 --data_dir=$data_path \
---output_dir=./outputs/default/sequence_classification\
+--output_dir=./outputs/default/sequence_classification/$DATA_NAME/ \
 --seed=42 \
 --exp_name=default-cls \
 --max_seq_length=$len \
@@ -51,5 +53,5 @@ python3 -m torch.distributed.launch --nproc_per_node=2 --master_port=6014 hugnlp
 --fp16 \
 --label_names=labels \
 --keep_predict_labels \
---user_defined="label_names=entailment,neutral,contradiction" \
+--user_defined="label_names=entailment,neutral,contradiction data_name=$DATA_NAME" \
 # --use_prompt_for_cls
