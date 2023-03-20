@@ -9,14 +9,16 @@ import math
 import numpy as np
 from collections import defaultdict
 from typing import Dict, Union, Any, Optional, Callable, List, Tuple, Iterator
+import torch
 import datasets
 from datasets import Dataset
-from config import DataTrainingArguments, TrainingArguments
+from config import DataTrainingArguments, TrainingArguments, ModelArguments
 from hugnlp_trainer import HugTrainer
 from processors.ProcessorBase import DataProcessor
 from metrics.classification_metric import ClassificationMetric
 from tools.computations.softmax import softmax
 from tools.runner_utils.log_util import logging
+from tools.model_utils.gpt_response import GPTResponse
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +30,7 @@ class Evaluator(object):
 
     def __init__(
         self,
+        model_args: ModelArguments,
         data_args: DataTrainingArguments,
         training_args: TrainingArguments,
         processor: DataProcessor,
@@ -36,6 +39,7 @@ class Evaluator(object):
         test_dataset: Optional[Dataset] = None,
     ) -> None:
 
+        self.model_args = model_args
         self.data_args = data_args
         self.training_args = training_args
         self.processor = processor
@@ -90,6 +94,7 @@ class ClassificationEvaluator(Evaluator):
 
     def __init__(
         self,
+        model_args: ModelArguments,
         data_args: DataTrainingArguments,
         training_args: TrainingArguments,
         processor: DataProcessor,
@@ -97,7 +102,7 @@ class ClassificationEvaluator(Evaluator):
         eval_dataset: Optional[Dataset] = None,
         test_dataset: Optional[Dataset] = None,
     ) -> None:
-        super().__init__(data_args, training_args, processor, trainer, eval_dataset, test_dataset)
+        super().__init__(model_args, data_args, training_args, processor, trainer, eval_dataset, test_dataset)
         self.paradigm = NO_GENERATE
 
 
@@ -247,6 +252,7 @@ class GenerationEvaluator(Evaluator):
 
     def __init__(
         self,
+        model_args: ModelArguments,
         data_args: DataTrainingArguments,
         training_args: TrainingArguments,
         processor: DataProcessor,
@@ -254,13 +260,31 @@ class GenerationEvaluator(Evaluator):
         eval_dataset: Optional[Dataset] = None,
         test_dataset: Optional[Dataset] = None,
     ) -> None:
-        super().__init__(data_args, training_args, processor, trainer, eval_dataset, test_dataset)
+        super().__init__(model_args, data_args, training_args, processor, trainer, eval_dataset, test_dataset)
         self.paradigm = NO_GENERATE
+        self.generation_model_response = None
+        if self.model_args.model_type in ["gpt2", "gpt3"]:
+            self.generation_model_response = GPTResponse(
+                model_type=self.model_args.model_type,
+                data_path=self.data_args.data_dir
+            )
 
 
     def default_compute_metrics(self, eval_predictions):
         pass
         # return all_metrics
+
+    def generate(self, eval_dataset, num_log_probs=1, echo=False):
+        # obtain generative answer from causal PLM.
+        assert hasattr(self.processor, "l"), "You must define l ('max length of generated tokens') for generative-style tasks"
+        l = self.processor.l
+
+        all_raw_answers = []
+
+        return all_raw_answers
+
+
+
 
 
     def evaluate(self):
@@ -276,4 +300,6 @@ class GenerationEvaluator(Evaluator):
         """
         Obtain the best results and Top K predictions.
         """
+
+
         pass

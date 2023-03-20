@@ -130,7 +130,7 @@ class InstructionPromptProcessor(PromptBaseProcessor):
         tokenizer: Optional[AutoTokenizer] = None
         ) -> None:
         super().__init__(data_args, task_name, sentence1_key, sentence2_key, template, label_words_mapping, instruction, tokenizer)
-        assert self.instruction_prompt is not None, "If you choose instruction prompt, you must define a instruction file."
+        assert self.instruction is not None, "If you choose instruction prompt, you must define a instruction file."
         self.instruction_prompt = self.instruction["instruction"] if "instruction" in self.instruction.keys() else ""
         self.input_prompt = self.instruction["input_prompt"] if "input_prompt" in self.instruction.keys() else ""
         self.output_prompt = self.instruction["output_prompt"] if "output_prompt" in self.instruction.keys() else ""

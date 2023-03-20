@@ -3,6 +3,7 @@ datasets
 jieba
 mlflow
 openai
+openai
 pymysql
 roformer
 scikit-learn

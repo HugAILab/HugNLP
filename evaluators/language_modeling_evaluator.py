@@ -10,7 +10,7 @@ import numpy as np
 from typing import Dict, Union, Any, Optional, Callable, List, Tuple, Iterator
 import datasets
 from datasets import Dataset
-from config import DataTrainingArguments, TrainingArguments
+from config import DataTrainingArguments, TrainingArguments, ModelArguments
 from hugnlp_trainer import HugTrainer
 from processors.ProcessorBase import DataProcessor
 from evaluators.EvaluatorBase import NO_GENERATE, DO_GENERATE, Evaluator, ClassificationEvaluator
@@ -27,6 +27,7 @@ class MaskedLanguageModelingEvaluator(ClassificationEvaluator):
 
     def __init__(
         self,
+        model_args: ModelArguments,
         data_args: DataTrainingArguments,
         training_args: TrainingArguments,
         processor: DataProcessor,
@@ -34,7 +35,7 @@ class MaskedLanguageModelingEvaluator(ClassificationEvaluator):
         eval_dataset: Optional[Dataset] = None,
         test_dataset: Optional[Dataset] = None,
     ) -> None:
-        super().__init__(data_args, training_args, processor, trainer, eval_dataset, test_dataset)
+        super().__init__(model_args, data_args, training_args, processor, trainer, eval_dataset, test_dataset)
         self.paradigm = NO_GENERATE
 
 
@@ -47,6 +48,7 @@ class CausalLanguageModelingEvaluator(ClassificationEvaluator):
 
     def __init__(
         self,
+        model_args: ModelArguments,
         data_args: DataTrainingArguments,
         training_args: TrainingArguments,
         processor: DataProcessor,
@@ -54,5 +56,5 @@ class CausalLanguageModelingEvaluator(ClassificationEvaluator):
         eval_dataset: Optional[Dataset] = None,
         test_dataset: Optional[Dataset] = None,
     ) -> None:
-        super().__init__(data_args, training_args, processor, trainer, eval_dataset, test_dataset)
+        super().__init__(model_args, data_args, training_args, processor, trainer, eval_dataset, test_dataset)
         self.paradigm = NO_GENERATE
