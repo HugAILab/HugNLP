@@ -36,6 +36,5 @@ python3 hugnlp_runner.py \
   --overwrite_output_dir \
   --label_names=short_labels \
   --keep_predict_labels \
-  --cache_dir=/wjn/.cache \
   --user_defined="num_incontext_example=4 l=1" \
   --use_prompt_for_cls
