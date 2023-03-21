@@ -1,5 +1,5 @@
 #### pre-trained lm path
-path=/wjn/pre-trained-lm/gpt2
+path=gpt2
 # path=/wjn/pre-trained-lm/gpt2-xl
 MODEL_TYPE=gpt2
 
