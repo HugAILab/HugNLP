@@ -26,7 +26,7 @@ TASK_NAME=clue
 #clue_task=cmnlic/cmnli_public
 clue_task=qbqtc
 
-#clue_task=text_similarity
+#clue_task=text_similarityw
 
 
 #### task_type
@@ -34,7 +34,9 @@ clue_task=qbqtc
 #task_type_=autocls
 # TASK_TYPE=classification
 # TASK_TYPE=head_cls
-TASK_TYPE=head_adapter_cls
+# TASK_TYPE=head_adapter_cls
+# TASK_TYPE=head_prefix_cls
+TASK_TYPE=head_ptuning_cls
 
 #### inference model path
 #path=/wjn/nlp_runner/outputs/clue/ocnli/chinese-macbert-large/chinese-macbert-large/
@@ -164,7 +166,7 @@ python3 -m torch.distributed.launch --nproc_per_node=2 --master_port=6015 hugnlp
   --label_names=labels \
   --keep_predict_labels \
   --user_defined="data_name=$clue_task" \
-  # --pre_seq_len=4 \
-  # --use_freezing
+  --pre_seq_len=32
   # --do_adv
+  # --use_freezing
   # --fp16 \

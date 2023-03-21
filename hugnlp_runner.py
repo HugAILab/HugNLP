@@ -14,7 +14,7 @@ from callback.ema import ExponentialMovingAveragingCallback
 from callback.freeze import FreezeCallback
 from callback.logger import LoggerCallback
 from processors import PROCESSORS
-from transformers import CONFIG_MAPPING, AutoConfig, AutoTokenizer, HfArgumentParser, set_seed
+from transformers import CONFIG_MAPPING, AutoConfig, AutoTokenizer, HfArgumentParser
 from hugnlp_trainer import HugTrainer
 from transformers.trainer_utils import get_last_checkpoint
 from transformers import EarlyStoppingCallback
@@ -24,6 +24,7 @@ from tools.runner_utils.log_util import init_logger
 from models import MODEL_CLASSES, TOKENIZER_CLASSES
 from evaluators import EVALUATORS_CLASSES
 from tools.runner_utils.conifg_extensive import config_extensive
+from tools.runner_utils.set_seed import set_seed
 import logging
 
 logger = logging.getLogger(__name__)
@@ -251,6 +252,7 @@ def main():
 
     # Obtain Evaluator
     evaluator = evaluator_class(
+        model_args=model_args,
         data_args=data_args,
         training_args=training_args,
         processor=processor,

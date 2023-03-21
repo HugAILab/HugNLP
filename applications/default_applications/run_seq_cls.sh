@@ -4,8 +4,8 @@ MODEL_TYPE=bert
 
 DATA_NAME=default-cls
 
-#### task data path (use should change this path)
-data_path=/wjn/frameworks/HugNLP/datasets/data_example/cls
+#### task data path (user should change this path)
+data_path=./datasets/data_example/cls
 
 TASK_TYPE=head_cls
 # TASK_TYPE=masked_prompt_prefix_cls

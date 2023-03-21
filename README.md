@@ -20,6 +20,19 @@
 
 HugNLP is a novel development and application library based on [Hugging Face](https://huggingface.co/) for improving the convenience and effectiveness of NLP researchers. The founder and main developer is [Jianing Wang](https://wjn1996.github.io/). The collaborators (programmers) are [Nuo Chen](https://github.com/nchen909) and [Qiushi Sun](https://github.com/QiushiSun).
 
+---
+
+## **News
+
+**🆕 23-03-21: Finish GPT-style PLMs for In-Context Learning classification.**
+
+**🆕 23-03-20: Add Evaluators for each task.**
+
+**🆕 23-03-13: Add code clone detection and defect task.**
+
+
+---
+
 # Architecture
 
 The framework overview is shown as follows:

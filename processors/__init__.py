@@ -20,8 +20,9 @@ from processors.pretraining.kg_enhance_plm.data_process import WikiKPPLMSupervis
 from processors.pretraining.causal_lm.data_processor import CausalLMITextLineProcessor, CausalLMInContextProcessor
 # few-shot ner
 from processors.ner.fewshot_ner.data_processor import SpanProtoFewNERDProcessor, SpanProtoCrossNERProcessor, TokenProtoFewNERDProcessor
-# chinese instruction-tuning
+# instruction-tuning
 from processors.instruction_prompting.chinese_extractive_instruction.data_processor import ChineseExtractiveInstructionProcessor
+from processors.instruction_prompting.incontext_learning.data_processor import CausalInContextClassificationProcessor
 # code
 from processors.code.code_clone.data_processor import CodeCloneProcessor
 from processors.code.code_defect.data_processor import CodeDefectProcessor
@@ -35,12 +36,19 @@ PRETRAINING_PROCESSORS = {
     "en_wiki_kpplm": WikiKPPLMSupervisedJsonProcessor,
 }
 
+# default task
+DEFAULT_PROCESSORS = {
+    "default_cls": DefaultSequenceClassificationProcessor,
+}
+
 # Information Extraction Tasks
 IE_PROCESSORS = {
+    "sequence_proto": None,
     "span_proto_fewnerd": SpanProtoFewNERDProcessor,  # span-based proto for few-shot ner
     "token_proto_fewnerd": TokenProtoFewNERDProcessor,  # token-based proto for few-shot ner
 }
 
+# Benchmark
 BENCHMARKS_PROCESSORS = {
     "clue": CLUEProcessor,
     "clue_ner": CLUENERProcessor,
@@ -56,8 +64,13 @@ BENCHMARKS_PROCESSORS = {
     "glue": GLUEProcessor,  # glue
 }
 
+# Instruction / Prompting / In-context / Chain-of-Thought
 INSTRUCTION_PROCESSORS = {
-    "zh_mrc_instruction": ChineseExtractiveInstructionProcessor, # 使用mrc
+    "causal_instruction": None, # using causal instruction-tuning
+    "zh_mrc_instruction": ChineseExtractiveInstructionProcessor, # using extractive-instruction for chinese
+    "causal_incontext_cls": CausalInContextClassificationProcessor, # using causal in-context learning for cls tasks
+    "causal_incontext": None, # using causal in-context
+    "causal_chain_of_thought": None, # using causal chain-of-thought
 }
 
 
@@ -72,13 +85,12 @@ CODE_PROCESSORS = {
 }
 
 OTHER_PROCESSORS = {
-    "default_cls": DefaultSequenceClassificationProcessor,
     # pre-training language model
     # "mlm_from_disk": MLMFromDisk,
     # "wwm_from_disk": WWMFromDisk,
     # "mlm_line_by_line": MLMLineByLineProcessor,
     # "mlm_group": MLMGroupProcessor,
-    "causal_lm_incontext": CausalLMInContextProcessor,
+    # "causal_lm_incontext": CausalLMInContextProcessor,
     # "kgpretrain": PretrainWithKGFromDisk,
     # "kgpretrain_v2": KgV2Processor,
 
@@ -89,6 +101,7 @@ OTHER_PROCESSORS = {
 
 PROCESSORS_LIST = [
     PRETRAINING_PROCESSORS,
+    DEFAULT_PROCESSORS,
     IE_PROCESSORS,
     INSTRUCTION_PROCESSORS,
     BENCHMARKS_PROCESSORS,
