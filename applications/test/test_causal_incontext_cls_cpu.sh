@@ -7,7 +7,7 @@ MODEL_TYPE=gpt2
 data_path=./datasets/data_example/incontext_cls
 
 export CUDA_VISIBLE_DEVICES=-1
-python -m torch.distributed.launch --nproc_per_node=2 --master_port=6020 hugnlp_runner.py \
+python3 hugnlp_runner.py \
   --model_name_or_path=$path \
   --data_dir=$data_path\
   --output_dir=./outputs/instruction/incontext_learning \

@@ -183,8 +183,8 @@ class CausalSequenceClassificationEvaluator(GenerationEvaluator):
         for data in tqdm(eval_dataset):
 
             total_sequences = self.model.generate(
-                input_ids=torch.Tensor([data['input_ids']]).long().cuda(),
-                attention_mask=torch.Tensor([data['attention_mask']]).long().cuda(),
+                input_ids=torch.Tensor([data['input_ids']]).long().to(self.model.device),
+                attention_mask=torch.Tensor([data['attention_mask']]).long().to(self.model.device),
                 max_length=l + len(data['input_ids']),
                 do_sample=False,
                 pad_token_id=self.processor.tokenizer.eos_token_id
