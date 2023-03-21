@@ -96,7 +96,7 @@ class CausalSequenceClassificationEvaluator(GenerationEvaluator):
 
     def evaluate(self):
 
-        # generate answer
+        # generate answer for validation set
         all_raw_answers = self.generate(
             eval_dataset=self.eval_dataset,
             num_log_probs=1,
@@ -107,7 +107,7 @@ class CausalSequenceClassificationEvaluator(GenerationEvaluator):
         all_label_probs = self.obtain_label_logits(all_raw_answers, self.eval_dataset)
 
         metrics = self.default_compute_metrics(all_label_probs, self.eval_dataset)
-        print("dev metrics=", metrics)
+        # print("dev metrics=", metrics)
 
         self.trainer.log_metrics("eval", metrics)
         self.trainer.save_metrics("eval", metrics)
@@ -115,20 +115,20 @@ class CausalSequenceClassificationEvaluator(GenerationEvaluator):
 
     def predict(self):
 
-        # generate answer
+        # generate answer for test dataset
         all_raw_answers = self.generate(
-            eval_dataset=self.eval_dataset,
+            eval_dataset=self.test_dataset,
             num_log_probs=1,
             echo=True
         )
 
         # obtain the logits of the generated answer for each label.
-        logits = self.obtain_label_logits(all_raw_answers, self.eval_dataset)
+        logits = self.obtain_label_logits(all_raw_answers, self.test_dataset)
 
-        if "label" in self.test_dataset.features:
+        if "label" in self.test_dataset.features and not self.data_args.keep_predict_labels:
 
             metrics = self.default_compute_metrics(logits, self.test_dataset)
-            print("test metrics=", metrics)
+            # print("test metrics=", metrics)
 
             self.trainer.log_metrics("test", metrics)
             self.trainer.save_metrics("test", metrics)

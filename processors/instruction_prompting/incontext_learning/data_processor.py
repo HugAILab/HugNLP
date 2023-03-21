@@ -10,6 +10,7 @@ import torch
 import os.path
 import numpy as np
 from dataclasses import dataclass
+from datasets import DatasetDict, Dataset, load_metric
 from typing import Optional, List
 from collections import defaultdict
 from transformers import PreTrainedTokenizerBase
@@ -21,7 +22,7 @@ from collections import defaultdict, Counter
 from processors.basic_processors.prompt_processor import InstructionPromptProcessor
 from tools.processing_utils.tokenizer.tokenizer_utils import get_special_token_mapping
 from processors.instruction_prompting.incontext_learning.data_collator import DataCollatorForClassificationInContextLearning
-
+from processors.dataset import DatasetK
 from tools.model_utils.gpt_response import GPTResponse
 
 """
@@ -141,6 +142,38 @@ class CausalInContextClassificationProcessor(CLSProcessor):
         incontext_examples = examples[:self.num_incontext_example] if self.num_incontext_example > len(examples) else examples
         return incontext_examples
 
+
+    def get_tokenized_datasets(self):
+        raw_datasets = DatasetDict()
+        if self.training_args.do_train:
+            train_examples = self.get_examples("train")
+            raw_datasets["train"] = DatasetK.from_dict(self.list_2_json(train_examples)) # [{k1: xxx, k2: xxx}, {...}] -> {k1: [xxx, xxx], k2: [xxx, xxx]}
+        if self.training_args.do_eval:
+            dev_examples = self.get_examples("dev")
+            raw_datasets["validation"] = DatasetK.from_dict(self.list_2_json(dev_examples))
+        if self.training_args.do_predict:
+            test_examples = self.get_examples("test")
+            raw_datasets["test"] = DatasetK.from_dict(self.list_2_json(test_examples))
+
+        if self.post_tokenizer:
+            if self.keep_raw_data:
+                self.raw_datasets = raw_datasets
+            return raw_datasets
+        remove_columns = self.sentence1_key if not self.sentence2_key else [self.sentence1_key, self.sentence2_key]
+        tokenize_func = self.build_preprocess_function()
+        # 多gpu, 0计算完存cache，其他load cache
+        with self.training_args.main_process_first(desc="dataset tokenizer map"):
+            raw_datasets = raw_datasets.map(
+                tokenize_func,
+                batched=True,
+                desc="Running tokenizer on dataset",
+                remove_columns=remove_columns
+            )
+            if self.keep_raw_data:
+                self.raw_datasets = raw_datasets
+            return raw_datasets
+
+
     def get_examples(self, set_type):
         # assert set_type != "train", "In-context learning dose not have training proce"
 
@@ -156,8 +189,10 @@ class CausalInContextClassificationProcessor(CLSProcessor):
             # 随机采样若干in-context example作为demonstration
             incontext_examples = self.InContextSampling(training_examples)
             # incontext_examples = self.incontext_examples
-
-            examples = self._create_examples(self._read_json2(self.dev_file), set_type)
+            if set_type == "dev":
+                examples = self._create_examples(self._read_json2(self.dev_file), set_type)
+            else:
+                examples = self._create_examples(self._read_json2(self.test_file), set_type)
             # 为每个dev/test构建prompt
             eval_examples = list()
             for example in examples:
