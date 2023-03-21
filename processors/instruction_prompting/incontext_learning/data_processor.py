@@ -107,8 +107,8 @@ class CausalInContextClassificationProcessor(CLSProcessor):
         # label_words_mapping: {"xxx": ["xxx"], ...}
         self.label_words_mapping = json.load(open(self.label_words_mapping_file, "r", encoding="utf-8"))
 
-        # if self.model_args.model_type in ["gpt2"]:
-        #     self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
+        if self.model_args.model_type in ["gpt2"]:
+            self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
 
         self.prompt_engineering = InstructionPromptProcessor(
             data_args=self.data_args,

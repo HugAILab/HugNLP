@@ -1,6 +1,5 @@
 #### pre-trained lm path
 path=gpt2
-# path=/wjn/pre-trained-lm/gpt2-xl
 MODEL_TYPE=gpt2
 
 #### task data path (user should change this path)
