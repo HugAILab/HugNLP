@@ -49,8 +49,9 @@ class CausalInContextClassificationProcessor(CLSProcessor):
         }
         self.data_name = param["data_name"] if "data_name" in param.keys() else "user-define"
         self.num_incontext_example = int(param["num_incontext_example"]) # the number of in-context example
-        self.l = int(param["l"]) if "l" in param.keys() else 10
-
+        self.l = int(param["l"]) if "l" in param.keys() else 1 # the max length to generate
+        self.use_calibrate = param["use_calibrate"] == "True" if "use_calibrate" in param.keys() else False # whether to calibrate the prediction
+        self.content_free = ["N/A"] # When set "use_calibrate" is True, will add a new content_free example.
         self.data_dir = data_args.data_dir
         self.train_file = os.path.join(
             data_args.data_dir, "train.json"
@@ -111,6 +112,7 @@ class CausalInContextClassificationProcessor(CLSProcessor):
         if self.model_args.model_type in ["gpt2"]:
             self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
 
+        self.incontext_examples = None
         self.prompt_engineering = InstructionPromptProcessor(
             data_args=self.data_args,
             task_name=self.data_name,
@@ -139,7 +141,7 @@ class CausalInContextClassificationProcessor(CLSProcessor):
     def InContextSampling(self, examples: list) -> list:
         # used for sampling in-context examples
         random.shuffle(examples)
-        incontext_examples = examples[:self.num_incontext_example] if self.num_incontext_example > len(examples) else examples
+        incontext_examples = examples[:self.num_incontext_example] if self.num_incontext_example < len(examples) else examples
         return incontext_examples
 
 
@@ -151,6 +153,7 @@ class CausalInContextClassificationProcessor(CLSProcessor):
         if self.training_args.do_eval:
             dev_examples = self.get_examples("dev")
             raw_datasets["validation"] = DatasetK.from_dict(self.list_2_json(dev_examples))
+            print("raw_datasets[validation][0]=", raw_datasets["validation"][0])
         if self.training_args.do_predict:
             test_examples = self.get_examples("test")
             raw_datasets["test"] = DatasetK.from_dict(self.list_2_json(test_examples))
@@ -173,6 +176,26 @@ class CausalInContextClassificationProcessor(CLSProcessor):
                 self.raw_datasets = raw_datasets
             return raw_datasets
 
+    def get_content_free_examples(self):
+        assert self.use_calibrate and self.content_free is not None and self.incontext_examples is not None
+        content_free_examples = list()
+        for ei, content_free_text in enumerate(self.content_free):
+            content_free_example = {
+                self.sentence1_key: content_free_text,
+            }
+            content_free_prompt = self.prompt_engineering.construct_incontext_prompt(
+                sentence1_key=self.sentence1_key,
+                sentence2_key=self.sentence2_key,
+                incontext_examples=self.incontext_examples,
+                eval_example=content_free_example
+            )
+            content_free_examples.append({
+                "idx": "content-free-{}".format(ei),
+                "content_free_prompt": content_free_prompt,
+                # "label": 0, # content free example has no label (not bias to any labels). But is must add a label value, so set 0.
+                # "target": 0, # content free example has no label (not bias to any labels). But is must add a label value, so set 0.
+            })
+        return content_free_examples
 
     def get_examples(self, set_type):
         # assert set_type != "train", "In-context learning dose not have training proce"
@@ -187,7 +210,8 @@ class CausalInContextClassificationProcessor(CLSProcessor):
             # 先获取所有的训练集
             training_examples = self._create_examples(self._read_json2(self.train_file), "train")
             # 随机采样若干in-context example作为demonstration
-            incontext_examples = self.InContextSampling(training_examples)
+            if self.incontext_examples is None:
+                self.incontext_examples = self.InContextSampling(training_examples)
             # incontext_examples = self.incontext_examples
             if set_type == "dev":
                 examples = self._create_examples(self._read_json2(self.dev_file), set_type)
@@ -199,7 +223,7 @@ class CausalInContextClassificationProcessor(CLSProcessor):
                 prompt = self.prompt_engineering.construct_incontext_prompt(
                     sentence1_key=self.sentence1_key,
                     sentence2_key=self.sentence2_key,
-                    incontext_examples=incontext_examples,
+                    incontext_examples=self.incontext_examples,
                     eval_example=example
                     )
                 eval_examples.append({
@@ -210,7 +234,7 @@ class CausalInContextClassificationProcessor(CLSProcessor):
                     "target": example["target"],
                 })
 
-        return examples # List[dict]
+        return eval_examples # List[dict]
 
     def _create_examples(self, lines, set_type=None):
         examples = []
@@ -249,8 +273,8 @@ class CausalInContextClassificationProcessor(CLSProcessor):
             tokenized_examples = tokenizer(
                 examples[self.sentence1_key], # 即使是sentence pair任务，也在数据处理前通过prompt合并为一个序列
                 truncation=True,
-                max_length=max_seq_length,
-                padding="max_length" if self.data_args.pad_to_max_length else False,
+                # max_length=max_seq_length,
+                # padding="max_length" if self.data_args.pad_to_max_length else False,
                 # return_offsets_mapping=True
             )
             # 确定label

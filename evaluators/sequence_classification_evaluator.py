@@ -19,6 +19,7 @@ from evaluators.EvaluatorBase import NO_GENERATE, DO_GENERATE, Evaluator, Classi
 from metrics.classification_metric import ClassificationMetric
 from tools.runner_utils.log_util import logging
 from tools.computations.softmax import softmax
+from tools.model_utils.calibrate import CausalCLSCalibrator
 
 logger = logging.getLogger(__name__)
 
@@ -62,6 +63,8 @@ class CausalSequenceClassificationEvaluator(GenerationEvaluator):
         self.paradigm = DO_GENERATE
         assert hasattr(self.processor, "label_words_mapping"), "If you choose causal PLM to generate label for classification, you must define 'label_words_mapping'"
         self.label_words_mapping = self.processor.label_words_mapping
+        self.label2id = self.processor.label2id
+        self.calibrator = CausalCLSCalibrator(self.model, self.processor.tokenizer)
 
 
     def default_compute_metrics(self, predictions, examples):
@@ -99,12 +102,22 @@ class CausalSequenceClassificationEvaluator(GenerationEvaluator):
         # generate answer for validation set
         all_raw_answers = self.generate(
             eval_dataset=self.eval_dataset,
-            num_log_probs=1,
-            echo=True
+            num_log_probs=100,
+            echo=False, # echo is False means do not directly obtain label probability.
         )
 
         # obtain the logits of the generated answer for each label.
         all_label_probs = self.obtain_label_logits(all_raw_answers, self.eval_dataset)
+
+        # calibrate the prediction
+        if self.processor.use_calibrate:
+            logger.info("Calibrating ...")
+            content_free_examples = self.processor.get_content_free_examples()
+            all_label_probs = self.calibrator.calibrate(
+                all_label_probs=all_label_probs,
+                content_free_examples=content_free_examples,
+                label2id=self.processor.label2id,
+            )
 
         metrics = self.default_compute_metrics(all_label_probs, self.eval_dataset)
         # print("dev metrics=", metrics)
@@ -118,13 +131,21 @@ class CausalSequenceClassificationEvaluator(GenerationEvaluator):
         # generate answer for test dataset
         all_raw_answers = self.generate(
             eval_dataset=self.test_dataset,
-            num_log_probs=1,
-            echo=True
+            num_log_probs=100,
+            echo=False
         )
 
         # obtain the logits of the generated answer for each label.
         logits = self.obtain_label_logits(all_raw_answers, self.test_dataset)
-
+        # calibrate the prediction
+        if self.processor.use_calibrate:
+            logger.info("Calibrating ...")
+            content_free_examples = self.processor.get_content_free_examples()
+            logits = self.calibrator.calibrate(
+                all_label_probs=logits,
+                content_free_examples=content_free_examples,
+                label2id=self.processor.label2id,
+            )
         if "label" in self.test_dataset.features and not self.data_args.keep_predict_labels:
 
             metrics = self.default_compute_metrics(logits, self.test_dataset)
@@ -173,23 +194,20 @@ class CausalSequenceClassificationEvaluator(GenerationEvaluator):
                 json.dump(topk_predictions, f2, ensure_ascii=False, indent=4)
 
 
-    def generate(self, eval_dataset, num_log_probs=1, echo=False):
+    def generate(self, eval_dataset, num_log_probs=100, echo=False):
         # obtain generative answer from causal PLM.
         assert hasattr(self.processor, "l"), "You must define l ('max length of generated tokens') for generative-style tasks"
         l = self.processor.l
-
         all_raw_answers = []
-
         for data in tqdm(eval_dataset):
-
             total_sequences = self.model.generate(
                 input_ids=torch.Tensor([data['input_ids']]).long().to(self.model.device),
                 attention_mask=torch.Tensor([data['attention_mask']]).long().to(self.model.device),
                 max_length=l + len(data['input_ids']),
-                do_sample=False,
+                do_sample=False, # If for cls, 'do_sample' must set False
                 pad_token_id=self.processor.tokenizer.eos_token_id
             )
-
+            # print("total_sequences=", self.processor.tokenizer.convert_ids_to_tokens(total_sequences[0][len(data['input_ids']):])) # e.g. ['Ġnegative']
             if num_log_probs is not None:
                 # we are left padding, so we need to adjust the position IDs
                 attention_mask = (total_sequences != 50256).float()
@@ -197,8 +215,7 @@ class CausalSequenceClassificationEvaluator(GenerationEvaluator):
                 position_ids.masked_fill_(attention_mask == 0, 1)
                 # get the logits for the context and the next l tokens
                 logits = self.model.forward(input_ids=total_sequences, attention_mask=attention_mask, position_ids=position_ids, return_dict=True).logits.detach().cpu()
-
-                response_res = self.generation_model_response.call_for_gpt2_response(self.processor.tokenizer, logits, total_sequences, num_log_probs, echo)
+                response_res = self.generation_model_response.call_for_gpt2_response(self.processor.tokenizer, logits, total_sequences, l, num_log_probs, echo)
 
                 for answer_id, answer in enumerate(response_res['choices']):
                     all_raw_answers.append(answer)
@@ -224,9 +241,11 @@ class CausalSequenceClassificationEvaluator(GenerationEvaluator):
         all_missing_positions = []
         for i, ans in enumerate(answers):
             top_logprobs = ans['logprobs']['top_logprobs'][0]  # [0] since we only ask for complete one more token, dict
+            # print("top_logprobs=", top_logprobs)
             # top_logprobs = {' I': -3.4267239570617676, '\n': -3.5073862075805664, ...}
-            label_probs = [0] * len(self.label_words_mapping.keys())
+            label_probs = [0.] * len(self.label_words_mapping.keys())
             for j, label_list in self.label_words_mapping.items():
+                j = self.label2id[j] # j is the original label name, it must be converted to label id
                 all_found = True
                 for label in label_list:  # each possible label correspond to the same class
                     label = " " + label  # notice prompt does not have space after 'A:'

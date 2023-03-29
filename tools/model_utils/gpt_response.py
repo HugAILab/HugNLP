@@ -39,7 +39,7 @@ class GPTResponse:
                 time.sleep(1)
         return response
 
-    def call_for_gpt2_response(self, gpt2_tokenizer, logits, total_sequences, num_log_probs=None, echo=False, n=None):
+    def call_for_gpt2_response(self, gpt2_tokenizer, logits, total_sequences, l=10, num_log_probs=None, echo=False, n=None):
         """
         Obtain the prediction logits from gpt2 in local, and convert it to the value that can match the response from OpenAI
         """
@@ -49,6 +49,7 @@ class GPTResponse:
         else:
             # get the top tokens and probs for the context and the generated l tokens
             probs = torch.softmax(logits, dim=2).cpu()
+        # print("probs=", probs)
         top_probs, top_tokens = torch.topk(probs, k=num_log_probs)
         logprobs = torch.log(probs)
         top_log_probs = torch.log(top_probs)

@@ -14,6 +14,7 @@ from transformers.models.roformer import RoFormerTokenizer
 from transformers.models.bert import BertTokenizerFast, BertForTokenClassification, BertTokenizer
 from transformers.models.roberta.tokenization_roberta import RobertaTokenizer
 from transformers.models.gpt2.tokenization_gpt2_fast import GPT2TokenizerFast
+from transformers.models.gpt2.tokenization_gpt2 import GPT2Tokenizer
 from transformers.models.bart.tokenization_bart import BartTokenizer
 from transformers.models.t5.tokenization_t5 import T5Tokenizer
 from transformers.models.plbart.tokenization_plbart import PLBartTokenizer
