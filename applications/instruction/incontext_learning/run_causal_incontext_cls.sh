@@ -1,13 +1,13 @@
 #### pre-trained lm path
-path=/wjn/pre-trained-lm/gpt2
-# path=/wjn/pre-trained-lm/gpt2-xl
+# path=/wjn/pre-trained-lm/gpt2
+path=/wjn/pre-trained-lm/gpt2-xl
 MODEL_TYPE=gpt2
 
 #### task data path (user should change this path)
 data_path=./datasets/data_example/incontext_cls
 
-export CUDA_VISIBLE_DEVICES=2,3
-python -m torch.distributed.launch --nproc_per_node=2 --master_port=6020 hugnlp_runner.py \
+export CUDA_VISIBLE_DEVICES=4
+python3 -m torch.distributed.launch --nproc_per_node=1 --master_port=6020 hugnlp_runner.py \
   --model_name_or_path=$path \
   --data_dir=$data_path\
   --output_dir=./outputs/instruction/incontext_learning \
@@ -37,5 +37,5 @@ python -m torch.distributed.launch --nproc_per_node=2 --master_port=6020 hugnlp_
   --label_names=short_labels \
   --keep_predict_labels \
   --cache_dir=/wjn/.cache \
-  --user_defined="num_incontext_example=4 l=1" \
+  --user_defined="num_incontext_example=4 l=1 use_calibrate=True" \
   --use_prompt_for_cls
