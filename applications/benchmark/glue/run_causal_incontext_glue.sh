@@ -1,12 +1,22 @@
 #### pre-trained lm path
-path=gpt2
+# path=/wjn/pre-trained-lm/gpt2
+path=/wjn/pre-trained-lm/gpt2-xl
 MODEL_TYPE=gpt2
 
-#### task data path (user should change this path)
-data_path=./datasets/data_example/incontext_cls
+data_path=./ # you can ignore it
 
-export CUDA_VISIBLE_DEVICES=-1
-python3 hugnlp_runner.py \
+#### glue task
+# glue_task=cola
+# glue_task=mnli
+# glue_task=mrpc
+glue_task=sst2
+# glue_task=qqp
+#glue_task=qnli
+# glue_task=rte
+#glue_task=snli
+
+export CUDA_VISIBLE_DEVICES=0
+python3 -m torch.distributed.launch --nproc_per_node=1 --master_port=6013 hugnlp_runner.py \
   --model_name_or_path=$path \
   --data_dir=$data_path\
   --output_dir=./outputs/instruction/incontext_learning \
@@ -26,7 +36,7 @@ python3 hugnlp_runner.py \
   --save_total_limit=1 \
   --load_best_model_at_end \
   --report_to=none \
-  --task_name=causal_incontext_cls \
+  --task_name=glue_instruction \
   --task_type=causal_prompt_cls \
   --model_type=$MODEL_TYPE \
   --metric_for_best_model=macro_f1 \
@@ -35,5 +45,6 @@ python3 hugnlp_runner.py \
   --overwrite_output_dir \
   --label_names=short_labels \
   --keep_predict_labels \
-  --user_defined="num_incontext_example=4 l=1 use_calibrate=True" \
+  --cache_dir=/wjn/.cache \
+  --user_defined="data_name=$glue_task num_incontext_example=4 l=1 use_calibrate=True" \
   --use_prompt_for_cls

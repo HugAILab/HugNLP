@@ -60,7 +60,7 @@ class CausalInContextClassificationProcessor(CLSProcessor):
         self.dev_file = os.path.join(data_args.data_dir, "dev.json")
         self.test_file = os.path.join(data_args.data_dir, "test.json")
         assert os.path.exists(self.test_file), "the test.json is not found in {}".format(self.data_dir)
-         # each line is one label name
+        # each line is one label name
         self.label_file = os.path.join(data_args.data_dir,"label_names.json")
         self.template_file = os.path.join(data_args.data_dir, "template.json")
         self.instruction_file = os.path.join(data_args.data_dir, "instruction.json")

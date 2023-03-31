@@ -6,7 +6,7 @@ MODEL_TYPE=gpt2
 #### task data path (user should change this path)
 data_path=./datasets/data_example/incontext_cls
 
-export CUDA_VISIBLE_DEVICES=4
+export CUDA_VISIBLE_DEVICES=0
 python3 -m torch.distributed.launch --nproc_per_node=1 --master_port=6020 hugnlp_runner.py \
   --model_name_or_path=$path \
   --data_dir=$data_path\
