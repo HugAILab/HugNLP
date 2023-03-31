@@ -43,6 +43,7 @@
 
 ### 四、Application
 定义脚本。
+
 位置：HugNLP/applications/default_applications/run_seq_cls.sh
 需要自定义的参数（非调参部分）：
 
@@ -63,8 +64,6 @@
 - --task_type可选“head_prefix_cls”、“head_ptuning_cls”、“head_adapter_cls”
 - --use_freezing
 
-使用半监督训练：
-（略）
 样例：
 ```bash
 #### pre-trained lm path
@@ -80,7 +79,6 @@ epoch=10
 eval_step=50
 wr_step=50
 lr=3e-05
-
 
 export CUDA_VISIBLE_DEVICES=2,3
 python -m torch.distributed.launch --nproc_per_node=2 --master_port=6014 hugnlp_runner.py \
@@ -124,12 +122,10 @@ python -m torch.distributed.launch --nproc_per_node=2 --master_port=6014 hugnlp_
 在数据准备阶段，在数据集目录下存放如下两个文件：
 ```json
 [{"prefix_template": "", "suffix_template": ""}, {"prefix_template": "<mask> <mask>", "suffix_template": ""}]
-
 ```
 template.json中是一个数组，数组中的第一个元素表示对第一个句子的开头和结尾的模板，同理，数组中的第二个元素表示对第二个句子的开头和结尾的模板。
 ```json
 {"entailment": ["蕴含"], "neutral": ["中立"], "contradiction": ["矛盾"]}
-
 ```
 label_words_mapping.json中保存每一个类别名称对应的一个label word。
 > 注意：
@@ -145,6 +141,3 @@ label_words_mapping.json中保存每一个类别名称对应的一个label word�
 
 - --task_type可选“head_prefix_cls”、“head_ptuning_cls”、“head_adapter_cls”
 - --use_freezing
-
-使用半监督训练：
-（略）

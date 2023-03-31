@@ -216,4 +216,3 @@ python3 -m torch.distributed.launch --nproc_per_node=4 --master_port 6013 nlp_ru
 
 **运行效果**：
 ![image.png](https://cdn.nlark.com/yuque/0/2023/png/12897066/1676619774385-ba374ebe-430c-4f25-930d-358e4d32c3ee.png#averageHue=%230c0c0c&clientId=u9ae83d77-657b-4&from=paste&height=378&id=ue8d12655&name=image.png&originHeight=756&originWidth=1190&originalType=binary&ratio=2&rotation=0&showTitle=false&size=143495&status=done&style=none&taskId=u88be8b2a-e7be-495c-8869-d37813b358c&title=&width=595)
-**实验结果**：

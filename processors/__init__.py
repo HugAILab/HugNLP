@@ -12,7 +12,7 @@ from processors.benchmark.cluemrc.data_processor import CLUEMRCProcessor
 from processors.benchmark.clue.data_processor import CLUEProcessor, TnewsEFLProcessor, CSLEFLProcessor
 from processors.benchmark.cluener.data_processor import CLUENERProcessor
 from processors.benchmark.fewclue.data_processor import InstructionMRCForFewCLUEProcessor
-from processors.benchmark.glue.data_processor import GLUEProcessor
+from processors.benchmark.glue.data_processor import GLUEProcessor, GLUEForInContextProcessor
 # pre-training language model
 from processors.pretraining.mlm.data_processor import MLMTextLineProcessor
 # from processor.pretraining.mlm.data_processor import MLMGroupProcessor, MLMFromDisk, MLMLineByLineProcessor, WWMFromDisk
@@ -62,6 +62,7 @@ BENCHMARKS_PROCESSORS = {
     "cmrc18_global_pointer": CMRCForGlobalPointerProcessor,
     "fewclue_instruction": InstructionMRCForFewCLUEProcessor,
     "glue": GLUEProcessor,  # glue
+    "glue_instruction": GLUEForInContextProcessor, # instruction-tuning for glue
 }
 
 # Instruction / Prompting / In-context / Chain-of-Thought

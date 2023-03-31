@@ -18,20 +18,18 @@
 
 # About HugNLP
 
-HugNLP is a novel development and application library based on [Hugging Face](https://huggingface.co/) for improving the convenience and effectiveness of NLP researchers. The founder and main developer is [Jianing Wang](https://wjn1996.github.io/). The collaborators (programmers) are [Nuo Chen](https://github.com/nchen909) and [Qiushi Sun](https://github.com/QiushiSun).
+HugNLP is a novel development and application library based on [Hugging Face](https://huggingface.co/) for improving the convenience and effectiveness of NLP researchers. The founder and main developer is [Jianing Wang](https://wjn1996.github.io/). The collaborators are [Nuo Chen](https://github.com/nchen909) and [Qiushi Sun](https://github.com/QiushiSun).
 
----
 
 ## **News
 
-**🆕 23-03-21: Finish GPT-style PLMs for In-Context Learning classification.**
+**🆕 23-03-21: Finish GPT-style in-context learning for sequence classification.**
 
 **🆕 23-03-20: Add Evaluators for each task.**
 
 **🆕 23-03-13: Add code clone detection and defect task.**
 
 
----
 
 # Architecture
 
@@ -53,8 +51,8 @@ For few-shot learning settings, HugNLP provides a prototypical network in both f
 In addition, we also incorporate some plug-and-play utils in HugNLP.
 
 1. Parameter Freezing. If we want to perform parameter-efficient learning, which aims to freeze some parameters in PLMs to improve the training efficiency, we can set the configure `use_freezing` and freeze the backbone. A use case is shown in Code.
-1. Uncertainty Estimation aims to calculate the model certainty when in semi-supervised learning.
-1. We also design Prediction Calibration, which can be used to further improve the accuracy by calibrating the distribution and alleviating the semantics bias problem.
+2. Uncertainty Estimation aims to calculate the model certainty when in semi-supervised learning.
+3. We also design Prediction Calibration, which can be used to further improve the accuracy by calibrating the distribution and alleviating the semantics bias problem.
 
 ### Processors
 
@@ -88,7 +86,8 @@ So, all the NLP tasks can be unified into the same format and can substantially 
 Inspired by this idea, we extend it into other two paradigms:
 
 1. extractive-style paradigm: we unify various NLP tasks into span extraction, which is the same as extractive question answering.
-1. inference-style paradigm: all the tasks can be viewed as natural language inference to match the relations between inputs and outputs.
+2. inference-style paradigm: all the tasks can be viewed as natural language inference to match the relations between inputs and outputs.
+3. generative-style paradigm: we unify all the tasks into generative format, and train the causal models based on instruction-tuning, in-context learning or chain-of-thought.
 
 ### Self-training with Uncertainty Estimation
 
@@ -112,8 +111,34 @@ We develop some novel parameter-efficient learning approaches, such as Prefix-tu
 At present, the project is still being developed and improved, and there may be some `bugs` in use, please understand. We also look forward to your being able to ask issues or committing some valuable pull requests.
 
 
+# Pre-built Applications Overview
+
+We demonstrate all pre-built applications in HugNLP. You can choose one application to use HugNLP. You can also click the link to see the details document.
+
+| **Applications** | **Runing Tasks** | **Task Notes** | **PLM Models** | **Documents** |
+| --- | --- | --- | --- | --- |
+| **Default Application** | run_seq_cls.sh | **Goal**: Standard **Fine-tuning** or **Prompt-tuning** for sequence classification on user-defined dataset. <br> **Path**: applications/default_applications | BERT, RoBERTa, DeBERTa | [click](./documents/default_tasks/default_sequence_classification.md) |
+| **Pre-training** | run_pretrain_mlm.sh | **Goal**: Pre-training via **Masked Language Modeling** (MLM). <br> **Path**: applications/pretraining/ | BERT, RoBERTa | [click](./documents/pretraining/Masked%20LM%20for%20Continual%20Pre-training.md) |
+|  | run_pretrain_casual_lm.sh | **Goal**: Pre-training via **Causal Language Modeling** (CLM). <br> **Path**: applications/pretraining | BERT, RoBERTa | [click](./documents/pretraining/Causal%20LM%20for%20Continual%20Pre-training.md) |
+| **GLUE Benchmark** | run_glue.sh | **Goal**: Standard **Fine-tuning** or **Prompt-tuning** for GLUE classification tasks. <br> **Path**: applications/benchmark/glue | BERT, RoBERTa, DeBERTa |  |
+|  | run_causal_incontext_glue.sh | **Goal**: **In-context learning** for GLUE classification tasks. <br> **Path**: applications/benchmark/glue | GPT-2 |  |
+| **CLUE Benchmark** | clue_finetune_dev.sh | **Goal**: Standard **Fine-tuning** and **Prompt-tuning** for CLUE classification task。 <br> **Path**: applications/benchmark/clue | BERT, RoBERTa, DeBERTa |  |
+|  | run_clue_cmrc.sh | **Goal**: Standard **Fine-tuning** for CLUE CMRC2018 task. <br> **Path**: applications/benchmark/cluemrc | BERT, RoBERTa, DeBERTa |  |
+|  | run_clue_c3.sh | **Goal**: Standard **Fine-tuning** for CLUE C3 task. <br> **Path**: applications/benchmark/cluemrc | BERT, RoBERTa, DeBERTa |  |
+|  | run_clue_chid.sh | **Goal**: Standard **Fine-tuning** for CLUE CHID task. <br> **Path**: applications/benchmark/cluemrc | BERT, RoBERTa, DeBERTa |  |
+| **Instruction-Prompting** | zh_global_pointer_finetune_dev.sh | **Goal**: **Cross-task training** via extractive Instruction-tuning based on Global Pointer model. <br> **Path**: applications/instruction_prompting/chinese_instruction | BERT, RoBERTa, DeBERTa | [click](./documents/instruction_prompting/instruction_tuning.md) |
+|  | run_causal_incontext_cls.sh | **Goal**: **In-context learning** for user-defined classification tasks. <br> **Path**: applications/instruction_prompting/incontext_learning | GPT-2 | [click](./documents/instruction_prompting/incontext_learning_for_cls.md) |
+| **Information Extraction** | run_extractive_unified_ie.sh | **Goal**: **HugIE**: training a unified chinese information extraction via extractive instruction-tuning. <br> **Path**: applications/information_extraction/HugIE | BERT, RoBERTa, DeBERTa | [click](./documents/information_extraction/HugIE.md) |
+|  | api_test.py | **Goal**: HugIE: API test. <br> **Path**: applications/information_extraction/HugIE | - | [click](./documents/information_extraction/HugIE.md) |
+|  | run_fewnerd.sh | **Goal**: **Prototypical learning** for named entity recognition, including SpanProto, TokenProto <br> **Path**: applications/information_extraction/fewshot_ner | BERT |  |
+| **Code NLU** | run_clone_cls.sh | **Goal**: Standard **Fine-tuning** for code clone classification task. <br> **Path**: applications/code/code_clone | CodeBERT, CodeT5, GraphCodeBERT, PLBART |  |
+|  | run_defect_cls.sh | **Goal**: Standard **Fine-tuning** for code defect classification task. <br> **Path**: applications/code/code_defect | CodeBERT, CodeT5, GraphCodeBERT, PLBART |  |
+
+More details of the pre-built applications and settings with the designed models and processors can be found in [HugNLP Documents](./documents/README.md).
+
 # Quick Use
 
+Here we provide an example to show you to quick use HugNLP.
 If you want to perform a classification task on user-defined dataset, you can prepare three json files (```train.json```, ```dev.json```, ```test.json```) on a directory. And you can run the script file
 > bash ./application/default_applications/run_seq_cls.sh
 
@@ -133,13 +158,13 @@ If you wang to use parameter-efficient learning, you can add the following param
 
 The example of ```run_seq_cls.sh``` is:
 
-```
+```bash
 path=chinese-macbert-base
 MODEL_TYPE=bert
 data_path=/wjn/frameworks/HugNLP/datasets/data_example/cls
 TASK_TYPE=head_cls
 len=196
-bz=4 # 8
+bz=4
 epoch=10
 eval_step=50
 wr_step=10
@@ -183,10 +208,9 @@ python3 -m torch.distributed.launch --nproc_per_node=2 --master_port=6014 hugnlp
 --user_defined="label_names=entailment,neutral,contradiction"
 ```
 
-More details of how to use other pre-built applications can be found in the [HugNLP Documents]().
-
 # Quick Develop
 
+This section is for developer.
 HugNLP is easy to use and develop. We draw a workflow in the following figure to show how to develop a new running task.
 
 <p align="center">
@@ -197,18 +221,20 @@ HugNLP is easy to use and develop. We draw a workflow in the following figure to
 It consists of five main steps, including library installation, data preparation, processor selection or design, model selection or design, and application design.
 This illustrates that HugNLP can simplify the implementation of complex NLP models and tasks.
 
-# Demo Example
+# Demo API Example
 
-## HugIE: Towards Chinese Unified Information Extraction via Extractive MRC and Instruction-tuning
+Here, we show an example of the pre-built API application: **HugIE: Towards Chinese Unified Information Extraction via Extractive MRC and Instruction-tuning**.
 
-### Introduction
+
+
+### Introduction:
 
 Information Extraction (IE) aims to extract structure knowledge from un-structure text. The structure knowledge is formed as a triple ""(head_entity, relation, tail_entity)"". IE consists of two main tasks:
 
 - Named Entity Recognition (NER) aims to extract all entity mentions of one type.
 - Relation Extraction (RE). It has two kinds of goal, the first aims to classify the relation between two entities, and the second aims to predict the tail entity when given one head entity and the corresponding relation.
 
-### Solutions
+### Solutions:
 
 - We unify the tasks of NER and RE into the paradigm of extractive question answering (i.e., machine reading comprehension).
 - We design task-specific instruction and language prompts for NER and RE.
@@ -223,7 +249,7 @@ Information Extraction (IE) aims to extract structure knowledge from un-structur
 
 - During the training, we utilize Global Pointer with Chinese-Macbert as the basic model.；
 
-### Usage
+### Usage:
 
 Our model is saved in Hugging Face: [https://huggingface.co/wjn1996/wjn1996-hugnlp-hugie-large-zh](https://huggingface.co/wjn1996/wjn1996-hugnlp-hugie-large-zh).
 
@@ -276,18 +302,26 @@ topk_predictions:
 You can contact the author `Jianing Wang` from github.
 The interaction group in QQ or dingding will come soon.
 
-# References
+# Cite Me
+
+If you find this repository helpful, feel free to cite our paper:
 
 ```latex
 @misc{wang2023hugnlp,
   doi       = {10.48550/ARXIV.2302.14286},
   url       = {https://arxiv.org/abs/2302.14286},
-  author    = {Wang, Jianing and Chen, Nuo and Sun, Qiushi and Huang, Wenkang and Wang, Chengyu and Gao, Ming},
+  author    = {Jianing Wang, Nuo Chen, Qiushi Sun, Wenkang Huang, Chengyu Wang, Ming Gao},
   title     = {HugNLP: A Unified and Comprehensive Library for Natural Language Processing},
-  publisher = {arXiv},
   year      = {2023}
 }
 ```
+
+# References
+
+1. Jianing Wang, Wenkang Huang, Minghui Qiu, Qiuhui Shi, Hongbin Wang, Xiang Li, Ming Gao:
+Knowledge Prompting in Pre-trained Language Model for Natural Language Understanding. EMNLP 2022: 3164-3177
+2. Chengyu Wang, Jianing Wang, Minghui Qiu, Jun Huang, Ming Gao: TransPrompt: Towards an Automatic Transferable Prompting Framework for Few-shot Text Classification. EMNLP 2021: 2792-2802
+3. Jianing Wang, Chengyu Wang, Jun Huang, Ming Gao, Aoying Zhou: Uncertainty-aware Self-training for Low-resource Neural Sequence Labeling. AAAI 2023.
 
 # Acknowledgement
 
