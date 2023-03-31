@@ -1,8 +1,6 @@
 # Instruction-tuning 技术文档
 
 
----
-
 ### 基于MRC的中文instruction-tuning
 （1）方法介绍
 xxx
