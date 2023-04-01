@@ -164,7 +164,6 @@ class CausalInContextClassificationProcessor(CLSProcessor):
             return raw_datasets
         remove_columns = self.sentence1_key if not self.sentence2_key else [self.sentence1_key, self.sentence2_key]
         tokenize_func = self.build_preprocess_function()
-        # 多gpu, 0计算完存cache，其他load cache
         with self.training_args.main_process_first(desc="dataset tokenizer map"):
             raw_datasets = raw_datasets.map(
                 tokenize_func,
