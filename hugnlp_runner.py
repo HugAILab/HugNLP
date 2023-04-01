@@ -195,6 +195,7 @@ def main():
     evaluator = evaluator_class(
         model_args=model_args,
         data_args=data_args,
+        model=model,
         training_args=training_args,
         processor=processor,
         eval_dataset=eval_dataset,
