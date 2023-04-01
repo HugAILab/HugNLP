@@ -50,6 +50,10 @@ class Evaluator(object):
         self.paradigm = None # You must define this as DO_GENERATE or NO_GENERATE when inherit this class.
         self.metric = None # You must define the metric when inherit this class.
 
+    def reset_trainer(self, trainer: HugTrainer):
+        logger.info("Reset trainer state in evaluation.")
+        self.trainer = trainer
+
     def default_compute_metrics(self, eval_predictions):
         """
         Design for the default metrics calculation for the current task.

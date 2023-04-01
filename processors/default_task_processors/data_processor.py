@@ -14,10 +14,12 @@ from processors.ProcessorBase import CLSProcessor
 from processors.benchmark.clue.clue_processor import clue_processors, clue_output_modes
 from metrics import datatype2metrics
 from tools.computations.softmax import softmax
-from processors.default_task_processors.data_collator import DataCollatorForDefaultSequenceClassification
+from processors.default_task_processors.data_collator import (
+    DataCollatorForDefaultSequenceClassification,
+    DataCollatorForDefaultSequenceLabeling
+)
 from processors.basic_processors.prompt_processor import PromptBaseProcessor
 from tools.processing_utils.tokenizer.tokenizer_utils import get_special_token_mapping
-
 
 
 """
@@ -49,7 +51,7 @@ class DefaultSequenceClassificationProcessor(CLSProcessor):
         self.dev_file = os.path.join(data_args.data_dir, "dev.json")
         self.test_file = os.path.join(data_args.data_dir, "test.json")
          # each line is one label name
-        self.label_file = os.path.join(data_args.data_dir,"label_names.txt")
+        self.label_file = os.path.join(data_args.data_dir,"label_names.json")
         self.template_file = os.path.join(data_args.data_dir, "template.json")
         self.label_words_mapping_file = os.path.join(data_args.data_dir, "label_words_mapping.json")
         self.max_len = data_args.max_seq_length
@@ -61,12 +63,11 @@ class DefaultSequenceClassificationProcessor(CLSProcessor):
         if "label_names" in param.keys():
             self.labels = param["label_names"].replace(" ", "").split(",")
         # 如果用户没有输入label name，检查本地是否有label_names.json文件
-        elif os.path.exists(self.label_file):
+        elif os.path.exists(self.label_file): # {"label_name": "description", xxx}
             self.labels = list()
             with open(self.label_file, "r", encoding="utf-8") as fr:
-                lines = fr.readlines()
-            for line in lines:
-                self.labels.append(line.replace("\n", ""))
+                label_name_dict = json.load(fr)
+            self.labels = list(label_name_dict.keys())
         else:
             raise FileNotFoundError(
                 "You must define the 'label_names' in user-define parameters or"
@@ -221,6 +222,179 @@ class DefaultSequenceClassificationProcessor(CLSProcessor):
                 for input_ids in tokenized_examples["input_ids"]:
                     mask_pos.append(input_ids.index(get_special_token_mapping(self.tokenizer)["mask"]))
                 tokenized_examples["mask_pos"] = mask_pos
+            return tokenized_examples
+
+        return func
+
+
+"""
+The data processor for the default sequence labeling.
+"""
+class DefaultSequenceLabelingProcessor(CLSProcessor):
+    def __init__(self,
+                 data_args,
+                 training_args,
+                 model_args,
+                 tokenizer=None,
+                 post_tokenizer=False,
+                 keep_raw_data=True):
+        super().__init__(data_args,
+                         training_args,
+                         model_args,
+                         tokenizer,
+                         post_tokenizer=post_tokenizer,
+                         keep_raw_data=keep_raw_data)
+        param = {
+            p.split("=")[0]: p.split("=")[1]
+            for p in (data_args.user_defined).split(" ")
+        }
+        self.data_name = param["data_name"] if "data_name" in param.keys() else "user-define"
+        self.data_dir = data_args.data_dir
+        self.train_file = os.path.join(
+            data_args.data_dir, "train.json"
+        )  # each line: {"sentence1": xx, "sentence2": xx, "label": xx}
+        self.dev_file = os.path.join(data_args.data_dir, "dev.json")
+        self.test_file = os.path.join(data_args.data_dir, "test.json")
+         # each line is one label name
+        self.label_file = os.path.join(data_args.data_dir,"label_names.json")
+        self.max_len = data_args.max_seq_length
+        self.doc_stride = data_args.doc_stride
+        self.sentence_key = "word_list"
+        self.label_key = "tag_list"
+
+        # 如果用户输入了label name，则以用户输入的为准
+        if "label_names" in param.keys():
+            self.labels = param["label_names"].replace(" ", "").split(",")
+        # 如果用户没有输入label name，检查本地是否有label_names.json文件
+        elif os.path.exists(self.label_file):
+            self.labels = list()
+            with open(self.label_file, "r", encoding="utf-8") as fr:
+                label_name_dict = json.load(fr)
+            self.labels = list(label_name_dict.keys())
+        else:
+            raise FileNotFoundError(
+                "You must define the 'label_names' in user-define parameters or"
+                "define a label_names.json file at {}".format(self.label_file))
+
+        assert self.labels[0] == "O", "The first label '0' must be 'O' (Outside) class."
+
+        self.label2id = {label: ei for ei, label in enumerate(self.labels)}
+        self.id2label = {ei: label for ei, label in enumerate(self.labels)}
+
+
+    def get_data_collator(self):
+        pad_to_multiple_of_8 = self.training_args.fp16 and not self.data_args.pad_to_max_length
+        return DataCollatorForDefaultSequenceLabeling(
+            self.tokenizer,
+            max_length=self.data_args.max_seq_length,
+            pad_to_multiple_of=8 if pad_to_multiple_of_8 else None,
+            pad_to_max_length=self.data_args.pad_to_max_length)
+
+    def get_examples(self, set_type):
+        examples = list()
+        if set_type == "train":
+            examples = self._create_examples(self._read_json2(self.train_file), "train")
+            self.train_examples = examples
+        elif set_type == "dev":
+            examples = self._create_examples(self._read_json2(self.dev_file), "dev")
+            self.dev_examples = examples
+        elif set_type == "test":
+            examples = self._create_examples(self._read_json2(self.test_file), "test")
+            self.test_examples = examples
+        return examples
+
+    def _create_examples(self, lines, set_type):
+        examples = list()
+        for ei, line in enumerate(lines):
+            idx = "{}-{}".format(set_type, str(ei))
+            word_list = line[self.sentence_key]
+
+            if self.label_key in line.keys():
+                tag_list = line[self.label_key]
+            else:
+                tag_list = [self.labels[0]] * len(word_list) # default initialized label 0
+            if len(word_list) == 0 or len(tag_list) == 0:
+                continue
+            assert len(word_list) == len(tag_list) and len(word_list) > 0, "the length of word and tag must be equal and not are zeros."
+
+            label_list = [self.label2id[tag] for tag in tag_list]
+
+            examples.append({
+                "idx": idx,
+                self.sentence_key: word_list, # ["xx", "xx", "xx"]
+                "label": label_list, # [0, 1, 2]
+                "target": tag_list, # ["xx", "xx", "xxx"]
+            })
+
+        return examples
+
+    def get_tokenized_datasets(self):
+        raw_datasets = DatasetDict()
+        if self.training_args.do_train:
+            train_examples = self.get_examples("train")
+            raw_datasets["train"] = DatasetK.from_dict(self.list_2_json(train_examples))  # [{k1: xxx, k2: xxx}, {...}] -> {k1: [xxx, xxx], k2: [xxx, xxx]}
+        if self.training_args.do_eval:
+            dev_examples = self.get_examples("dev")
+            raw_datasets["validation"] = DatasetK.from_dict(self.list_2_json(dev_examples))
+        if self.training_args.do_predict:
+            test_examples = self.get_examples("test")
+            raw_datasets["test"] = DatasetK.from_dict(self.list_2_json(test_examples))
+
+        if self.post_tokenizer:
+            if self.keep_raw_data:
+                self.raw_datasets = raw_datasets
+            return raw_datasets
+
+        # remove_columns = [self.sentence_key]
+        tokenize_func = self.build_preprocess_function()
+
+        with self.training_args.main_process_first(desc="dataset tokenizer map"):
+            raw_datasets = raw_datasets.map(
+                tokenize_func,
+                batched=True,
+                desc="Running tokenizer on dataset",
+                # remove_columns=remove_columns
+            )
+            if self.keep_raw_data:
+                self.raw_datasets = raw_datasets
+            return raw_datasets
+
+    def build_preprocess_function(self):
+        # Tokenize the texts
+        tokenizer = self.tokenizer
+        special_token_mapping = get_special_token_mapping(self.tokenizer)
+        max_seq_length = self.data_args.max_seq_length
+
+        def func(examples):
+            """
+            Obtain word piece of each word, and generate tag.
+            """
+            all_label_list = list()
+            all_sentence_list = list()
+            for word_list, tag_list in zip(examples[self.sentence_key], examples["label"]):
+                sentence = " ".join(word_list)
+                label_list = [0] # tag of cls token is 'O'
+                for word, tag in zip(word_list, tag_list):
+                    word_token_list = self.tokenizer.encode(word, add_special_tokens=False)
+                    word_tag_list = [tag] * len(word_token_list)
+                    label_list.extend(word_tag_list)
+                label_list.append(0) # tag of sep token is 'O'
+                if self.data_args.pad_to_max_length:
+                    label_list = label_list[:max_seq_length]
+                    label_list.extend([0] * (max_seq_length - len(label_list)))
+                all_label_list.append(label_list)
+                all_sentence_list.append(sentence)
+            # print("all_sentence_list=", all_sentence_list)
+            examples[self.sentence_key] = all_sentence_list
+            # Tokenize
+            tokenized_examples = tokenizer(
+                examples[self.sentence_key],
+                truncation=True,
+                max_length=max_seq_length,
+                padding="max_length" if self.data_args.pad_to_max_length else False,
+            )
+            # 确定label
+            tokenized_examples["label"] = all_label_list
             return tokenized_examples
 
         return func

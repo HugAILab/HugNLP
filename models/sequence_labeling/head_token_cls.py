@@ -5,6 +5,7 @@ from transformers.models.bert.modeling_bert import BertPreTrainedModel, BertMode
 from transformers.models.roberta.modeling_roberta import RobertaPreTrainedModel, RobertaModel
 from transformers.models.albert.modeling_albert import AlbertPreTrainedModel, AlbertModel
 from transformers.models.megatron_bert.modeling_megatron_bert import MegatronBertPreTrainedModel, MegatronBertModel
+from transformers.modeling_outputs import TokenClassifierOutput
 from torch.nn import CrossEntropyLoss
 from loss.focal_loss import FocalLoss
 from loss.label_smoothing import LabelSmoothingCrossEntropy
@@ -32,8 +33,16 @@ class BertSoftmaxForSequenceLabeling(BertPreTrainedModel):
         self.loss_type = config.loss_type
         self.init_weights()
 
-    def forward(self, input_ids, attention_mask=None, token_type_ids=None,
-                position_ids=None, head_mask=None, labels=None):
+    def forward(
+            self,
+            input_ids,
+            attention_mask=None,
+            token_type_ids=None,
+            position_ids=None,
+            head_mask=None,
+            labels=None,
+            return_dict=False,
+            ):
         outputs = self.bert(input_ids = input_ids,attention_mask=attention_mask,token_type_ids=token_type_ids)
         sequence_output = outputs[0]
         sequence_output = self.dropout(sequence_output)
@@ -55,8 +64,17 @@ class BertSoftmaxForSequenceLabeling(BertPreTrainedModel):
                 loss = loss_fct(active_logits, active_labels)
             else:
                 loss = loss_fct(logits.view(-1, self.num_labels), labels.view(-1))
+
+        if not return_dict:
             outputs = (loss,) + outputs
-        return outputs  # (loss), scores, (hidden_states), (attentions)
+            return outputs  # (loss), scores, (hidden_states), (attentions)
+
+        return TokenClassifierOutput(
+            loss=loss,
+            logits=logits,
+            hidden_states=outputs.hidden_states,
+            attentions=outputs.attentions,
+        )
 
 
 """
@@ -74,8 +92,16 @@ class RobertaSoftmaxForSequenceLabeling(RobertaPreTrainedModel):
         self.loss_type = config.loss_type
         self.init_weights()
 
-    def forward(self, input_ids, attention_mask=None, token_type_ids=None,
-                position_ids=None, head_mask=None, labels=None):
+    def forward(
+            self,
+            input_ids,
+            attention_mask=None,
+            token_type_ids=None,
+            position_ids=None,
+            head_mask=None,
+            labels=None,
+            return_dict=False,
+            ):
         outputs = self.roberta(input_ids = input_ids,attention_mask=attention_mask,token_type_ids=token_type_ids)
         sequence_output = outputs[0]
         sequence_output = self.dropout(sequence_output)
@@ -97,8 +123,17 @@ class RobertaSoftmaxForSequenceLabeling(RobertaPreTrainedModel):
                 loss = loss_fct(active_logits, active_labels)
             else:
                 loss = loss_fct(logits.view(-1, self.num_labels), labels.view(-1))
+
+        if not return_dict:
             outputs = (loss,) + outputs
-        return outputs  # (loss), scores, (hidden_states), (attentions)
+            return outputs  # (loss), scores, (hidden_states), (attentions)
+
+        return TokenClassifierOutput(
+            loss=loss,
+            logits=logits,
+            hidden_states=outputs.hidden_states,
+            attentions=outputs.attentions,
+        )
 
 
 """
@@ -116,8 +151,16 @@ class AlbertSoftmaxForSequenceLabeling(AlbertPreTrainedModel):
         self.classifier = nn.Linear(config.hidden_size, config.num_labels)
         self.init_weights()
 
-    def forward(self, input_ids, attention_mask=None, token_type_ids=None,
-                position_ids=None, head_mask=None, labels=None):
+    def forward(
+            self,
+            input_ids,
+            attention_mask=None,
+            token_type_ids=None,
+            position_ids=None,
+            head_mask=None,
+            labels=None,
+            return_dict=False,
+            ):
         outputs = self.bert(input_ids = input_ids,attention_mask=attention_mask,token_type_ids=token_type_ids,
                             position_ids=position_ids,head_mask=head_mask)
         sequence_output = outputs[0]
@@ -140,8 +183,17 @@ class AlbertSoftmaxForSequenceLabeling(AlbertPreTrainedModel):
                 loss = loss_fct(active_logits, active_labels)
             else:
                 loss = loss_fct(logits.view(-1, self.num_labels), labels.view(-1))
+
+        if not return_dict:
             outputs = (loss,) + outputs
-        return outputs  # (loss), scores, (hidden_states), (attentions)
+            return outputs  # (loss), scores, (hidden_states), (attentions)
+
+        return TokenClassifierOutput(
+            loss=loss,
+            logits=logits,
+            hidden_states=outputs.hidden_states,
+            attentions=outputs.attentions,
+        )
 
 
 """
@@ -159,8 +211,16 @@ class MegatronBertSoftmaxForSequenceLabeling(MegatronBertPreTrainedModel):
         self.loss_type = config.loss_type
         self.init_weights()
 
-    def forward(self, input_ids, attention_mask=None, token_type_ids=None,
-                position_ids=None, head_mask=None, labels=None):
+    def forward(
+            self,
+            input_ids,
+            attention_mask=None,
+            token_type_ids=None,
+            position_ids=None,
+            head_mask=None,
+            labels=None,
+            return_dict=False,
+            ):
         outputs = self.bert(input_ids = input_ids,attention_mask=attention_mask,token_type_ids=token_type_ids)
         sequence_output = outputs[0]
         sequence_output = self.dropout(sequence_output)
@@ -182,8 +242,17 @@ class MegatronBertSoftmaxForSequenceLabeling(MegatronBertPreTrainedModel):
                 loss = loss_fct(active_logits, active_labels)
             else:
                 loss = loss_fct(logits.view(-1, self.num_labels), labels.view(-1))
+
+        if not return_dict:
             outputs = (loss,) + outputs
-        return outputs  # (loss), scores, (hidden_states), (attentions)
+            return outputs  # (loss), scores, (hidden_states), (attentions)
+
+        return TokenClassifierOutput(
+            loss=loss,
+            logits=logits,
+            hidden_states=outputs.hidden_states,
+            attentions=outputs.attentions,
+        )
 
 
 """
@@ -200,7 +269,16 @@ class BertCrfForSequenceLabeling(BertPreTrainedModel):
         self.crf = CRF(num_tags=config.num_labels, batch_first=True)
         self.init_weights()
 
-    def forward(self, input_ids, token_type_ids=None, attention_mask=None,labels=None,input_lens=None):
+    def forward(
+            self,
+            input_ids,
+            attention_mask=None,
+            token_type_ids=None,
+            position_ids=None,
+            head_mask=None,
+            labels=None,
+            return_dict=False,
+            ):
         outputs =self.bert(input_ids = input_ids,attention_mask=attention_mask,token_type_ids=token_type_ids)
         sequence_output = outputs[0]
         sequence_output = self.dropout(sequence_output)
@@ -209,7 +287,16 @@ class BertCrfForSequenceLabeling(BertPreTrainedModel):
         if labels is not None:
             loss = self.crf(emissions = logits, tags=labels, mask=attention_mask)
             outputs =(-1*loss,)+outputs
-        return outputs # (loss), scores
+
+        if not return_dict:
+            return outputs  # (loss), scores, (hidden_states), (attentions)
+
+        return TokenClassifierOutput(
+            loss=loss,
+            logits=logits,
+            hidden_states=outputs.hidden_states,
+            attentions=outputs.attentions,
+        )
 
 
 """
@@ -226,7 +313,16 @@ class RobertaCrfForSequenceLabeling(RobertaPreTrainedModel):
         self.crf = CRF(num_tags=config.num_labels, batch_first=True)
         self.init_weights()
 
-    def forward(self, input_ids, token_type_ids=None, attention_mask=None,labels=None,input_lens=None):
+    def forward(
+            self,
+            input_ids,
+            attention_mask=None,
+            token_type_ids=None,
+            position_ids=None,
+            head_mask=None,
+            labels=None,
+            return_dict=False,
+            ):
         outputs =self.roberta(input_ids = input_ids,attention_mask=attention_mask,token_type_ids=token_type_ids)
         sequence_output = outputs[0]
         sequence_output = self.dropout(sequence_output)
@@ -235,7 +331,16 @@ class RobertaCrfForSequenceLabeling(RobertaPreTrainedModel):
         if labels is not None:
             loss = self.crf(emissions = logits, tags=labels, mask=attention_mask)
             outputs =(-1*loss,)+outputs
-        return outputs # (loss), scores
+
+        if not return_dict:
+            return outputs  # (loss), scores, (hidden_states), (attentions)
+
+        return TokenClassifierOutput(
+            loss=loss,
+            logits=logits,
+            hidden_states=outputs.hidden_states,
+            attentions=outputs.attentions,
+        )
 
 
 """
@@ -252,7 +357,16 @@ class AlbertCrfForSequenceLabeling(AlbertPreTrainedModel):
         self.crf = CRF(num_tags=config.num_labels, batch_first=True)
         self.init_weights()
 
-    def forward(self, input_ids, token_type_ids=None, attention_mask=None,labels=None,input_lens=None):
+    def forward(
+            self,
+            input_ids,
+            attention_mask=None,
+            token_type_ids=None,
+            position_ids=None,
+            head_mask=None,
+            labels=None,
+            return_dict=False,
+            ):
         outputs = self.bert(input_ids = input_ids,attention_mask=attention_mask,token_type_ids=token_type_ids)
         sequence_output = outputs[0]
         sequence_output = self.dropout(sequence_output)
@@ -261,7 +375,16 @@ class AlbertCrfForSequenceLabeling(AlbertPreTrainedModel):
         if labels is not None:
             loss = self.crf(emissions = logits, tags=labels, mask=attention_mask)
             outputs =(-1*loss,)+outputs
-        return outputs # (loss), scores
+
+        if not return_dict:
+            return outputs  # (loss), scores, (hidden_states), (attentions)
+
+        return TokenClassifierOutput(
+            loss=loss,
+            logits=logits,
+            hidden_states=outputs.hidden_states,
+            attentions=outputs.attentions,
+        )
 
 
 """
@@ -278,7 +401,16 @@ class MegatronBertCrfForSequenceLabeling(MegatronBertPreTrainedModel):
         self.crf = CRF(num_tags=config.num_labels, batch_first=True)
         self.init_weights()
 
-    def forward(self, input_ids, token_type_ids=None, attention_mask=None,labels=None,input_lens=None):
+    def forward(
+            self,
+            input_ids,
+            attention_mask=None,
+            token_type_ids=None,
+            position_ids=None,
+            head_mask=None,
+            labels=None,
+            return_dict=False,
+            ):
         outputs =self.bert(input_ids = input_ids,attention_mask=attention_mask,token_type_ids=token_type_ids)
         sequence_output = outputs[0]
         sequence_output = self.dropout(sequence_output)
@@ -287,4 +419,13 @@ class MegatronBertCrfForSequenceLabeling(MegatronBertPreTrainedModel):
         if labels is not None:
             loss = self.crf(emissions = logits, tags=labels, mask=attention_mask)
             outputs =(-1*loss,)+outputs
-        return outputs # (loss), scores
+
+        if not return_dict:
+            return outputs  # (loss), scores, (hidden_states), (attentions)
+
+        return TokenClassifierOutput(
+            loss=loss,
+            logits=logits,
+            hidden_states=outputs.hidden_states,
+            attentions=outputs.attentions,
+        )

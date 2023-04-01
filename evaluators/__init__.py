@@ -34,18 +34,8 @@ CLASSIFICATION_EVALUATOR_CLASSES = {
 
 TOKEN_CLASSIFICATION_EVALUATOR_CLASSES = {
     "auto_token_cls": TokenClassificationEvaluator,
-    "head_softmax_token_cls": {
-        "bert": TokenClassificationEvaluator,
-        "roberta": TokenClassificationEvaluator,
-        "albert": TokenClassificationEvaluator,
-        "megatron": TokenClassificationEvaluator,
-    },
-    "head_crf_token_cls": {
-        "bert": TokenClassificationEvaluator,
-        "roberta": TokenClassificationEvaluator,
-        "albert": TokenClassificationEvaluator,
-        "megatron": TokenClassificationEvaluator,
-    }
+    "head_softmax_token_cls": TokenClassificationEvaluator,
+    "head_crf_token_cls": TokenClassificationEvaluator,
 }
 
 
