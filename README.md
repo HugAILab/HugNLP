@@ -118,6 +118,7 @@ We demonstrate all pre-built applications in HugNLP. You can choose one applicat
 | **Applications** | **Runing Tasks** | **Task Notes** | **PLM Models** | **Documents** |
 | --- | --- | --- | --- | --- |
 | **Default Application** | run_seq_cls.sh | **Goal**: Standard **Fine-tuning** or **Prompt-tuning** for sequence classification on user-defined dataset. <br> **Path**: applications/default_applications | BERT, RoBERTa, DeBERTa | [click](./documents/default_tasks/default_sequence_classification.md) |
+|  | run_seq_labeling.sh | **Goal**: Standard **Fine-tuning** for sequence labeling on user-defined dataset. <br> **Path**: applications/default_applications | BERT, RoBERTa, ALBERT |   |
 | **Pre-training** | run_pretrain_mlm.sh | **Goal**: Pre-training via **Masked Language Modeling** (MLM). <br> **Path**: applications/pretraining/ | BERT, RoBERTa | [click](./documents/pretraining/Masked%20LM%20for%20Continual%20Pre-training.md) |
 |  | run_pretrain_casual_lm.sh | **Goal**: Pre-training via **Causal Language Modeling** (CLM). <br> **Path**: applications/pretraining | BERT, RoBERTa | [click](./documents/pretraining/Causal%20LM%20for%20Continual%20Pre-training.md) |
 | **GLUE Benchmark** | run_glue.sh | **Goal**: Standard **Fine-tuning** or **Prompt-tuning** for GLUE classification tasks. <br> **Path**: applications/benchmark/glue | BERT, RoBERTa, DeBERTa |  |
@@ -126,7 +127,7 @@ We demonstrate all pre-built applications in HugNLP. You can choose one applicat
 |  | run_clue_cmrc.sh | **Goal**: Standard **Fine-tuning** for CLUE CMRC2018 task. <br> **Path**: applications/benchmark/cluemrc | BERT, RoBERTa, DeBERTa |  |
 |  | run_clue_c3.sh | **Goal**: Standard **Fine-tuning** for CLUE C3 task. <br> **Path**: applications/benchmark/cluemrc | BERT, RoBERTa, DeBERTa |  |
 |  | run_clue_chid.sh | **Goal**: Standard **Fine-tuning** for CLUE CHID task. <br> **Path**: applications/benchmark/cluemrc | BERT, RoBERTa, DeBERTa |  |
-| **Instruction-Prompting** | zh_global_pointer_finetune_dev.sh | **Goal**: **Cross-task training** via extractive Instruction-tuning based on Global Pointer model. <br> **Path**: applications/instruction_prompting/chinese_instruction | BERT, RoBERTa, DeBERTa | [click](./documents/instruction_prompting/instruction_tuning.md) |
+| **Instruction-Prompting** | run_zh_extract_instruction.sh | **Goal**: **Cross-task training** via extractive Instruction-tuning based on Global Pointer model. <br> **Path**: applications/instruction_prompting/chinese_instruction | BERT, RoBERTa, DeBERTa | [click](./documents/instruction_prompting/instruction_tuning.md) |
 |  | run_causal_incontext_cls.sh | **Goal**: **In-context learning** for user-defined classification tasks. <br> **Path**: applications/instruction_prompting/incontext_learning | GPT-2 | [click](./documents/instruction_prompting/incontext_learning_for_cls.md) |
 | **Information Extraction** | run_extractive_unified_ie.sh | **Goal**: **HugIE**: training a unified chinese information extraction via extractive instruction-tuning. <br> **Path**: applications/information_extraction/HugIE | BERT, RoBERTa, DeBERTa | [click](./documents/information_extraction/HugIE.md) |
 |  | api_test.py | **Goal**: HugIE: API test. <br> **Path**: applications/information_extraction/HugIE | - | [click](./documents/information_extraction/HugIE.md) |
