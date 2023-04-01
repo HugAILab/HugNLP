@@ -31,7 +31,7 @@ class MaskedLanguageModelingEvaluator(ClassificationEvaluator):
         data_args: DataTrainingArguments,
         training_args: TrainingArguments,
         processor: DataProcessor,
-        trainer: Optional[HugTrainer],
+        trainer: Optional[HugTrainer] = None,
         eval_dataset: Optional[Dataset] = None,
         test_dataset: Optional[Dataset] = None,
     ) -> None:
@@ -52,7 +52,7 @@ class CausalLanguageModelingEvaluator(ClassificationEvaluator):
         data_args: DataTrainingArguments,
         training_args: TrainingArguments,
         processor: DataProcessor,
-        trainer: Optional[HugTrainer],
+        trainer: Optional[HugTrainer] = None,
         eval_dataset: Optional[Dataset] = None,
         test_dataset: Optional[Dataset] = None,
     ) -> None:
