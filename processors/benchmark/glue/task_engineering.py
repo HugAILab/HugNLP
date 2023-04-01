@@ -103,7 +103,7 @@ causal_task_to_template = {
         "prefix_template": "Question 2: ",
         "suffix_template": ""
     }],
-    "qqp": [{
+    "rte": [{
         "prefix_template": "Text 1: ",
         "suffix_template": ""
     }, {
