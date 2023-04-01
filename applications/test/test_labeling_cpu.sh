@@ -1,28 +1,29 @@
 #### pre-trained lm path
-path=/wjn/pre-trained-lm/chinese-macbert-base/
+path=bert-base-uncased
 MODEL_TYPE=bert
 
-DATA_NAME=default-cls
+DATA_NAME=default-labeling
 
 #### task data path (user should change this path)
-data_path=./datasets/data_example/cls
+data_path=./datasets/data_example/ner
 
-TASK_TYPE=head_cls
-# TASK_TYPE=masked_prompt_prefix_cls
+# TASK_TYPE=auto_token_cls
+# TASK_TYPE=head_softmax_token_cls
+TASK_TYPE=head_crf_token_cls
 
-len=196
+len=64
 bz=4 # 8
-epoch=100
+epoch=4
 eval_step=50
 wr_step=10
 lr=1e-05
 
 
-export CUDA_VISIBLE_DEVICES=0,1
-python3 -m torch.distributed.launch --nproc_per_node=2 --master_port=6014 hugnlp_runner.py \
+export CUDA_VISIBLE_DEVICES=-1
+python3 hugnlp_runner.py \
 --model_name_or_path=$path \
 --data_dir=$data_path \
---output_dir=./outputs/default/sequence_classification/$DATA_NAME/ \
+--output_dir=./outputs/default/sequence_labeling/$DATA_NAME/ \
 --seed=42 \
 --exp_name=default-cls \
 --max_seq_length=$len \
@@ -43,7 +44,7 @@ python3 -m torch.distributed.launch --nproc_per_node=2 --master_port=6014 hugnlp
 --warmup_steps=$wr_step \
 --load_best_model_at_end \
 --report_to=none \
---task_name=default_cls \
+--task_name=default_labeling \
 --task_type=$TASK_TYPE \
 --model_type=$MODEL_TYPE \
 --metric_for_best_model=acc \
@@ -52,5 +53,4 @@ python3 -m torch.distributed.launch --nproc_per_node=2 --master_port=6014 hugnlp
 --overwrite_output_dir \
 --label_names=labels \
 --keep_predict_labels \
---user_defined="data_name=user-define label_names=entailment,neutral,contradiction data_name=$DATA_NAME" \
-# --use_prompt_for_cls
+--user_defined="data_name=user-define"

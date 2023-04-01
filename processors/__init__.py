@@ -27,7 +27,10 @@ from processors.instruction_prompting.incontext_learning.data_processor import C
 from processors.code.code_clone.data_processor import CodeCloneProcessor
 from processors.code.code_defect.data_processor import CodeDefectProcessor
 # default applications
-from processors.default_task_processors.data_processor import DefaultSequenceClassificationProcessor
+from processors.default_task_processors.data_processor import (
+    DefaultSequenceClassificationProcessor,
+    DefaultSequenceLabelingProcessor
+)
 
 # Pre-training Tasks
 PRETRAINING_PROCESSORS = {
@@ -39,6 +42,7 @@ PRETRAINING_PROCESSORS = {
 # default task
 DEFAULT_PROCESSORS = {
     "default_cls": DefaultSequenceClassificationProcessor,
+    "default_labeling": DefaultSequenceLabelingProcessor
 }
 
 # Information Extraction Tasks

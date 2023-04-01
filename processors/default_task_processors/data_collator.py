@@ -72,3 +72,40 @@ class DataCollatorForDefaultSequenceClassification:
             if len(segment_spans) != 0:
                 batch["segment_spans"] = torch.Tensor(segment_spans).long()
         return batch
+
+
+
+@dataclass
+class DataCollatorForDefaultSequenceLabeling:
+    tokenizer: PreTrainedTokenizerBase
+    max_length: Optional[int] = 512
+    pad_to_multiple_of: Optional[int] = None
+    pad_to_max_length: Optional[bool] = None
+
+    def __call__(self, features):
+        # Tokenize
+        # is_train = features[0]["is_train"] > 0
+        batch = []
+        for f in features:
+            if "token_type_ids" in f.keys():
+                batch.append(
+                    {
+                        "input_ids": f["input_ids"],
+                        "token_type_ids": f["token_type_ids"],
+                        "attention_mask": f["attention_mask"]
+                    })
+            else:
+                batch.append(
+                    {
+                        "input_ids": f["input_ids"],
+                        "attention_mask": f["attention_mask"]
+                    })
+        batch = self.tokenizer.pad(
+            batch,
+            padding="max_length",
+            max_length=self.max_length,
+            return_tensors="pt")  # {"input_ids": [xxx], xxx}
+        # add labels
+        batch["labels"] = torch.Tensor([f["label"] for f in features]).long()
+
+        return batch

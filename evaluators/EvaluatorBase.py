@@ -34,7 +34,8 @@ class Evaluator(object):
         data_args: DataTrainingArguments,
         training_args: TrainingArguments,
         processor: DataProcessor,
-        trainer: Optional[HugTrainer],
+        model: torch.nn.Module,
+        trainer: Optional[HugTrainer] = None,
         eval_dataset: Optional[Dataset] = None,
         test_dataset: Optional[Dataset] = None,
     ) -> None:
@@ -46,9 +47,14 @@ class Evaluator(object):
         self.trainer = trainer
         self.eval_dataset = eval_dataset
         self.test_dataset = test_dataset
-        self.model = trainer.model
+        self.model = model
         self.paradigm = None # You must define this as DO_GENERATE or NO_GENERATE when inherit this class.
         self.metric = None # You must define the metric when inherit this class.
+
+    def reset_trainer(self, trainer: HugTrainer):
+        logger.info("Reset trainer state in evaluation.")
+        self.trainer = trainer
+        self.model = trainer.model
 
     def default_compute_metrics(self, eval_predictions):
         """
@@ -98,11 +104,12 @@ class ClassificationEvaluator(Evaluator):
         data_args: DataTrainingArguments,
         training_args: TrainingArguments,
         processor: DataProcessor,
-        trainer: Optional[HugTrainer],
+        model: torch.nn.Module,
+        trainer: Optional[HugTrainer] = None,
         eval_dataset: Optional[Dataset] = None,
         test_dataset: Optional[Dataset] = None,
     ) -> None:
-        super().__init__(model_args, data_args, training_args, processor, trainer, eval_dataset, test_dataset)
+        super().__init__(model_args, data_args, training_args, processor, model, trainer, eval_dataset, test_dataset)
         self.paradigm = NO_GENERATE
 
 
@@ -256,11 +263,12 @@ class GenerationEvaluator(Evaluator):
         data_args: DataTrainingArguments,
         training_args: TrainingArguments,
         processor: DataProcessor,
-        trainer: Optional[HugTrainer],
+        model: torch.nn.Module,
+        trainer: Optional[HugTrainer] = None,
         eval_dataset: Optional[Dataset] = None,
         test_dataset: Optional[Dataset] = None,
     ) -> None:
-        super().__init__(model_args, data_args, training_args, processor, trainer, eval_dataset, test_dataset)
+        super().__init__(model_args, data_args, training_args, processor, model, trainer, eval_dataset, test_dataset)
         self.paradigm = NO_GENERATE
         self.generation_model_response = None
         if self.model_args.model_type in ["gpt2", "gpt3"]:

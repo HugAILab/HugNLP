@@ -1,9 +1,10 @@
 from typing import List, Dict
 from metrics.metric import Metric
 
-class NERMetric(Metric):
+
+class TokenClassificationMetric(Metric):
     def __init__(self):
-        super(NERMetric, self).__init__()
+        super(TokenClassificationMetric, self).__init__()
 
     def _compute(self, label, pred, hit):
         if label == 0:
@@ -31,3 +32,7 @@ class NERMetric(Metric):
             "acc": acc/len(golden.keys()),
             "f1": f1/len(golden.keys())
         }
+
+
+class NERMetric(TokenClassificationMetric):
+    pass

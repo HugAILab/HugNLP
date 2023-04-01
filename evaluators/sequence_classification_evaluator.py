@@ -35,11 +35,12 @@ class SequenceClassificationEvaluator(ClassificationEvaluator):
         data_args: DataTrainingArguments,
         training_args: TrainingArguments,
         processor: DataProcessor,
-        trainer: Optional[HugTrainer],
+        model: torch.nn.Module,
+        trainer: Optional[HugTrainer] = None,
         eval_dataset: Optional[Dataset] = None,
         test_dataset: Optional[Dataset] = None,
     ) -> None:
-        super().__init__(model_args, data_args, training_args, processor, trainer, eval_dataset, test_dataset)
+        super().__init__(model_args, data_args, training_args, processor, model, trainer, eval_dataset, test_dataset)
         self.paradigm = NO_GENERATE
 
 
@@ -55,11 +56,12 @@ class CausalSequenceClassificationEvaluator(GenerationEvaluator):
         data_args: DataTrainingArguments,
         training_args: TrainingArguments,
         processor: DataProcessor,
-        trainer: Optional[HugTrainer],
+        model: torch.nn.Module,
+        trainer: Optional[HugTrainer] = None,
         eval_dataset: Optional[Dataset] = None,
         test_dataset: Optional[Dataset] = None,
     ) -> None:
-        super().__init__(model_args, data_args, training_args, processor, trainer, eval_dataset, test_dataset)
+        super().__init__(model_args, data_args, training_args, processor, model, trainer, eval_dataset, test_dataset)
         self.paradigm = DO_GENERATE
         assert hasattr(self.processor, "label_words_mapping"), "If you choose causal PLM to generate label for classification, you must define 'label_words_mapping'"
         self.label_words_mapping = self.processor.label_words_mapping
@@ -120,7 +122,7 @@ class CausalSequenceClassificationEvaluator(GenerationEvaluator):
                 content_free_examples=content_free_examples,
                 label2id=self.processor.label2id,
             )
-        print("all_calibrate_label_probs=", all_label_probs)
+        # print("all_calibrate_label_probs=", all_label_probs)
 
         metrics = self.default_compute_metrics(all_label_probs, self.eval_dataset)
         # print("dev metrics=", metrics)

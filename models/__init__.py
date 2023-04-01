@@ -33,8 +33,12 @@ from models.sequence_matching.fusion_siamese import BertForFusionSiamese, BertFo
 from models.fewshot_learning.span_proto import SpanProto
 from models.fewshot_learning.token_proto import TokenProto
 
-from models.sequence_labeling.softmax_for_ner import BertSoftmaxForNer, RobertaSoftmaxForNer, AlbertSoftmaxForNer, MegatronBertSoftmaxForNer
-from models.sequence_labeling.crf_for_ner import BertCrfForNer, RobertaCrfForNer, AlbertCrfForNer, MegatronBertCrfForNer
+from models.sequence_labeling.head_token_cls import (
+    BertSoftmaxForSequenceLabeling, BertCrfForSequenceLabeling,
+    RobertaSoftmaxForSequenceLabeling, RobertaCrfForSequenceLabeling,
+    AlbertSoftmaxForSequenceLabeling, AlbertCrfForSequenceLabeling,
+    MegatronBertSoftmaxForSequenceLabeling, MegatronBertCrfForSequenceLabeling,
+)
 from models.span_extraction.span_for_ner import BertSpanForNer, RobertaSpanForNer, AlbertSpanForNer, MegatronBertSpanForNer
 
 from models.language_modeling.mlm import BertForMaskedLM
@@ -133,7 +137,19 @@ CLASSIFICATION_MODEL_CLASSES = {
 
 
 TOKEN_CLASSIFICATION_MODEL_CLASSES = {
-    "ner": AutoModelForTokenClassification,
+    "auto_token_cls": AutoModelForTokenClassification,
+    "head_softmax_token_cls": {
+        "bert": BertSoftmaxForSequenceLabeling,
+        "roberta": RobertaSoftmaxForSequenceLabeling,
+        "albert": AlbertSoftmaxForSequenceLabeling,
+        "megatron": MegatronBertSoftmaxForSequenceLabeling,
+    },
+    "head_crf_token_cls": {
+        "bert": BertCrfForSequenceLabeling,
+        "roberta": RobertaCrfForSequenceLabeling,
+        "albert": AlbertCrfForSequenceLabeling,
+        "megatron": MegatronBertCrfForSequenceLabeling,
+    }
 }
 
 
@@ -175,15 +191,6 @@ CODE_MODEL_CLASSES = {
 # task_type 负责对应model类型
 OTHER_MODEL_CLASSES = {
     # sequence labeling
-    "ner": AutoModelForTokenClassification,
-    "bert_softmax_ner": BertSoftmaxForNer,
-    "roberta_softmax_ner": RobertaSoftmaxForNer,
-    "albert_softmax_ner": AlbertSoftmaxForNer,
-    "megatronbert_softmax_ner": MegatronBertSoftmaxForNer,
-    "bert_crf_ner": BertCrfForNer,
-    "roberta_crf_ner": RobertaCrfForNer,
-    "albert_crf_ner": AlbertCrfForNer,
-    "megatronbert_crf_ner": MegatronBertCrfForNer,
     "bert_span_ner": BertSpanForNer,
     "roberta_span_ner": RobertaSpanForNer,
     "albert_span_ner": AlbertSpanForNer,
@@ -226,6 +233,7 @@ OTHER_MODEL_CLASSES = {
 MODEL_CLASSES_LIST = [
     PRETRAIN_MODEL_CLASSES,
     CLASSIFICATION_MODEL_CLASSES,
+    TOKEN_CLASSIFICATION_MODEL_CLASSES,
     SPAN_EXTRACTION_MODEL_CLASSES,
     FEWSHOT_MODEL_CLASSES,
     CODE_MODEL_CLASSES,
