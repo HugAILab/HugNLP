@@ -7,6 +7,7 @@ import torch
 import random
 import os.path
 import numpy as np
+from tqdm import tqdm
 from datasets import DatasetDict
 from datasets.load import load_dataset
 from dataclasses import dataclass
@@ -402,7 +403,7 @@ class GLUEForInContextProcessor(CLSProcessor):
             training_example_list = list()
             for ei, example in enumerate(training_examples):
                 training_example_list.append({
-                    "idx": ei,
+                    "idx": example["idx"],
                     self.sentence1_key: example[self.sentence1_key],
                     self.sentence2_key if self.sentence2_key is not None else "sentence2": example[self.sentence2_key] if self.sentence2_key in example.keys() else "",
                     "label": example["label"],
@@ -412,7 +413,7 @@ class GLUEForInContextProcessor(CLSProcessor):
 
         # 为每个dev/test构建prompt
         prompt_eval_examples = list()
-        for ei, example in enumerate(eval_examples):
+        for ei, example in enumerate(tqdm(eval_examples)):
             prompt = self.prompt_engineering.construct_incontext_prompt(
                 sentence1_key=self.sentence1_key,
                 sentence2_key=self.sentence2_key,
@@ -421,7 +422,7 @@ class GLUEForInContextProcessor(CLSProcessor):
                 )
             if set_type != "test":
                 prompt_eval_examples.append({
-                    "idx": ei,
+                    "idx": example["idx"],
                     self.sentence1_key: prompt,
                     self.sentence2_key if self.sentence2_key is not None else "sentence2": "",
                     "label": example["label"],
@@ -435,32 +436,12 @@ class GLUEForInContextProcessor(CLSProcessor):
                     "label": 0, # the label of test set is missing, so default initialize as 0
                     "target": self.id2label[0], # the label of test set is missing, so default initialize as 0
                 })
+        print("prompt_eval_examples[0]=", prompt_eval_examples[0])
 
         return prompt_eval_examples # List[dict]
 
     def _create_examples(self, lines, set_type=None):
-        examples = []
-        is_train = 0 if set_type == "test" else 1
-        for idx, line in enumerate(lines):
-            sentence1 = line[self.sentence1_key]
-            sentence2 = line[self.sentence2_key] if self.sentence2_key in line.keys() else None
-            if set_type != "test":
-                label = line["label"]
-                if label not in self.labels:
-                    continue
-            else:
-                # 有些测试集没有标签，为了避免报错，默认初始化标签0
-                label = line["label"] if "label" in line.keys() else self.labels[0]
-
-            examples.append({
-                "idx": idx,
-                self.sentence1_key: sentence1,
-                self.sentence2_key: sentence2,
-                "label": self.label2id[label], # label id
-                "target": label # label name
-            })
-
-        return examples
+        pass
 
     def set_config(self, config):
         pass

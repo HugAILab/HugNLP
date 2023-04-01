@@ -9,17 +9,17 @@ data_path=./ # you can ignore it
 # glue_task=cola
 # glue_task=mnli
 # glue_task=mrpc
-glue_task=sst2
+# glue_task=sst2
 # glue_task=qqp
 #glue_task=qnli
-# glue_task=rte
+glue_task=rte
 #glue_task=snli
 
 export CUDA_VISIBLE_DEVICES=0
 python3 -m torch.distributed.launch --nproc_per_node=1 --master_port=6013 hugnlp_runner.py \
   --model_name_or_path=$path \
   --data_dir=$data_path\
-  --output_dir=./outputs/instruction/incontext_learning \
+  --output_dir=./outputs/glue/$glue_task/incontext \
   --seed=42 \
   --exp_name=gpt2-incontext-cls \
   --max_seq_length=512 \
