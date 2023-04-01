@@ -1,7 +1,6 @@
 """
 Head Tuning with Prefix / Adapter
 """
-import logging
 from typing import Optional, List, Union, Tuple
 import torch
 from torch._C import NoopLogger
@@ -24,6 +23,7 @@ from models.basic_modules.prefix_encoder import PrefixEncoder
 from models.basic_modules.adapter import BertAdaModel, RobertaAdaModel, init_adapter
 from tools.model_utils.parameter_freeze import ParameterFreeze
 
+from tools.runner_utils.log_util import logging
 logger = logging.getLogger(__name__)
 
 

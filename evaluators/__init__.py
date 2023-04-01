@@ -33,7 +33,19 @@ CLASSIFICATION_EVALUATOR_CLASSES = {
 
 
 TOKEN_CLASSIFICATION_EVALUATOR_CLASSES = {
-    "ner": TokenClassificationEvaluator,
+    "auto_token_cls": TokenClassificationEvaluator,
+    "head_softmax_token_cls": {
+        "bert": TokenClassificationEvaluator,
+        "roberta": TokenClassificationEvaluator,
+        "albert": TokenClassificationEvaluator,
+        "megatron": TokenClassificationEvaluator,
+    },
+    "head_crf_token_cls": {
+        "bert": TokenClassificationEvaluator,
+        "roberta": TokenClassificationEvaluator,
+        "albert": TokenClassificationEvaluator,
+        "megatron": TokenClassificationEvaluator,
+    }
 }
 
 
@@ -58,15 +70,6 @@ CODE_EVALUATOR_CLASSES = {
 # task_type 负责对应model类型
 OTHER_EVALUATOR_CLASSES = {
     # sequence labeling
-    "ner": TokenClassificationEvaluator,
-    "bert_softmax_ner": TokenClassificationEvaluator,
-    "roberta_softmax_ner": TokenClassificationEvaluator,
-    "albert_softmax_ner": TokenClassificationEvaluator,
-    "megatronbert_softmax_ner": TokenClassificationEvaluator,
-    "bert_crf_ner": TokenClassificationEvaluator,
-    "roberta_crf_ner": TokenClassificationEvaluator,
-    "albert_crf_ner": TokenClassificationEvaluator,
-    "megatronbert_crf_ner": TokenClassificationEvaluator,
     "bert_span_ner": SpanExtractionEvaluator,
     "roberta_span_ner": SpanExtractionEvaluator,
     "albert_span_ner": SpanExtractionEvaluator,
