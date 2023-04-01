@@ -118,17 +118,18 @@ class TokenClassificationEvaluator(ClassificationEvaluator):
             predicts, topk_predictions = self.get_best_and_topk(logits, examples, stage="test")
             label_list = self.processor.labels
             id2label = {i: label for i, label in enumerate(label_list)}
-
             # submit
             answer = list()
-            print("predicts=", predicts)
-            for k, v in predicts.items():
-                if v not in id2label.keys():
-                    res = ""
-                    print("unknown")
-                else:
-                    res = id2label[v]
-                answer.append({"id": k, "label": res})
+            for k, tag_list in predicts.items():
+                res_list = list()
+                for v in tag_list:
+                    if v not in id2label.keys():
+                        res = ""
+                        print("unknown")
+                    else:
+                        res = id2label[v]
+                    res_list.append(res)
+                answer.append({"id": k, "label": res_list})
 
             output_submit_file = os.path.join(self.training_args.output_dir, "answer.json")
             # Save the label results
@@ -154,14 +155,14 @@ class TokenClassificationEvaluator(ClassificationEvaluator):
         # logits: [test_data_num, label_num]
         predictions = dict() # Obtain the best predictions
         topk_result = dict() # Obtain the Top K predictions
-
+        # print("logits.shape=", logits.shape) # [data_num, seq_len, tag_num]
         preds = logits
-        preds = np.argmax(preds, axis=1)
+        preds = np.argmax(preds, axis=-1)
 
         for pred, example, logit in zip(preds, examples, logits):
             id_ = example["idx"]
             id_ = int(id_.split("-")[1])
-            predictions[id_] = pred
+            predictions[id_] = pred.tolist()
             proba = softmax(logit) # Transform as probabilities.
             indices = np.argsort(-proba)
             out = list()
