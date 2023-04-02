@@ -21,14 +21,14 @@
 HugNLP is a novel development and application library based on [Hugging Face](https://huggingface.co/) for improving the convenience and effectiveness of NLP researchers. The founder and main developer is [Jianing Wang](https://wjn1996.github.io/). The collaborators are [Nuo Chen](https://github.com/nchen909) and [Qiushi Sun](https://github.com/QiushiSun).
 
 
-## **News
+## **News & Highlights
 
-**🆕 23-03-21: Finish GPT-style in-context learning for sequence classification.**
-
-**🆕 23-03-20: Add Evaluators for each task.**
-
-**🆕 23-03-13: Add code clone detection and defect task.**
-
+- 🆕 [23-04-02]: Add GPT-style instruction-tuning. You can continual train a small-scale ChatGPT! [[see the bash](./applications/instruction_prompting/instruction_tuning/run_casual_instruction.sh
+)]
+- 🆕 [23-03-21]: Finish GPT-style in-context learning for sequence classification. [[see doc](./documents/instruction_prompting/incontext_learning_for_cls.md)]
+- 🆕 [23-03-13]: Add code clone detection and defect task. You can train clone and defect for user-defined dataset.
+- 🆕 [23-03-03]: Add HugIE API and corresponding training script. You can use it to perform information extraction on Chinese data. [[see doc](./documents/information_extraction/HugIE.md)]
+- 🆕 [23-02-18]: The HugNLP is open!
 
 
 # Architecture

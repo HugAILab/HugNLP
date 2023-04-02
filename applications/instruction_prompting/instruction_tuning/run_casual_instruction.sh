@@ -6,6 +6,10 @@ path=/wjn/pre-trained-lm/gpt2
 
 model_name=gpt2
 
+# the data example is shown in ./datasets/data_example/instruction/
+# we provide an instruction-tuning medical trainin data.
+# the training data can be downloaded by run 'bash download_example.sh'
+# you can merge all data to form a final train.json and dev.json. the test.json is the same as dev.json.
 data_path=/wjn/nlp_task_datasets/instruction/all/
 
 export CUDA_VISIBLE_DEVICES=0
