@@ -291,7 +291,7 @@ def main():
         trainer.save_state()
 
     # Update trainer state
-    evaluator.reset_trainer(trainer if semi_training_args.use_semi else trainer.student_trainer)
+    evaluator.reset_trainer(trainer if not semi_training_args.use_semi else trainer.student_trainer)
     # Evaluation
     if training_args.do_eval:
         logger.info("*** Evaluate ***")
