@@ -262,7 +262,6 @@ class HugSelfTrainer(object):
         self.unlabeled_data_num = self.semi_training_args.unlabeled_data_num # self-training每轮迭代时，首先挑选一部分用于计算MC dropout uncertainty。-1表示全部计算uncertainty
         self.pseudo_sample_num_or_ratio = self.semi_training_args.pseudo_sample_num_or_ratio # MC dropout后，从所有计算过uncertainty的unlabeled data上采样的样本比例/数量
         self.student_learning_rate = self.semi_training_args.student_learning_rate
-        self.student_pre_seq_len = self.semi_training_args.student_pre_seq_len
         self.output_dir = self.training_args.output_dir
 
     def get_teacher_trainer(
