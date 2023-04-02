@@ -5,6 +5,9 @@
 # !/usr/bin/env python
 # coding=utf-8
 
+"""
+This file is the runner of HugNLP.
+"""
 import math
 import os
 import time
@@ -15,10 +18,10 @@ from callback.freeze import FreezeCallback
 from callback.logger import LoggerCallback
 from processors import PROCESSORS
 from transformers import CONFIG_MAPPING, AutoConfig, AutoTokenizer, HfArgumentParser
-from hugnlp_trainer import HugTrainer
+from hugnlp_trainer import HugTrainer, HugSelfTrainer
 from transformers.trainer_utils import get_last_checkpoint
 from transformers import EarlyStoppingCallback
-from config import ModelArguments, DataTrainingArguments, TrainingArguments
+from config import ModelArguments, DataTrainingArguments, TrainingArguments, SemiSupervisedTrainingArguments
 from callback.mlflow import MLflowCallback
 from tools.runner_utils.log_util import init_logger
 from models import MODEL_CLASSES, TOKENIZER_CLASSES
@@ -42,8 +45,8 @@ def print_hello():
 
 def main():
     # See all possible arguments or by passing the --help flag to this script.
-    parser = HfArgumentParser((ModelArguments, DataTrainingArguments, TrainingArguments))
-    model_args, data_args, training_args = parser.parse_args_into_dataclasses()
+    parser = HfArgumentParser((ModelArguments, DataTrainingArguments, TrainingArguments, SemiSupervisedTrainingArguments))
+    model_args, data_args, training_args, semi_training_args = parser.parse_args_into_dataclasses()
 
     # Print hello world
     if training_args.local_rank == 0:
@@ -166,6 +169,8 @@ def main():
     except:
         print("Fail to resize token embeddings.")
 
+    train_dataset, eval_dataset, test_dataset, unlabeled_dataset = None, None, None, None
+
     # Obtain tokenized data
     tokenized_datasets = processor.get_tokenized_datasets()
     if training_args.do_train:
@@ -188,6 +193,12 @@ def main():
         test_dataset = tokenized_datasets["test"]
         if data_args.max_predict_samples is not None:
             test_dataset = test_dataset.select(range(data_args.max_predict_samples))
+
+    if semi_training_args.use_semi:
+        assert "unlabeled_data" in tokenized_datasets.features, "If you choose semi-supervised training, you must define unlabeled data."
+        unlabeled_dataset = tokenized_datasets["unlabeled_dataset"]
+        if semi_training_args.unlabeled_data_num is not None:
+            unlabeled_dataset = unlabeled_dataset.select(range(semi_training_args.unlabeled_data_num))
 
     # Set evaluator
     assert data_args.task_type in EVALUATORS_CLASSES, "You must define an evaluator for '{}'".format(data_args.task_type)
@@ -234,16 +245,31 @@ def main():
         callbacks.append(DoPredictDuringTraining(test_dataset, processor))
 
     # Obtain trainer
-    trainer = HugTrainer(
-        model=model,
-        args=training_args,
-        train_dataset=train_dataset if training_args.do_train else None,
-        eval_dataset=eval_dataset if training_args.do_eval else None,
-        compute_metrics=compute_metrics,
-        tokenizer=tokenizer,
-        data_collator=data_collator,
-        callbacks=callbacks
-    )
+    if not semi_training_args.use_semi:
+        # traditional trainer
+        trainer = HugTrainer(
+            model=model,
+            args=training_args,
+            train_dataset=train_dataset if training_args.do_train else None,
+            eval_dataset=eval_dataset if training_args.do_eval else None,
+            compute_metrics=compute_metrics,
+            tokenizer=tokenizer,
+            data_collator=data_collator,
+            callbacks=callbacks
+        )
+    else:
+        # self-trainer
+        trainer = HugSelfTrainer(
+            model=model,
+            args=training_args,
+            train_dataset=train_dataset if training_args.do_train else None,
+            eval_dataset=eval_dataset if training_args.do_eval else None,
+            compute_metrics=compute_metrics,
+            tokenizer=tokenizer,
+            data_collator=data_collator,
+            callbacks=callbacks
+        )
+
 
     # Training
     if training_args.do_train:
@@ -265,7 +291,7 @@ def main():
         trainer.save_state()
 
     # Update trainer state
-    evaluator.reset_trainer(trainer)
+    evaluator.reset_trainer(trainer if not semi_training_args.use_semi else trainer.student_trainer)
     # Evaluation
     if training_args.do_eval:
         logger.info("*** Evaluate ***")
