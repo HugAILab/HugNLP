@@ -6,6 +6,8 @@
 import os
 import torch
 from torch import nn
+import numpy as np
+from tqdm import tqdm
 import datasets
 from datasets import Dataset
 from processors.dataset import DatasetK
@@ -23,7 +25,7 @@ from config import TrainingArguments
 
 from transformers.file_utils import is_datasets_available
 from models.adversarial import FGM
-
+from tools.processing_utils.sampler import random_sampling
 from tools.model_utils.uncertainty import sample_by_bald_class_easiness
 from tools.runner_utils.log_util import logging
 logger = logging.getLogger(__name__)
@@ -212,6 +214,89 @@ class HugTrainer(Trainer):
                     rank=self.args.process_index,
                     seed=self.args.seed,
                 )
+
+    """
+    User for calculate mc
+    """
+    def mc_evaluate(
+        self,
+        unlabeled_dataset: Optional[Dataset] = None,
+        unlabeled_data_num: int = -1,
+        description: str = "Evaluate on Unlabeled Data via MC Dropout Uncertainty Estimation",
+        prediction_loss_only: Optional[bool] = None,
+        ignore_keys: Optional[List[str]] = None,
+        metric_key_prefix: str = "eval",
+        T: int = 30,
+        num_classes: int = 0
+    ):
+        """
+        Prediction/evaluation loop, shared by `Trainer.evaluate()` and `Trainer.predict()`.
+
+        Works both with or without labels.
+        """
+        args = self.args
+
+        prediction_loss_only = prediction_loss_only if prediction_loss_only is not None else args.prediction_loss_only
+        is_sample = True
+        if unlabeled_data_num == -1 or unlabeled_data_num >= len(unlabeled_dataset):
+            unlabeled_data_num = len(unlabeled_dataset)
+            is_sample = False
+
+        if is_sample:
+            recalled_examples_idx_list = random_sampling(
+                raw_datasets=unlabeled_dataset,
+                num_examples_per_label=unlabeled_data_num // num_classes
+            )
+            unlabeled_dataset = unlabeled_dataset.select(recalled_examples_idx_list)
+            unlabeled_data_num = len(unlabeled_dataset)
+
+        unlabeled_dataloader = self.get_eval_dataloader(unlabeled_dataset)
+        model = self._wrap_model(self.model, training=True, dataloader=unlabeled_dataloader) # reset training to True
+
+        batch_size = unlabeled_dataloader.batch_size
+        # unlabeled_data_num = self.num_examples(unlabeled_dataloader)
+        logger.info(f"***** Running {description} *****")
+        logger.info(f"  Num examples = {unlabeled_data_num}")
+        logger.info(f"  Batch size = {batch_size}")
+
+        model.train() # 开启train模式，允许模型进行Dropout
+
+        if args.past_index >= 0:
+            self._past = None
+
+        self.callback_handler.eval_dataloader = unlabeled_dataloader
+
+        # y_T = np.zeros((T, unlabeled_data_num, num_classes))
+        y_T = list()
+
+        for i in tqdm(range(T)):
+            y_pred = []
+
+            for step, inputs in enumerate(unlabeled_dataloader):
+                _, logits, __ = self.prediction_step(model, inputs, prediction_loss_only, ignore_keys=ignore_keys)
+                y_pred.extend(logits.detach().cpu().numpy().tolist())
+            # print("y_pred.shape=", torch.Tensor(y_pred).shape) # [n, num_class]
+            predict_proba = torch.softmax(torch.Tensor(y_pred).to(logits.device), -1)
+            # print("predict_proba.shape=", predict_proba.shape) # [n, num_class]
+            # y_T[i] = predict_proba.detach().cpu().numpy().tolist()
+            y_T.append(predict_proba.detach().cpu().numpy().tolist())
+
+        y_T = np.array(y_T)
+        #compute mean
+        y_mean = np.mean(y_T, axis=0)
+        # print("y_mean.shape=", y_mean.shape) # e.g., (4095, 3) [n, class_num]
+        # print("(unlabeled_data_num, num_classes)=", (unlabeled_data_num, num_classes))
+        assert y_mean.shape == (unlabeled_data_num, num_classes)
+
+        #compute majority prediction
+        y_pred = np.array([np.argmax(np.bincount(row)) for row in np.transpose(np.argmax(y_T, axis=-1))])
+        assert y_pred.shape == (unlabeled_data_num,)
+
+        #compute variance
+        y_var = np.var(y_T, axis=0)
+        assert y_var.shape == (unlabeled_data_num, num_classes)
+
+        return unlabeled_dataset, y_mean, y_var, y_pred, y_T
 
 
 """
