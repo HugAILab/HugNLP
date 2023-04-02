@@ -111,7 +111,7 @@ class CausalSequenceClassificationEvaluator(GenerationEvaluator):
         # obtain the logits of the generated answer for each label.
         all_label_probs = self.obtain_label_logits(all_raw_answers, self.eval_dataset)
 
-        print("all_label_probs=", all_label_probs)
+        # print("all_label_probs=", all_label_probs)
 
         # calibrate the prediction
         if self.processor.use_calibrate:

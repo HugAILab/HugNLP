@@ -74,7 +74,7 @@ INSTRUCTION_PROCESSORS = {
     "causal_instruction": None, # using causal instruction-tuning
     "zh_mrc_instruction": ChineseExtractiveInstructionProcessor, # using extractive-instruction for chinese
     "causal_incontext_cls": CausalInContextClassificationProcessor, # using causal in-context learning for cls tasks
-    "causal_incontext": None, # using causal in-context
+    "causal_incontext": None, # using causal in-context for generation
     "causal_chain_of_thought": None, # using causal chain-of-thought
 }
 
@@ -86,7 +86,6 @@ CODE_PROCESSORS = {
     "code_refine": None,
     "code_translation": None,
     "code_summarization": None,
-
 }
 
 OTHER_PROCESSORS = {
