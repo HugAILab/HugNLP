@@ -333,7 +333,7 @@ class TrainingArguments(TransformersTrainingArguments):
 
 
 @dataclass
-class SemiSupervisedArguments:
+class SemiSupervisedTrainingArguments:
     use_semi: bool = field(
         default=False, metadata={"help": "If true, the training process will be transformed into self-training framework."}
     )

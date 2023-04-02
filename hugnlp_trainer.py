@@ -397,20 +397,12 @@ class HugSelfTrainer(object):
         )
         return student_trainer
 
-    def freeze_backbone(self, model: torch.nn.Module, use_pe: bool=False):
-        try:
-            model.freeze_backbone(use_pe=use_pe)
-        except:
-            pass
-        return model
-
 
     def train(self, resume_from_checkpoint=None):
         if not os.path.exists(os.path.join(self.output_dir, "iteration")):
             os.makedirs(os.path.join(self.output_dir, "iteration"))
 
         teacher_model = self.teacher_base_model
-        teacher_model = self.freeze_backbone(teacher_model, use_pe=False)
         teacher_trainer: HugTrainer = self.get_teacher_trainer(base_model=teacher_model, num_train_epochs=self.teacher_training_epoch)
 
         if resume_from_checkpoint is not None and (os.path.isfile(os.path.join(resume_from_checkpoint, WEIGHTS_NAME)) or os.path.isfile(
@@ -501,21 +493,6 @@ class HugSelfTrainer(object):
                 break
 
 
-            # # Teacher模型在labeled data上进行parameter-efficient tuning
-            # if iter > 0:
-            #     logger.info("*"*80)
-            #     logger.info("* Tuning the teacher model on labeled data at {}-th self-training iteration. *".format(iter))
-            #     logger.info("*"*80)
-            #     print("*"*80)
-            #     print("* Tuning the teacher model on labeled data at {}-th self-training iteration. *".format(iter))
-            #     print("*"*80)
-
-            #     teacher_model = self.freeze_backbone(teacher_model, use_pe=True)
-            #     # teacher_trainer: TeacherTrainer = self.get_teacher_trainer(base_model=teacher_model, num_train_epochs=self.teacher_tuning_epoch)
-            #     teacher_trainer.train()
-            #     teacher_model.load_state_dict(torch.load(os.path.join(teacher_trainer.state.best_model_checkpoint, "pytorch_model.bin")))
-            #     teacher_trainer.model = teacher_model
-
             # Teacher模型在unlabeled data上获取pseudo-labeled data，并根据uncertainty estimation进行采样
             logger.info("*"*72)
             logger.info("Obtaining pseudo-labeled data and uncertainty estimation via MC dropout.")
@@ -565,7 +542,6 @@ class HugSelfTrainer(object):
             print("*"*56)
 
             student_model = self.student_base_model
-            student_model = self.freeze_backbone(student_model, use_pe=True)
             student_trainer: HugTrainer = self.get_student_trainer(
                 base_model=student_model,
                 num_train_epochs=self.student_training_epoch,
@@ -648,7 +624,6 @@ class HugSelfTrainer(object):
             print("*"*56)
 
             student_model = self.student_base_model
-            student_model = self.freeze_backbone(student_model, use_pe=True)
             student_trainer: HugTrainer = self.get_student_trainer(
                 base_model=student_model,
                 num_train_epochs=self.student_training_epoch if len(pseudo_labeled_dataset) <= 4096 else int(self.student_training_epoch / 2),
