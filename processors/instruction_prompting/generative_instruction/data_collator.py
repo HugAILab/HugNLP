@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# @Time    : 2023/2/16 4:36 下午
+# @Time    : 2022/3/21 9:13 下午
 # @Author  : JianingWang
 # @File    : data_collator.py
 import torch
@@ -22,7 +22,6 @@ class DataCollatorForCausalLM:
         for f in features:
             labels = f["input_ids"]
             input_ids = [self.tokenizer.bos_token_id] + f["input_ids"] + [self.tokenizer.eos_token_id]
-            # label_masks = [0] + f["label_masks"] + [0]
             if "attention_mask" in f.keys():
                 attention_mask = [1] + f["attention_mask"] + [0]
             else:
@@ -37,14 +36,12 @@ class DataCollatorForCausalLM:
             input_ids += [self.tokenizer.pad_token_id] * num_padding
             labels += [-100] * (self.max_length - len(labels))
 
-            # label_masks += [0] * num_padding
             attention_mask += [0] * num_padding
             token_type_ids += [0] * num_padding
 
             input_ids = input_ids[:self.max_length]
             labels = labels[:self.max_length]
 
-            # label_masks = label_masks[:self.max_length]
             attention_mask = attention_mask[:self.max_length]
             token_type_ids = token_type_ids[:self.max_length]
 
@@ -57,7 +54,6 @@ class DataCollatorForCausalLM:
                 "labels": labels,
                 "attention_mask": attention_mask,
                 "token_type_ids": token_type_ids,
-                # "label_masks": label_masks,
                 })
         batch = {key: torch.tensor([feature[key] for feature in batch], dtype=torch.long) for key in batch[0].keys()}
         return batch

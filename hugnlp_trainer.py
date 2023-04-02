@@ -3,6 +3,10 @@
 # @Author  : JianingWang
 # @File    : HugTrainer
 
+"""
+This file is the runner of HugNLP.
+Use HugTrainer to perform task training and evaluating.
+"""
 import os
 import torch
 from torch import nn
@@ -316,7 +320,6 @@ class HugSelfTrainer(object):
         tokenizer=None,
         teacher_data_collator=None,
         student_data_collator=None,
-        task_type="cls",
         num_classes=0,
     ) -> None:
 
@@ -334,7 +337,6 @@ class HugSelfTrainer(object):
         self.tokenizer = tokenizer
         self.teacher_data_collator = teacher_data_collator
         self.student_data_collator = student_data_collator
-        self.task_type = task_type
         self.num_classes = num_classes
 
         # self.set_teacher_trainer()
@@ -637,6 +639,7 @@ class HugSelfTrainer(object):
             metrics = student_trainer.evaluate()
             post_metric = metrics["eval_{}".format(self.metric_for_best_model)]
 
+        self.student_trainer = student_trainer
 
         print("*"*68)
         print("Finishing all the processes, the results are shown in the following:")

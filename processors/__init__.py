@@ -21,6 +21,7 @@ from processors.pretraining.causal_lm.data_processor import CausalLMITextLinePro
 # few-shot ner
 from processors.ner.fewshot_ner.data_processor import SpanProtoFewNERDProcessor, SpanProtoCrossNERProcessor, TokenProtoFewNERDProcessor
 # instruction-tuning
+from processors.instruction_prompting.generative_instruction.data_processor import GenerativeInstructionProcessor
 from processors.instruction_prompting.chinese_extractive_instruction.data_processor import ChineseExtractiveInstructionProcessor
 from processors.instruction_prompting.incontext_learning.data_processor import CausalInContextClassificationProcessor
 # code
@@ -71,7 +72,7 @@ BENCHMARKS_PROCESSORS = {
 
 # Instruction / Prompting / In-context / Chain-of-Thought
 INSTRUCTION_PROCESSORS = {
-    "causal_instruction": None, # using causal instruction-tuning
+    "causal_instruction": GenerativeInstructionProcessor, # using causal instruction-tuning
     "zh_mrc_instruction": ChineseExtractiveInstructionProcessor, # using extractive-instruction for chinese
     "causal_incontext_cls": CausalInContextClassificationProcessor, # using causal in-context learning for cls tasks
     "causal_incontext": None, # using causal in-context for generation
