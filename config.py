@@ -218,6 +218,12 @@ class DataTrainingArguments:
                     "than this will be truncated."
         },
     )
+    block_size: int = field(
+        default=512,
+        metadata={
+            "help": "The length of each block"
+        }
+    )
     preprocessing_num_workers: Optional[int] = field(
         default=None,
         metadata={"help": "The number of processes to use for the preprocessing."},

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @Time    : 2023/3/5 11:10 下午
 # @Author  : JianingWang
-# @File    : EvaluatorBase.py
+# @File    : sequence_evaluator.py
 
 import json
 import os.path
@@ -104,7 +104,7 @@ class CausalSequenceClassificationEvaluator(GenerationEvaluator):
         # generate answer for validation set
         all_raw_answers = self.generate(
             eval_dataset=self.eval_dataset,
-            num_log_probs=100,
+            num_log_probs=10,
             echo=False, # echo is False means do not directly obtain label probability.
         )
 
@@ -200,11 +200,14 @@ class CausalSequenceClassificationEvaluator(GenerationEvaluator):
 
 
     def generate(self, eval_dataset, num_log_probs=100, echo=False):
-        # obtain generative answer from causal PLM.
+        """
+        obtain generative answer from causal PLM.
+        num_log_probs: Obtain the probability of top 100 tokens
+        """
         assert hasattr(self.processor, "l"), "You must define l ('max length of generated tokens') for generative-style tasks"
         l = self.processor.l
         all_raw_answers = []
-        for data in tqdm(eval_dataset):
+        for ei, data in enumerate(tqdm(eval_dataset)):
             total_sequences = self.model.generate(
                 input_ids=torch.Tensor([data['input_ids']]).long().to(self.model.device),
                 attention_mask=torch.Tensor([data['attention_mask']]).long().to(self.model.device),
@@ -212,7 +215,9 @@ class CausalSequenceClassificationEvaluator(GenerationEvaluator):
                 do_sample=False, # If for cls, 'do_sample' must set False
                 pad_token_id=self.processor.tokenizer.eos_token_id
             )
-            # print("total_sequences=", self.processor.tokenizer.convert_ids_to_tokens(total_sequences[0][len(data['input_ids']):])) # e.g. ['Ġnegative']
+            if ei < 5:
+                # display a few generated result. e.g. ['Ġnegative']
+                print("display generated result #{}={}".format(ei, self.processor.tokenizer.convert_ids_to_tokens(total_sequences[0][len(data['input_ids']):])))
             if num_log_probs is not None:
                 # we are left padding, so we need to adjust the position IDs
                 attention_mask = (total_sequences != 50256).float()
@@ -225,6 +230,15 @@ class CausalSequenceClassificationEvaluator(GenerationEvaluator):
                 for answer_id, answer in enumerate(response_res['choices']):
                     all_raw_answers.append(answer)
 
+        """
+        all_raw_answers:
+        [{
+            'text': ' I', # the top 1 generated token
+            'logprobs': {'top_logprobs': [{' I': -3.4267239570617676, '\n': -3.5073862075805664, ...], # Top k tokens at this position
+            'token_logprobs': [-3.4267239570617676], # the top 1 generated token score
+            'tokens': [' I']} # the generated token list
+        }, ...]
+        """
         return all_raw_answers
 
 

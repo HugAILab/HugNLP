@@ -267,7 +267,7 @@ if __name__ == "__main__":
         do_sample=False,
         num_beams=5,
         # bad_words_ids=[[628], [198]] if True else None,
-        num_return_sequences=1,
+        num_return_sequences=3,
     )
     print("output_sequences=", output_sequences)
     # print("output_sequences=", output_sequences)

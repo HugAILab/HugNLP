@@ -20,8 +20,8 @@ class DataCollatorForCausalLM:
         self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
         batch = []
         for f in features:
-            labels = f["input_ids"]
             input_ids = [self.tokenizer.bos_token_id] + f["input_ids"] + [self.tokenizer.eos_token_id]
+            labels = input_ids
             # label_masks = [0] + f["label_masks"] + [0]
             if "attention_mask" in f.keys():
                 attention_mask = [1] + f["attention_mask"] + [0]
@@ -35,7 +35,7 @@ class DataCollatorForCausalLM:
 
             num_padding = self.max_length - len(input_ids)
             input_ids += [self.tokenizer.pad_token_id] * num_padding
-            labels += [-100] * (self.max_length - len(labels))
+            labels += [-100] * num_padding
 
             # label_masks += [0] * num_padding
             attention_mask += [0] * num_padding
