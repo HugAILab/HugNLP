@@ -1,32 +1,9 @@
-{
-    "type": "text_only",
-    "instances": [
-        {
-            "text": "Input: Instruction: What is the scientific name for a beaver? \n Output: The scientific name for a beaver is Castor canadensis. \n\n"
-        },
-        {
-            "text": "Input: Instruction: Convert the following number from base 10 to hexadecimal: 278 \n Output: The number 278 in hexadecimal is 112. \n\n"
-        },
-        {
-            "text": "Input: Instruction: Give a definition of \"algae\". \n Output: Algae are a large and diverse group of simple, typically autotrophic organisms, ranging from unicellular to multicellular forms. They range in size from microscopic to large seaweeds and are classified in the same kingdom as plants, although unlike plants they lack true roots, stems, and leaves. Algae typically live in moist environments, including marine, freshwater, and terrestrial systems. \n\n"
-        },
-        {
-            "text": "Input: Instruction: Name a natural process which occurs in food preservation. \n Output: A natural process which occurs in food preservation is fermentation. \n\n"
-        },
-        {
-            "text": "Input: Instruction: Supply a phrase to complete this proverb: \"It's better to be safe than ____.\" \n Output: It's better to be safe than sorry. \n\n"
-        },
-        {
-            "text": "Input: Instruction: Give an example of a convergent boundary. \n Output: An example of a convergent boundary is the boundary between the North American Plate and the Pacific Plate which is converging to create the Sierra Nevada Mountains. \n\n"
-        },
-        {
-            "text": "Input: Instruction: Create a sentence that employs a figure of speech. \n Output: He was a bundle of nerves, like a butterfly in a snowstorm. \n\n"
-        },
-        {
-            "text": "Input: Instruction: Generate a sentence in Spanish that describes the natural beauty of Barcelona. \n Output: La naturaleza en Barcelona es espectacular, con su costa y su antiguo barrio g\u00f3tico. \n\n"
-        },
-        {
-            "text": "Input: Instruction: Describe the painting \"The Great Wave off Kanagawa\" by Katsushika Hokusai. \n Output: The Great Wave off Kanagawa, created by Japanese artist Katsushika Hokusai in the early 1830s, is a woodblock print depiction of a powerful wave cresting in the foreground, as three boats and Mount Fuji can be seen in the background. The painting\u2019s striking color palette and unique style of granular brushwork emphasizes the power and awe of a massive wave in motion. \n\n"
-        }
-    ]
-}
+{"text": "Input: Instruction: What is the scientific name for a beaver? \n Output: The scientific name for a beaver is Castor canadensis. \n\n"}
+{"text": "Input: Instruction: Convert the following number from base 10 to hexadecimal: 278 \n Output: The number 278 in hexadecimal is 112. \n\n"}
+{"text": "Input: Instruction: Give a definition of \"algae\". \n Output: Algae are a large and diverse group of simple, typically autotrophic organisms, ranging from unicellular to multicellular forms. They range in size from microscopic to large seaweeds and are classified in the same kingdom as plants, although unlike plants they lack true roots, stems, and leaves. Algae typically live in moist environments, including marine, freshwater, and terrestrial systems. \n\n"}
+{"text": "Input: Instruction: Name a natural process which occurs in food preservation. \n Output: A natural process which occurs in food preservation is fermentation. \n\n"}
+{"text": "Input: Instruction: Supply a phrase to complete this proverb: \"It's better to be safe than ____.\" \n Output: It's better to be safe than sorry. \n\n"}
+{"text": "Input: Instruction: Give an example of a convergent boundary. \n Output: An example of a convergent boundary is the boundary between the North American Plate and the Pacific Plate which is converging to create the Sierra Nevada Mountains. \n\n"}
+{"text": "Input: Instruction: Create a sentence that employs a figure of speech. \n Output: He was a bundle of nerves, like a butterfly in a snowstorm. \n\n"}
+{"text": "Input: Instruction: Generate a sentence in Spanish that describes the natural beauty of Barcelona. \n Output: La naturaleza en Barcelona es espectacular, con su costa y su antiguo barrio g\u00f3tico. \n\n"}
+{"text": "Input: Instruction: Describe the painting \"The Great Wave off Kanagawa\" by Katsushika Hokusai. \n Output: The Great Wave off Kanagawa, created by Japanese artist Katsushika Hokusai in the early 1830s, is a woodblock print depiction of a powerful wave cresting in the foreground, as three boats and Mount Fuji can be seen in the background. The painting\u2019s striking color palette and unique style of granular brushwork emphasizes the power and awe of a massive wave in motion. \n\n"}
