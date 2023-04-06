@@ -109,3 +109,40 @@ We demonstrate the performance of conversations of GPT-2 (base) in the following
 ```
 
 We find the model can make a simple multi-turn conversations.
+
+---
+
+## 免责声明(Disclaimer)：
+
+所使用的模型和数据均为开源资源，且当前训练的模型属于SFT(Supervised Fine-tuning)模型，可能存在如下缺陷：
+
+- 在涉及事实性的指令上可能会产生违背事实的错误回答。
+
+- 对于具备危害性的指令无法很好的鉴别，由此会产生危害性言论。
+
+- 在一些涉及推理、代码等场景下模型的能力仍有待提高。
+
+所开源的模型和技术方案仅供research，禁止商用，由于使用者恶意使用导致的法律道德诉讼等危害或风险，本框架团队概不负责。所有解释权归本框架团队所有。
+
+
+The models and data used are all open source resources, and the currently trained model belongs to the SFT (Supervised Fine-tuning) model, which may have the following defects:
+
+- There may be false answers to factual instructions.
+
+- Inability to identify harmful instructions well, resulting in harmful remarks.
+
+- The ability of the model in some scenarios involving reasoning, code, etc. still needs to be improved.
+
+The open-source models and technical solutions are for research only, and commercial use is prohibited. The framework team is not responsible for any harm or risk such as legal and moral litigation caused by malicious use by users. All interpretation rights belong to the HugNLP framework team.
+
+## Cite Me
+
+```latex
+@misc{wang2023hugnlp,
+  doi       = {10.48550/ARXIV.2302.14286},
+  url       = {https://arxiv.org/abs/2302.14286},
+  author    = {Jianing Wang, Nuo Chen, Qiushi Sun, Wenkang Huang, Chengyu Wang, Ming Gao},
+  title     = {HugNLP: A Unified and Comprehensive Library for Natural Language Processing},
+  year      = {2023}
+}
+```
