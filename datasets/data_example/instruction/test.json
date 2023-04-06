@@ -1,41 +1,9 @@
-{
-    "type": "text_only",
-    "instances": [
-        {
-            "text": "Input: Instruction: Name 5 invasive species. \n Output: 1. Zebra mussels \n2. Kudzu\n3. European green crab \n4. Brown tree snake \n5. Asian carp \n\n"
-        },
-        {
-            "text": "Input: Instruction: What is an AI algorithm? \n Output: An AI algorithm is a set of instructions or rules which are used to enable a computer or AI system to solve a problem or achieve a desired goal. AI algorithms can be used to capture and analyze data, classify objects, develop predictive models, and automate capabilities. \n\n"
-        },
-        {
-            "text": "Input: Instruction: Explain the term \"AI explainability\". \n Output: AI explainability is the ability of AI systems to provide a clear and understandable explanation of how they make decisions. This explanation can include visualizations, narrative descriptions, and other outputs which the AI system uses to explain its decision-making process and decisions. AI explainability helps to make AI and machine learning models more transparent and trust-worthy. \n\n"
-        },
-        {
-            "text": "Input: Instruction: Pick out the adverbs in the following sentence.\nJohn quickly ran to the store. \n Output: Quickly \n\n"
-        },
-        {
-            "text": "Input: Instruction: Transform the following sentence using the past perfect tense: Yesterday they opened the door. \n Output: Yesterday they had opened the door. \n\n"
-        },
-        {
-            "text": "Input: Instruction: Explain the uses of artificial intelligence. \n Output: Artificial intelligence is used in a variety of applications ranging from self-driving cars to facial recognition software. AI is used to help automate processes and make decisions in ways that are faster and more accurate than humans. AI can also be used for predictive analytics, where computers can detect patterns in data and make predictions about what could happen in the future. \n\n"
-        },
-        {
-            "text": "Input: Instruction: Describe a scenario in which blockchain technology could be successfully applied. \n Output: Blockchain technology can be used for secure transactions and fast payments. For example, it could be used to store and process healthcare records, allowing secure and instantaneous sharing of information between doctors and patients. It can also be used for secure digital voting, allowing votes to be securely and accurately counted while still allowing voters to stay anonymous. \n\n"
-        },
-        {
-            "text": "Input: Instruction: Complete the following analogy: Loud is to quiet as day is to \n Output: Night. \n\n"
-        },
-        {
-            "text": "Input: Instruction: Create an example of alliteration. \n Output: Sweet slippery snakes. \n\n"
-        },
-        {
-            "text": "Input: Instruction: Classify the following words by their grammatical categories: walk, interesting, quickly \n Output: Verb: walk; Adjective: interesting; Adverb: quickly. \n\n"
-        },
-        {
-            "text": "Input: Instruction: Find the greatest common factor of 12 and 18.\n12 & 18 \n Output: 6. \n\n"
-        },
-        {
-            "text": "Input: Instruction: Come up with a riddle \n Output: What's full of keys but can't open a single lock?\nAnswer: A piano. \n\n"
-        }
-    ]
-}
+{"text": "Input: Instruction: What is the scientific name for a beaver? \n Output: The scientific name for a beaver is Castor canadensis. \n\n"}
+{"text": "Input: Instruction: Convert the following number from base 10 to hexadecimal: 278 \n Output: The number 278 in hexadecimal is 112. \n\n"}
+{"text": "Input: Instruction: Give a definition of \"algae\". \n Output: Algae are a large and diverse group of simple, typically autotrophic organisms, ranging from unicellular to multicellular forms. They range in size from microscopic to large seaweeds and are classified in the same kingdom as plants, although unlike plants they lack true roots, stems, and leaves. Algae typically live in moist environments, including marine, freshwater, and terrestrial systems. \n\n"}
+{"text": "Input: Instruction: Name a natural process which occurs in food preservation. \n Output: A natural process which occurs in food preservation is fermentation. \n\n"}
+{"text": "Input: Instruction: Supply a phrase to complete this proverb: \"It's better to be safe than ____.\" \n Output: It's better to be safe than sorry. \n\n"}
+{"text": "Input: Instruction: Give an example of a convergent boundary. \n Output: An example of a convergent boundary is the boundary between the North American Plate and the Pacific Plate which is converging to create the Sierra Nevada Mountains. \n\n"}
+{"text": "Input: Instruction: Create a sentence that employs a figure of speech. \n Output: He was a bundle of nerves, like a butterfly in a snowstorm. \n\n"}
+{"text": "Input: Instruction: Generate a sentence in Spanish that describes the natural beauty of Barcelona. \n Output: La naturaleza en Barcelona es espectacular, con su costa y su antiguo barrio g\u00f3tico. \n\n"}
+{"text": "Input: Instruction: Describe the painting \"The Great Wave off Kanagawa\" by Katsushika Hokusai. \n Output: The Great Wave off Kanagawa, created by Japanese artist Katsushika Hokusai in the early 1830s, is a woodblock print depiction of a powerful wave cresting in the foreground, as three boats and Mount Fuji can be seen in the background. The painting\u2019s striking color palette and unique style of granular brushwork emphasizes the power and awe of a massive wave in motion. \n\n"}

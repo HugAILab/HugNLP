@@ -23,6 +23,7 @@ HugNLP is a novel development and application library based on [Hugging Face](ht
 
 ## **News & Highlights
 
+- 🆕 [23-04-06]: Develop a samll ChatGPT, naming HugChat! You can chat with HugNLP! [[see doc](./documents/instruction_prompting/generative_instruction_tuning.md)]
 - 🆕 [23-04-02]: Add GPT-style instruction-tuning. You can continual train a small-scale ChatGPT! [[see doc](./documents/instruction_prompting/generative_instruction_tuning.md)]
 - 🆕 [23-03-21]: Finish GPT-style in-context learning for sequence classification. [[see doc](./documents/instruction_prompting/incontext_learning_for_cls.md)]
 - 🆕 [23-03-13]: Add code clone detection and defect task. You can train clone and defect for user-defined dataset.

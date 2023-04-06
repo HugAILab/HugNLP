@@ -83,6 +83,7 @@ PRETRAIN_MODEL_CLASSES = {
         "gpt2": GPT2ForCausalLM,
         "bart": None,
         "t5": None,
+        "llama": None
     },
 }
 
