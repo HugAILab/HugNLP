@@ -50,4 +50,4 @@ python3 -m torch.distributed.launch --nproc_per_node=2 --master_port=6014 hugnlp
 --overwrite_output_dir \
 --label_names=labels \
 --keep_predict_labels \
---user_defined="label_names=0,1" \
+--user_defined="label_names=0,1 max_target_length=3" \

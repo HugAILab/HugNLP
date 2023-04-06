@@ -8,7 +8,7 @@ data_path=/code/cn/HugNLP/datasets/data_example/defect/
 TASK_TYPE=code_cls
 # TASK_TYPE=masked_prompt_prefix_cls
 
-len=196
+len=512
 bz=4 # 8
 epoch=10
 eval_step=50
@@ -50,4 +50,4 @@ python3 -m torch.distributed.launch --nproc_per_node=2 --master_port=6014 hugnlp
 --overwrite_output_dir \
 --label_names=labels \
 --keep_predict_labels \
---user_defined="label_names=0,1" \
+--user_defined="label_names=0,1 max_target_length=3" \

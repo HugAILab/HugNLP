@@ -66,7 +66,9 @@ from models.code.code_classification import (
     RobertaForCodeClassification, CodeBERTForCodeClassification,
     GraphCodeBERTForCodeClassification, PLBARTForCodeClassification, CodeT5ForCodeClassification
 )
-
+from models.code.code_generation import (
+    PLBARTForCodeGeneration
+)
 
 # Models for pre-training
 PRETRAIN_MODEL_CLASSES = {
@@ -179,11 +181,11 @@ CODE_MODEL_CLASSES = {
         "plbart": PLBARTForCodeClassification,
     },
     "code_generation": {
-        # "roberta": RobertaForConditionalGeneration,
-        # "codebert": BertForConditionalGeneration,
-        # "graphcodebert": BertForConditionalGeneration,
-        # "codet5": T5ForConditionalGeneration,
-        # "plbart": BartForConditionalGeneration,
+        # "roberta": RobertaForCodeGeneration,
+        # "codebert": BertForCodeGeneration,
+        # "graphcodebert": BertForCodeGeneration,
+        # "codet5": T5ForCodeGeneration,
+        "plbart": PLBARTForCodeGeneration,
     },
 }
 
