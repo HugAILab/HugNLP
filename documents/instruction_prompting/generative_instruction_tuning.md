@@ -25,25 +25,35 @@ The corpora is released, you can obtain multiple data including:
 - OIG: [download](https://huggingface.co/datasets/laion/OIG/tree/main)
 - Others are coming soon ...
 
+The first four dataset (MedMCQA, MedQA-USMLE, PubMedQA and Alpaca) can also be obtained from [LMFlow](https://github.com/OptimalScale/LMFlow).
+
 We have collect these data and obtain 8M training examples (about 11GB). You can download it from [huggingface (
-wjn1996/hugnlp-instruction-corpora)](https://huggingface.co/datasets/wjn1996/hugnlp-instruction-corpora).
+wjn1996/hugnlp-instruction-corpora)](https://huggingface.co/datasets/wjn1996/hugnlp-instruction-corpora), or run the following scripts:
+```
+cd datasets/corpora/instruction/generative_instruction
+bash download_instruction_corpora.sh
+```
 
 ## Running Application
 
 We prepare a running script for training in ```./application/instruction_prompting/instruction_tuning/run_causal_instruction.sh```.
 
-At first, you should edit the data_path at first, and edit some hyper-parameters, such as:
-- learning_rate
-- per_device_train_batch_size
-- per_device_eval_batch_size
+At first, you should edit the data_path as ```./datasets/corpora/instruction/generative_instruction``` in ```run_causal_instruction.sh``` at first.
 
-...
+You can also define some hyper-parameters, such as:
+- learning_rate=2e-5
+- per_device_train_batch_size=2
+- per_device_eval_batch_size=1
+- gradient_accumulation_steps=2
+- ...
 
 then run the script:
 
 ```bash
 bash ./application/instruction_prompting/instruction_tuning/run_causal_instruction.sh
 ```
+
+> If you select GPT-2 (large) and train on 8 V100 (32G) GPUs with 'per_device_train_batch_size=2, gradient_accumulation_steps=2, and epoch=10', The total training steps are 60K, the training time costs about 22 hours.
 
 ## Pre-built HugChat Modes
 
