@@ -8,7 +8,7 @@ data_path=/code/cn/HugNLP/datasets/data_example/defect/
 TASK_TYPE=code_cls
 # TASK_TYPE=masked_prompt_prefix_cls
 
-len=196
+len=512
 bz=4 # 8
 epoch=10
 eval_step=50
@@ -21,7 +21,7 @@ python3 -m torch.distributed.launch --nproc_per_node=2 --master_port=6014 hugnlp
 --model_name_or_path=$path \
 --data_dir=$data_path \
 --output_dir=./outputs/code/defect_classification_codet5\
---seed=42 \
+--seed=1234 \
 --exp_name=default-cls \
 --max_seq_length=$len \
 --max_eval_seq_length=$len \
@@ -50,4 +50,4 @@ python3 -m torch.distributed.launch --nproc_per_node=2 --master_port=6014 hugnlp
 --overwrite_output_dir \
 --label_names=labels \
 --keep_predict_labels \
---user_defined="label_names=0,1" \
+--user_defined="label_names=0,1 max_target_length=3" \

@@ -1,3 +1,4 @@
+
 <p align="center">
     <br>
     <img src="images/logo.png" width="360"/>
@@ -20,7 +21,6 @@
 
 HugNLP is a novel development and application library based on [Hugging Face](https://huggingface.co/) for improving the convenience and effectiveness of NLP researchers. The founder and main developer is [Jianing Wang](https://wjn1996.github.io/). The collaborators are [Nuo Chen](https://github.com/nchen909) and [Qiushi Sun](https://github.com/QiushiSun).
 
-
 ## **News & Highlights
 
 - 🆕 [23-04-06]: Develop a samll ChatGPT, naming HugChat! You can chat with HugNLP! [[see doc](./documents/instruction_prompting/generative_instruction_tuning.md)]
@@ -29,7 +29,6 @@ HugNLP is a novel development and application library based on [Hugging Face](ht
 - 🆕 [23-03-13]: Add code clone detection and defect task. You can train clone and defect for user-defined dataset.
 - 🆕 [23-03-03]: Add HugIE API and corresponding training script. You can use it to perform information extraction on Chinese data. [[see doc](./documents/information_extraction/HugIE.md)]
 - 🆕 [23-02-18]: The HugNLP is open!
-
 
 # Architecture
 
@@ -110,55 +109,58 @@ We develop some novel parameter-efficient learning approaches, such as Prefix-tu
 
 At present, the project is still being developed and improved, and there may be some `bugs` in use, please understand. We also look forward to your being able to ask issues or committing some valuable pull requests.
 
-
 # Pre-built Applications Overview
 
 We demonstrate all pre-built applications in HugNLP. You can choose one application to use HugNLP. You can also click the link to see the details document.
 
-| **Applications** | **Runing Tasks** | **Task Notes** | **PLM Models** | **Documents** |
-| --- | --- | --- | --- | --- |
-| **Default Application** | run_seq_cls.sh | **Goal**: Standard **Fine-tuning** or **Prompt-tuning** for sequence classification on user-defined dataset. <br> **Path**: applications/default_applications | BERT, RoBERTa, DeBERTa | [click](./documents/default_tasks/default_sequence_classification.md) |
-|  | run_seq_labeling.sh | **Goal**: Standard **Fine-tuning** for sequence labeling on user-defined dataset. <br> **Path**: applications/default_applications | BERT, RoBERTa, ALBERT |   |
-| **Pre-training** | run_pretrain_mlm.sh | **Goal**: Pre-training via **Masked Language Modeling** (MLM). <br> **Path**: applications/pretraining/ | BERT, RoBERTa | [click](./documents/pretraining/Masked%20LM%20for%20Continual%20Pre-training.md) |
-|  | run_pretrain_casual_lm.sh | **Goal**: Pre-training via **Causal Language Modeling** (CLM). <br> **Path**: applications/pretraining | BERT, RoBERTa | [click](./documents/pretraining/Causal%20LM%20for%20Continual%20Pre-training.md) |
-| **GLUE Benchmark** | run_glue.sh | **Goal**: Standard **Fine-tuning** or **Prompt-tuning** for GLUE classification tasks. <br> **Path**: applications/benchmark/glue | BERT, RoBERTa, DeBERTa |  |
-|  | run_causal_incontext_glue.sh | **Goal**: **In-context learning** for GLUE classification tasks. <br> **Path**: applications/benchmark/glue | GPT-2 |  |
-| **CLUE Benchmark** | clue_finetune_dev.sh | **Goal**: Standard **Fine-tuning** and **Prompt-tuning** for CLUE classification task。 <br> **Path**: applications/benchmark/clue | BERT, RoBERTa, DeBERTa |  |
-|  | run_clue_cmrc.sh | **Goal**: Standard **Fine-tuning** for CLUE CMRC2018 task. <br> **Path**: applications/benchmark/cluemrc | BERT, RoBERTa, DeBERTa |  |
-|  | run_clue_c3.sh | **Goal**: Standard **Fine-tuning** for CLUE C3 task. <br> **Path**: applications/benchmark/cluemrc | BERT, RoBERTa, DeBERTa |  |
-|  | run_clue_chid.sh | **Goal**: Standard **Fine-tuning** for CLUE CHID task. <br> **Path**: applications/benchmark/cluemrc | BERT, RoBERTa, DeBERTa |  |
-| **Instruction-Prompting** | run_causal_instruction.sh | **Goal**: **Cross-task training** via generative Instruction-tuning based on causal PLM. <font color='red'>**You can use it to train a small ChatGPT**</font>. <br> **Path**: applications/instruction_prompting/instruction_tuning | GPT2 | [click](./documents/instruction_prompting/generative_instruction_tuning.md) |
-|  | run_zh_extract_instruction.sh | **Goal**: **Cross-task training** via extractive Instruction-tuning based on Global Pointer model. <br> **Path**: applications/instruction_prompting/chinese_instruction | BERT, RoBERTa, DeBERTa | [click](./documents/instruction_prompting/instruction_tuning.md) |
-|  | run_causal_incontext_cls.sh | **Goal**: **In-context learning** for user-defined classification tasks. <br> **Path**: applications/instruction_prompting/incontext_learning | GPT-2 | [click](./documents/instruction_prompting/incontext_learning_for_cls.md) |
-| **Information Extraction** | run_extractive_unified_ie.sh | **Goal**: **HugIE**: training a unified chinese information extraction via extractive instruction-tuning. <br> **Path**: applications/information_extraction/HugIE | BERT, RoBERTa, DeBERTa | [click](./documents/information_extraction/HugIE.md) |
-|  | api_test.py | **Goal**: HugIE: API test. <br> **Path**: applications/information_extraction/HugIE | - | [click](./documents/information_extraction/HugIE.md) |
-|  | run_fewnerd.sh | **Goal**: **Prototypical learning** for named entity recognition, including SpanProto, TokenProto <br> **Path**: applications/information_extraction/fewshot_ner | BERT |  |
-| **Code NLU** | run_clone_cls.sh | **Goal**: Standard **Fine-tuning** for code clone classification task. <br> **Path**: applications/code/code_clone | CodeBERT, CodeT5, GraphCodeBERT, PLBART |  |
-|  | run_defect_cls.sh | **Goal**: Standard **Fine-tuning** for code defect classification task. <br> **Path**: applications/code/code_defect | CodeBERT, CodeT5, GraphCodeBERT, PLBART |  |
+| **Applications**           | **Runing Tasks**        | **Task Notes**                                                                                                                                                                                                                                                    | **PLM Models**                    | **Documents**                                                           |
+| -------------------------------- | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- | ----------------------------------------------------------------------------- |
+| **Default Application**    | run_seq_cls.sh                | **Goal**: Standard **Fine-tuning** or **Prompt-tuning** for sequence classification on user-defined dataset. `<br>` **Path**: applications/default_applications                                                                               | BERT, RoBERTa, DeBERTa                  | [click](./documents/default_tasks/default_sequence_classification.md)            |
+|                                  | run_seq_labeling.sh           | **Goal**: Standard **Fine-tuning** for sequence labeling on user-defined dataset. `<br>` **Path**: applications/default_applications                                                                                                                | BERT, RoBERTa, ALBERT                   |                                                                               |
+| **Pre-training**           | run_pretrain_mlm.sh           | **Goal**: Pre-training via **Masked Language Modeling** (MLM). `<br>` **Path**: applications/pretraining/                                                                                                                                           | BERT, RoBERTa                           | [click](./documents/pretraining/Masked%20LM%20for%20Continual%20Pre-training.md) |
+|                                  | run_pretrain_casual_lm.sh     | **Goal**: Pre-training via **Causal Language Modeling** (CLM). `<br>` **Path**: applications/pretraining                                                                                                                                            | BERT, RoBERTa                           | [click](./documents/pretraining/Causal%20LM%20for%20Continual%20Pre-training.md) |
+| **GLUE Benchmark**         | run_glue.sh                   | **Goal**: Standard **Fine-tuning** or **Prompt-tuning** for GLUE classification tasks. `<br>` **Path**: applications/benchmark/glue                                                                                                           | BERT, RoBERTa, DeBERTa                  |                                                                               |
+|                                  | run_causal_incontext_glue.sh  | **Goal**: **In-context learning** for GLUE classification tasks. `<br>` **Path**: applications/benchmark/glue                                                                                                                                       | GPT-2                                   |                                                                               |
+| **CLUE Benchmark**         | clue_finetune_dev.sh          | **Goal**: Standard **Fine-tuning** and **Prompt-tuning** for CLUE classification task。 `<br>` **Path**: applications/benchmark/clue                                                                                                          | BERT, RoBERTa, DeBERTa                  |                                                                               |
+|                                  | run_clue_cmrc.sh              | **Goal**: Standard **Fine-tuning** for CLUE CMRC2018 task. `<br>` **Path**: applications/benchmark/cluemrc                                                                                                                                          | BERT, RoBERTa, DeBERTa                  |                                                                               |
+|                                  | run_clue_c3.sh                | **Goal**: Standard **Fine-tuning** for CLUE C3 task. `<br>` **Path**: applications/benchmark/cluemrc                                                                                                                                                | BERT, RoBERTa, DeBERTa                  |                                                                               |
+|                                  | run_clue_chid.sh              | **Goal**: Standard **Fine-tuning** for CLUE CHID task. `<br>` **Path**: applications/benchmark/cluemrc                                                                                                                                              | BERT, RoBERTa, DeBERTa                  |                                                                               |
+| **Instruction-Prompting**  | run_causal_instruction.sh     | **Goal**: **Cross-task training** via generative Instruction-tuning based on causal PLM. `<font color='red'>`**You can use it to train a small ChatGPT**`</font>`. `<br>` **Path**: applications/instruction_prompting/instruction_tuning | GPT2                                    | [click](./documents/instruction_prompting/generative_instruction_tuning.md)      |
+|                                  | run_zh_extract_instruction.sh | **Goal**: **Cross-task training** via extractive Instruction-tuning based on Global Pointer model. `<br>` **Path**: applications/instruction_prompting/chinese_instruction                                                                          | BERT, RoBERTa, DeBERTa                  | [click](./documents/instruction_prompting/instruction_tuning.md)                 |
+|                                  | run_causal_incontext_cls.sh   | **Goal**: **In-context learning** for user-defined classification tasks. `<br>` **Path**: applications/instruction_prompting/incontext_learning                                                                                                     | GPT-2                                   | [click](./documents/instruction_prompting/incontext_learning_for_cls.md)         |
+| **Information Extraction** | run_extractive_unified_ie.sh  | **Goal**: **HugIE**: training a unified chinese information extraction via extractive instruction-tuning. `<br>` **Path**: applications/information_extraction/HugIE                                                                                | BERT, RoBERTa, DeBERTa                  | [click](./documents/information_extraction/HugIE.md)                             |
+|                                  | api_test.py                   | **Goal**: HugIE: API test. `<br>` **Path**: applications/information_extraction/HugIE                                                                                                                                                                     | -                                       | [click](./documents/information_extraction/HugIE.md)                             |
+|                                  | run_fewnerd.sh                | **Goal**: **Prototypical learning** for named entity recognition, including SpanProto, TokenProto `<br>` **Path**: applications/information_extraction/fewshot_ner                                                                                  | BERT                                    |                                                                               |
+| **Code NLU**               | run_clone_cls.sh              | **Goal**: Standard **Fine-tuning** for code clone classification task. `<br>` **Path**: applications/code/code_clone                                                                                                                                | CodeBERT, CodeT5, GraphCodeBERT, PLBART |                                                                               |
+|                                  | run_defect_cls.sh             | **Goal**: Standard **Fine-tuning** for code defect classification task. `<br>` **Path**: applications/code/code_defect                                                                                                                              | CodeBERT, CodeT5, GraphCodeBERT, PLBART |                                                                               |
 
 More details of the pre-built applications and settings with the designed models and processors can be found in [HugNLP Documents](./documents/README.md).
 
 # Quick Use
 
 Here we provide an example to show you to quick use HugNLP.
-If you want to perform a classification task on user-defined dataset, you can prepare three json files (```train.json```, ```dev.json```, ```test.json```) on a directory. And you can run the script file
+If you want to perform a classification task on user-defined dataset, you can prepare three json files (``train.json``, ``dev.json``, ``test.json``) on a directory. And you can run the script file
+
 > bash ./application/default_applications/run_seq_cls.sh
 
-Before the experiment, you must define the following parameters in the script file ```run_seq_cls.sh```.
+Before the experiment, you must define the following parameters in the script file ``run_seq_cls.sh``.
+
 - --model_name_or_path: the pre-trained model name or path. e.g. bert-base-uncased
-- --data_path: the path of the dataset (including ```train.json```, ```dev.json``` and ```test.json```), e.g. ```./datasets/data_example/cls/```.
-- --user_defined: you must define label_names if there is not exist a ```label_names.txt```.
+- --data_path: the path of the dataset (including ``train.json``, ``dev.json`` and ``test.json``), e.g. ``./datasets/data_example/cls/``.
+- --user_defined: you must define label_names if there is not exist a ``label_names.txt``.
 
 If you want to use prompt-based fine-tuning, you can add the following parameters:
-- --use_prompt_for_cls
-- ---task_type: one of ```masked_prompt_cls```, ```masked_prompt_prefix_cls```,```masked_prompt_ptuning_cls```, ```masked_prompt_adapter_cls```.
 
-You also should add ```template.json``` and ```label_words_mapping.json```.
+- --use_prompt_for_cls
+- ---task_type: one of ``masked_prompt_cls``, ``masked_prompt_prefix_cls``,``masked_prompt_ptuning_cls``, ``masked_prompt_adapter_cls``.
+
+You also should add ``template.json`` and ``label_words_mapping.json``.
 
 If you wang to use parameter-efficient learning, you can add the following parameter:
+
 - --use_freezing
 
-The example of ```run_seq_cls.sh``` is:
+The example of ``run_seq_cls.sh`` is:
 
 ```bash
 path=chinese-macbert-base
@@ -226,8 +228,6 @@ This illustrates that HugNLP can simplify the implementation of complex NLP mode
 # Demo API Example
 
 Here, we show an example of the pre-built API application: **HugIE: Towards Chinese Unified Information Extraction via Extractive MRC and Instruction-tuning**.
-
-
 
 ### Introduction:
 
@@ -321,7 +321,7 @@ If you find this repository helpful, feel free to cite our paper:
 # References
 
 1. Jianing Wang, Wenkang Huang, Minghui Qiu, Qiuhui Shi, Hongbin Wang, Xiang Li, Ming Gao:
-Knowledge Prompting in Pre-trained Language Model for Natural Language Understanding. EMNLP 2022: 3164-3177
+   Knowledge Prompting in Pre-trained Language Model for Natural Language Understanding. EMNLP 2022: 3164-3177
 2. Chengyu Wang, Jianing Wang, Minghui Qiu, Jun Huang, Ming Gao: TransPrompt: Towards an Automatic Transferable Prompting Framework for Few-shot Text Classification. EMNLP 2021: 2792-2802
 3. Jianing Wang, Chengyu Wang, Jun Huang, Ming Gao, Aoying Zhou: Uncertainty-aware Self-training for Low-resource Neural Sequence Labeling. AAAI 2023.
 

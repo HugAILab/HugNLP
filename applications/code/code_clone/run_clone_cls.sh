@@ -21,7 +21,7 @@ python3 -m torch.distributed.launch --nproc_per_node=2 --master_port=6014 hugnlp
 --model_name_or_path=$path \
 --data_dir=$data_path \
 --output_dir=./outputs/code/clone_classification_codebert\
---seed=42 \
+--seed=1234 \
 --exp_name=default-cls \
 --max_seq_length=$len \
 --max_eval_seq_length=$len \
@@ -50,4 +50,4 @@ python3 -m torch.distributed.launch --nproc_per_node=2 --master_port=6014 hugnlp
 --overwrite_output_dir \
 --label_names=labels \
 --keep_predict_labels \
---user_defined="label_names=0,1" \
+--user_defined="label_names=0,1 max_target_length=512" \

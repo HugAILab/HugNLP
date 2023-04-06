@@ -51,7 +51,12 @@ class CodeCloneProcessor(CLSProcessor):
         self.label_file = os.path.join(data_args.data_dir,"label_names.txt")
         self.template_file = os.path.join(data_args.data_dir, "template.json")
         self.label_words_mapping_file = os.path.join(data_args.data_dir, "label_words_mapping.json")
-        self.max_len = data_args.max_seq_length
+        self.max_source_length = data_args.max_seq_length #func1 length
+        # 如果用户输入了max_target_length，则以用户输入的为准 #func2 length
+        if "max_target_length" in param.keys():
+            self.max_target_length = int(param["max_target_length"].replace(" ", "").split(",")[0])
+        else:
+            self.max_target_length = self.max_source_length
         self.doc_stride = data_args.doc_stride
         self.func1_key = "func1"
         self.func2_key = "func2"
@@ -129,7 +134,15 @@ class CodeCloneProcessor(CLSProcessor):
 
     def _create_examples(self, lines, set_type):
         examples = list()
+
         for ei, line in enumerate(lines):
+            # 2 {'label': '0', 'func1': '\tpublic static void BubbleSortShort2(short[] num) {\n\t\tint last_exchange;\n\t\tint right_border = num.len
+            # gth - 1;\n\t\tdo {\n\t\t\tlast_exchange = 0;\n\t\t\tfor (int j = 0; j < num.length - 1; j++) {\n\t\t\t\tif (num[j] > num[j + 1])\n\t\t\
+            # t\t{\n\t\t\t\t\tshort temp = num[j];\n\t\t\t\t\tnum[j] = num[j + 1];\n\t\t\t\t\tnum[j + 1] = temp;\n\t\t\t\t\tlast_exchange = j;\n\t\t\
+            # t\t}\n\t\t\t}\n\t\t\tright_border = last_exchange;\n\t\t} while (right_border > 0);\n\t}\n', 'func2': '    public static InputStream ge
+            # tResourceAsStreamIfAny(String resPath) {\n        URL url = findResource(resPath);\n        try {\n            return url == null ? nul
+            # l : url.openStream();\n        } catch (IOException e) {\n            ZMLog.warn(e, " URL open Connection got an exception!");\n
+            #      return null;\n        }\n    }\n', 'id': 3}
             idx = "{}-{}".format(set_type, str(ei))
             func1 = line[self.func1_key]
             func2 = line[self.func2_key] if self.func2_key in line.keys() else None
@@ -143,10 +156,18 @@ class CodeCloneProcessor(CLSProcessor):
 
             label = self.label2id[label]
 
+            func1 = ' '.join(func1.split())
+            func2 = ' '.join(func2.split())
+            if self.model_args.model_type in ['t5', 'codet5']:
+                source_str = "{}: {}".format('clone', func1)
+                target_str = "{}: {}".format('clone', func2)
+            else:
+                source_str = func1
+                target_str = func2
             examples.append({
                 "idx": idx,
-                self.func1_key: func1,
-                self.func2_key: func2,
+                self.func1_key: source_str,
+                self.func2_key: target_str,
                 "label": label
             })
 
@@ -199,21 +220,44 @@ class CodeCloneProcessor(CLSProcessor):
                 # if use prompt, insert template into example
                 examples = self.prompt_engineering.prompt_preprocess_function(examples)
 
-            # Tokenize
-            # print("examples["text_b"]=", examples["text_b"])
-            if examples[self.func2_key][0] == None:
-                text_pair = None
-            else:
-                text_pair = examples[self.func2_key]
-            tokenized_examples = tokenizer(
+            # # Tokenize
+            # # print("examples["text_b"]=", examples["text_b"])
+            # if examples[self.func2_key][0] == None:
+            #     text_pair = None
+            # else:
+            #     text_pair = examples[self.func2_key]
+
+            if self.model_args.model_type in ['unixcoder']:
+                for index, item in enumerate(examples[self.func1_key]):
+                    source_str = self.tokenizer.tokenize(item[:self.max_source_length-4])#format_special_chars(tokenizer.tokenize(source[:args.max_source_length-4]))
+                    source_str =[self.tokenizer.cls_token,"<encoder-only>",self.tokenizer.sep_token]+source_str+[self.tokenizer.sep_token]
+                    examples[self.func1_key][index]=tokenizer.decode(source_str)
+                for index, item in enumerate(examples[self.func2_key]):
+                    target_str = self.tokenizer.tokenize(item[:self.max_source_length-4])#format_special_chars(tokenizer.tokenize(source[:args.max_source_length-4]))
+                    target_str =[self.tokenizer.cls_token,"<encoder-only>",self.tokenizer.sep_token]+target_str+[self.tokenizer.sep_token]
+                    examples[self.func2_key][index]=tokenizer.decode(target_str)
+
+            tokenized_examples_1 = tokenizer(
                 examples[self.func1_key],
-                text_pair=text_pair,
+                text_pair=None,
                 truncation=True,
-                max_length=max_seq_length,
+                max_length=self.max_source_length,
                 padding="max_length"
                 if self.data_args.pad_to_max_length else False,
                 # return_offsets_mapping=True
             )
+            tokenized_examples_2 = tokenizer(
+                examples[self.func2_key],
+                text_pair=None,
+                truncation=True,
+                max_length=self.max_target_length,
+                padding="max_length"
+                if self.data_args.pad_to_max_length else False,
+                # return_offsets_mapping=True
+            )
+            tokenized_examples = {}
+            tokenized_examples["input_ids"]=[x + y for x, y in zip(tokenized_examples_1["input_ids"], tokenized_examples_2["input_ids"])]
+            tokenized_examples["attention_mask"]=[x + y for x, y in zip(tokenized_examples_1["attention_mask"], tokenized_examples_2["attention_mask"])]
             # 确定label
             if self.model_args.use_prompt_for_cls:
                 mask_pos = []
