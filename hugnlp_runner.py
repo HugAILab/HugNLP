@@ -5,6 +5,9 @@
 # !/usr/bin/env python
 # coding=utf-8
 
+"""
+This file is the runner of HugNLP.
+"""
 import math
 import os
 import time
@@ -15,10 +18,10 @@ from callback.freeze import FreezeCallback
 from callback.logger import LoggerCallback
 from processors import PROCESSORS
 from transformers import CONFIG_MAPPING, AutoConfig, AutoTokenizer, HfArgumentParser
-from hugnlp_trainer import HugTrainer
+from hugnlp_trainer import HugTrainer, HugSelfTrainer
 from transformers.trainer_utils import get_last_checkpoint
 from transformers import EarlyStoppingCallback
-from config import ModelArguments, DataTrainingArguments, TrainingArguments
+from config import ModelArguments, DataTrainingArguments, TrainingArguments, SemiSupervisedTrainingArguments
 from callback.mlflow import MLflowCallback
 from tools.runner_utils.log_util import init_logger
 from models import MODEL_CLASSES, TOKENIZER_CLASSES
@@ -42,8 +45,8 @@ def print_hello():
 
 def main():
     # See all possible arguments or by passing the --help flag to this script.
-    parser = HfArgumentParser((ModelArguments, DataTrainingArguments, TrainingArguments))
-    model_args, data_args, training_args = parser.parse_args_into_dataclasses()
+    parser = HfArgumentParser((ModelArguments, DataTrainingArguments, TrainingArguments, SemiSupervisedTrainingArguments))
+    model_args, data_args, training_args, semi_training_args = parser.parse_args_into_dataclasses()
 
     # Print hello world
     if training_args.local_rank == 0:
@@ -160,15 +163,13 @@ def main():
             ignore_mismatched_sizes=True
         )
 
-    # Set evaluator
-    assert data_args.task_type in EVALUATORS_CLASSES, "You must define an evaluator for '{}'".format(data_args.task_type)
-    evaluator_class = EVALUATORS_CLASSES[data_args.task_type]
-
     # Resize token embeddings
     try:
         model.resize_token_embeddings(len(tokenizer))
     except:
         print("Fail to resize token embeddings.")
+
+    train_dataset, eval_dataset, test_dataset, unlabeled_dataset = None, None, None, None
 
     # Obtain tokenized data
     tokenized_datasets = processor.get_tokenized_datasets()
@@ -193,11 +194,35 @@ def main():
         if data_args.max_predict_samples is not None:
             test_dataset = test_dataset.select(range(data_args.max_predict_samples))
 
+    if semi_training_args.use_semi:
+        assert "unlabeled_data" in tokenized_datasets.features, "If you choose semi-supervised training, you must define unlabeled data."
+        unlabeled_dataset = tokenized_datasets["unlabeled_dataset"]
+        if semi_training_args.unlabeled_data_num is not None:
+            unlabeled_dataset = unlabeled_dataset.select(range(semi_training_args.unlabeled_data_num))
+
+    # Set evaluator
+    assert data_args.task_type in EVALUATORS_CLASSES, "You must define an evaluator for '{}'".format(data_args.task_type)
+    evaluator_class = EVALUATORS_CLASSES[data_args.task_type]
+    evaluator = evaluator_class(
+        model_args=model_args,
+        data_args=data_args,
+        model=model,
+        training_args=training_args,
+        processor=processor,
+        eval_dataset=eval_dataset,
+        test_dataset=test_dataset,
+    )
+
     # Set data collator
     data_collator = processor.get_data_collator()
     if hasattr(processor, "compute_metrics"):
+        # first to choose defined "compute_metrics" in processor.
         compute_metrics = processor.compute_metrics
+    elif hasattr(evaluator, "default_compute_metrics"):
+        # second to choose defined "default_compute_metrics" in evaluator.
+        compute_metrics = evaluator.default_compute_metrics
     else:
+        # set None, in this case, evaluating in training time will not calculate metric.
         compute_metrics = None
 
     # Obtain tracking
@@ -220,16 +245,31 @@ def main():
         callbacks.append(DoPredictDuringTraining(test_dataset, processor))
 
     # Obtain trainer
-    trainer = HugTrainer(
-        model=model,
-        args=training_args,
-        train_dataset=train_dataset if training_args.do_train else None,
-        eval_dataset=eval_dataset if training_args.do_eval else None,
-        compute_metrics=compute_metrics,
-        tokenizer=tokenizer,
-        data_collator=data_collator,
-        callbacks=callbacks
-    )
+    if not semi_training_args.use_semi:
+        # traditional trainer
+        trainer = HugTrainer(
+            model=model,
+            args=training_args,
+            train_dataset=train_dataset if training_args.do_train else None,
+            eval_dataset=eval_dataset if training_args.do_eval else None,
+            compute_metrics=compute_metrics,
+            tokenizer=tokenizer,
+            data_collator=data_collator,
+            callbacks=callbacks
+        )
+    else:
+        # self-trainer
+        trainer = HugSelfTrainer(
+            model=model,
+            args=training_args,
+            train_dataset=train_dataset if training_args.do_train else None,
+            eval_dataset=eval_dataset if training_args.do_eval else None,
+            compute_metrics=compute_metrics,
+            tokenizer=tokenizer,
+            data_collator=data_collator,
+            callbacks=callbacks
+        )
+
 
     # Training
     if training_args.do_train:
@@ -250,17 +290,8 @@ def main():
         trainer.save_metrics("train", metrics)
         trainer.save_state()
 
-    # Obtain Evaluator
-    evaluator = evaluator_class(
-        model_args=model_args,
-        data_args=data_args,
-        training_args=training_args,
-        processor=processor,
-        trainer=trainer,
-        eval_dataset=eval_dataset,
-        test_dataset=test_dataset,
-    )
-
+    # Update trainer state
+    evaluator.reset_trainer(trainer if not semi_training_args.use_semi else trainer.student_trainer)
     # Evaluation
     if training_args.do_eval:
         logger.info("*** Evaluate ***")
@@ -270,49 +301,6 @@ def main():
     if training_args.do_predict and not training_args.do_predict_during_train:
         logger.info("*** Predict ***")
         evaluator.predict()
-
-
-    # if training_args.do_eval:
-    #     logger.info("*** Evaluate ***")
-    #     metrics = trainer.evaluate()
-    #     max_eval_samples = data_args.max_eval_samples if data_args.max_eval_samples is not None else len(eval_dataset)
-    #     metrics["eval_samples"] = min(max_eval_samples, len(eval_dataset))
-    #     if data_args.task_type == "mlm":
-    #         try:
-    #             perplexity = math.exp(metrics["eval_loss"])
-    #         except OverflowError:
-    #             perplexity = float("inf")
-    #         metrics["perplexity"] = perplexity
-    #     trainer.log_metrics("eval", metrics)
-    #     trainer.save_metrics("eval", metrics)
-
-    # if training_args.do_predict and not training_args.do_predict_during_train:
-    #     logger.info("*** Predict ***")
-    #     if not data_args.keep_predict_labels:
-    #         for l in ["labels", "label"]:
-    #             if l in test_dataset.column_names:
-    #                 test_dataset = test_dataset.remove_columns(l)
-
-    #     prediction = trainer.predict(test_dataset, metric_key_prefix="predict")
-    #     logits = prediction.predictions
-    #     if data_args.keep_predict_labels:
-    #         label_ids = prediction.label_ids
-    #     if hasattr(processor, "save_result"):
-    #         if trainer.is_world_process_zero():
-    #             if not data_args.keep_predict_labels:
-    #                 processor.save_result(logits)
-    #             else:
-    #                 processor.save_result(logits, label_ids)
-    #     else:
-    #         predictions = np.argmax(logits, axis=1)
-    #         output_predict_file = os.path.join(training_args.output_dir, f"predict_results.txt")
-    #         if trainer.is_world_process_zero():
-    #             with open(output_predict_file, "w") as writer:
-    #                 logger.info(f"***** Predict results {data_args.task_name} *****")
-    #                 writer.write("index\tprediction\n")
-    #                 for index, item in enumerate(predictions):
-    #                     item = processor.labels[item]
-    #                     writer.write(f"{index}\t{item}\n")
 
 if __name__ == "__main__":
     main()

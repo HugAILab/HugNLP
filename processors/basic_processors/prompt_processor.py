@@ -134,6 +134,7 @@ class InstructionPromptProcessor(PromptBaseProcessor):
         self.instruction_prompt = self.instruction["instruction"] if "instruction" in self.instruction.keys() else ""
         self.input_prompt = self.instruction["input_prompt"] if "input_prompt" in self.instruction.keys() else ""
         self.output_prompt = self.instruction["output_prompt"] if "output_prompt" in self.instruction.keys() else ""
+        self.input_prompt = self.input_prompt.strip()
         self.output_prompt = self.output_prompt.strip()
 
     def construct_incontext_prompt(
@@ -158,18 +159,18 @@ class InstructionPromptProcessor(PromptBaseProcessor):
         }
 
         """
-        prompt = self.instruction_prompt
+        prompt = self.instruction_prompt + "\n\n"
         for incontext_example in incontext_examples:
-            s = incontext_example[sentence1_key] + (" " + incontext_example[sentence2_key]) if incontext_example[sentence2_key] is not None else ""
+            s = incontext_example[sentence1_key] + (" " + incontext_example[sentence2_key] if sentence2_key in eval_example.keys() and incontext_example[sentence2_key] is not None else "")
             l = incontext_example["target"]
             label_word = self.label_words_mapping[l][0] if isinstance(self.label_words_mapping[l], list) else self.label_words_mapping[l]
-            prompt += self.input_prompt
+            prompt += self.input_prompt + " "
             prompt += s + "\n"
-            prompt += self.output_prompt
+            prompt += self.output_prompt + " "
             prompt += label_word + "\n\n"
 
-        eval_s = eval_example[sentence1_key] + (" " + eval_example[sentence2_key]) if eval_example[sentence2_key] is not None else ""
-        prompt += self.input_prompt
+        eval_s = eval_example[sentence1_key] + (" " + eval_example[sentence2_key] if sentence2_key in eval_example.keys() and eval_example[sentence2_key] is not None else "")
+        prompt += self.input_prompt + " "
         prompt += eval_s + "\n"
 
         prompt += self.output_prompt # GPT models do not want a trailing space, so we cut off -1

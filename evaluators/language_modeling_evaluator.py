@@ -6,6 +6,7 @@
 import json
 import os.path
 import math
+import torch
 import numpy as np
 from typing import Dict, Union, Any, Optional, Callable, List, Tuple, Iterator
 import datasets
@@ -14,6 +15,7 @@ from config import DataTrainingArguments, TrainingArguments, ModelArguments
 from hugnlp_trainer import HugTrainer
 from processors.ProcessorBase import DataProcessor
 from evaluators.EvaluatorBase import NO_GENERATE, DO_GENERATE, Evaluator, ClassificationEvaluator
+from evaluators.generation_evaluator import CausalGenerationEvaluator
 from metrics.classification_metric import ClassificationMetric
 from tools.runner_utils.log_util import logging
 
@@ -31,11 +33,12 @@ class MaskedLanguageModelingEvaluator(ClassificationEvaluator):
         data_args: DataTrainingArguments,
         training_args: TrainingArguments,
         processor: DataProcessor,
-        trainer: Optional[HugTrainer],
+        model: torch.nn.Module,
+        trainer: Optional[HugTrainer] = None,
         eval_dataset: Optional[Dataset] = None,
         test_dataset: Optional[Dataset] = None,
     ) -> None:
-        super().__init__(model_args, data_args, training_args, processor, trainer, eval_dataset, test_dataset)
+        super().__init__(model_args, data_args, training_args, processor, model, trainer, eval_dataset, test_dataset)
         self.paradigm = NO_GENERATE
 
 
@@ -44,7 +47,7 @@ class MaskedLanguageModelingEvaluator(ClassificationEvaluator):
 Evaluator for the task of language modeling with Causal PLMs.
 Note: the evaluation of causal LM is the same as Masked LM.
 """
-class CausalLanguageModelingEvaluator(ClassificationEvaluator):
+class CausalLanguageModelingEvaluator(CausalGenerationEvaluator):
 
     def __init__(
         self,
@@ -52,9 +55,10 @@ class CausalLanguageModelingEvaluator(ClassificationEvaluator):
         data_args: DataTrainingArguments,
         training_args: TrainingArguments,
         processor: DataProcessor,
-        trainer: Optional[HugTrainer],
+        model: torch.nn.Module,
+        trainer: Optional[HugTrainer] = None,
         eval_dataset: Optional[Dataset] = None,
         test_dataset: Optional[Dataset] = None,
     ) -> None:
-        super().__init__(model_args, data_args, training_args, processor, trainer, eval_dataset, test_dataset)
-        self.paradigm = NO_GENERATE
+        super().__init__(model_args, data_args, training_args, processor, model, trainer, eval_dataset, test_dataset)
+        self.paradigm = DO_GENERATE

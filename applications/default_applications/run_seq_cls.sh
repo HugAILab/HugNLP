@@ -12,7 +12,7 @@ TASK_TYPE=head_cls
 
 len=196
 bz=4 # 8
-epoch=10
+epoch=100
 eval_step=50
 wr_step=10
 lr=1e-05
@@ -50,8 +50,7 @@ python3 -m torch.distributed.launch --nproc_per_node=2 --master_port=6014 hugnlp
 --pad_to_max_length=True \
 --remove_unused_columns=False \
 --overwrite_output_dir \
---fp16 \
 --label_names=labels \
 --keep_predict_labels \
---user_defined="label_names=entailment,neutral,contradiction data_name=$DATA_NAME" \
+--user_defined="data_name=user-define label_names=entailment,neutral,contradiction data_name=$DATA_NAME" \
 # --use_prompt_for_cls

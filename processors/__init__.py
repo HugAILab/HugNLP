@@ -12,7 +12,7 @@ from processors.benchmark.cluemrc.data_processor import CLUEMRCProcessor
 from processors.benchmark.clue.data_processor import CLUEProcessor, TnewsEFLProcessor, CSLEFLProcessor
 from processors.benchmark.cluener.data_processor import CLUENERProcessor
 from processors.benchmark.fewclue.data_processor import InstructionMRCForFewCLUEProcessor
-from processors.benchmark.glue.data_processor import GLUEProcessor
+from processors.benchmark.glue.data_processor import GLUEProcessor, GLUEForInContextProcessor
 # pre-training language model
 from processors.pretraining.mlm.data_processor import MLMTextLineProcessor
 # from processor.pretraining.mlm.data_processor import MLMGroupProcessor, MLMFromDisk, MLMLineByLineProcessor, WWMFromDisk
@@ -21,13 +21,17 @@ from processors.pretraining.causal_lm.data_processor import CausalLMITextLinePro
 # few-shot ner
 from processors.ner.fewshot_ner.data_processor import SpanProtoFewNERDProcessor, SpanProtoCrossNERProcessor, TokenProtoFewNERDProcessor
 # instruction-tuning
+from processors.instruction_prompting.generative_instruction.data_processor import GenerativeInstructionProcessor
 from processors.instruction_prompting.chinese_extractive_instruction.data_processor import ChineseExtractiveInstructionProcessor
 from processors.instruction_prompting.incontext_learning.data_processor import CausalInContextClassificationProcessor
 # code
 from processors.code.code_clone.data_processor import CodeCloneProcessor
 from processors.code.code_defect.data_processor import CodeDefectProcessor
 # default applications
-from processors.default_task_processors.data_processor import DefaultSequenceClassificationProcessor
+from processors.default_task_processors.data_processor import (
+    DefaultSequenceClassificationProcessor,
+    DefaultSequenceLabelingProcessor
+)
 
 # Pre-training Tasks
 PRETRAINING_PROCESSORS = {
@@ -39,6 +43,7 @@ PRETRAINING_PROCESSORS = {
 # default task
 DEFAULT_PROCESSORS = {
     "default_cls": DefaultSequenceClassificationProcessor,
+    "default_labeling": DefaultSequenceLabelingProcessor
 }
 
 # Information Extraction Tasks
@@ -62,14 +67,15 @@ BENCHMARKS_PROCESSORS = {
     "cmrc18_global_pointer": CMRCForGlobalPointerProcessor,
     "fewclue_instruction": InstructionMRCForFewCLUEProcessor,
     "glue": GLUEProcessor,  # glue
+    "glue_instruction": GLUEForInContextProcessor, # instruction-tuning for glue
 }
 
 # Instruction / Prompting / In-context / Chain-of-Thought
 INSTRUCTION_PROCESSORS = {
-    "causal_instruction": None, # using causal instruction-tuning
+    "causal_instruction": GenerativeInstructionProcessor, # using causal instruction-tuning
     "zh_mrc_instruction": ChineseExtractiveInstructionProcessor, # using extractive-instruction for chinese
     "causal_incontext_cls": CausalInContextClassificationProcessor, # using causal in-context learning for cls tasks
-    "causal_incontext": None, # using causal in-context
+    "causal_incontext": None, # using causal in-context for generation
     "causal_chain_of_thought": None, # using causal chain-of-thought
 }
 
@@ -81,7 +87,6 @@ CODE_PROCESSORS = {
     "code_refine": None,
     "code_translation": None,
     "code_summarization": None,
-
 }
 
 OTHER_PROCESSORS = {

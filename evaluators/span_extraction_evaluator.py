@@ -32,11 +32,12 @@ class SpanExtractionEvaluator(ClassificationEvaluator):
         data_args: DataTrainingArguments,
         training_args: TrainingArguments,
         processor: DataProcessor,
-        trainer: Optional[HugTrainer],
+        model: torch.nn.Module,
+        trainer: Optional[HugTrainer] = None,
         eval_dataset: Optional[Dataset] = None,
         test_dataset: Optional[Dataset] = None,
     ) -> None:
-        super().__init__(model_args, data_args, training_args, processor, trainer, eval_dataset, test_dataset)
+        super().__init__(model_args, data_args, training_args, processor, model, trainer, eval_dataset, test_dataset)
         self.paradigm = NO_GENERATE
 
 
