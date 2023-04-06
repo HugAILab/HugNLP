@@ -3,7 +3,20 @@
 Generative Instruction-tuning aims to unify all NLP task into generative format to train the causal language model (e.g., GPT2, BART).
 Thus document teach you how to use HugNLP to perform instruction-tuning, and continual train a small ChatGPT-style model on user-defined task-specific corpora.
 
-We develop HugChat with instruction-tuning, we will provide introduction on how to train HugChat.
+## HugChat
+
+We develop the HugChat, you can make conversation on terminal:
+
+![](../../images/hugchat_example.jpg)
+
+You can run:
+```bash
+python3 applications/instruction_prompting/HugChat/hugchat.py
+```
+
+Have fun!
+
+We will next provide introduction on how to train HugChat.
 
 ## Data Preparation
 
@@ -96,8 +109,3 @@ We demonstrate the performance of conversations of GPT-2 (base) in the following
 ```
 
 We find the model can make a simple multi-turn conversations.
-
-
-## HugChat
-
-Coming soon.
