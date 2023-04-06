@@ -129,7 +129,15 @@ class CodeCloneProcessor(CLSProcessor):
 
     def _create_examples(self, lines, set_type):
         examples = list()
+
         for ei, line in enumerate(lines):
+            # 2 {'label': '0', 'func1': '\tpublic static void BubbleSortShort2(short[] num) {\n\t\tint last_exchange;\n\t\tint right_border = num.len
+            # gth - 1;\n\t\tdo {\n\t\t\tlast_exchange = 0;\n\t\t\tfor (int j = 0; j < num.length - 1; j++) {\n\t\t\t\tif (num[j] > num[j + 1])\n\t\t\
+            # t\t{\n\t\t\t\t\tshort temp = num[j];\n\t\t\t\t\tnum[j] = num[j + 1];\n\t\t\t\t\tnum[j + 1] = temp;\n\t\t\t\t\tlast_exchange = j;\n\t\t\
+            # t\t}\n\t\t\t}\n\t\t\tright_border = last_exchange;\n\t\t} while (right_border > 0);\n\t}\n', 'func2': '    public static InputStream ge
+            # tResourceAsStreamIfAny(String resPath) {\n        URL url = findResource(resPath);\n        try {\n            return url == null ? nul
+            # l : url.openStream();\n        } catch (IOException e) {\n            ZMLog.warn(e, " URL open Connection got an exception!");\n
+            #      return null;\n        }\n    }\n', 'id': 3}
             idx = "{}-{}".format(set_type, str(ei))
             func1 = line[self.func1_key]
             func2 = line[self.func2_key] if self.func2_key in line.keys() else None
@@ -189,6 +197,9 @@ class CodeCloneProcessor(CLSProcessor):
         # Tokenize the texts
         tokenizer = self.tokenizer
         max_seq_length = self.data_args.max_seq_length
+        print("\n\n\n\n\n")
+        print("max_seq_length=", max_seq_length)
+        print("\n\n\n\n\n")
         if self.model_args.model_type in ["gpt2"]:
             tokenizer.pad_token = tokenizer.eos_token
 
@@ -214,6 +225,10 @@ class CodeCloneProcessor(CLSProcessor):
                 if self.data_args.pad_to_max_length else False,
                 # return_offsets_mapping=True
             )
+            print("\n\n\n\n\n")
+            print("tokenized_examples=", tokenized_examples)
+            print(len(tokenized_examples['input_ids']))
+            print("\n\n\n\n\n")
             # 确定label
             if self.model_args.use_prompt_for_cls:
                 mask_pos = []

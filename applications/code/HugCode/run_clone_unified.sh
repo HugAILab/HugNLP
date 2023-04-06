@@ -1,9 +1,9 @@
 #### pre-trained lm path
-path=/code/cn/CodePrompt/data/huggingface_models/codebert-base/
-MODEL_TYPE=codebert
+path=/root/autodl-tmp/CodePrompt/data/huggingface_models/plbart-base/
+MODEL_TYPE=plbart
 
 #### task data path (use should change this path)
-data_path=/code/cn/HugNLP/datasets/data_example/clone/
+data_path=/root/autodl-tmp/HugNLP/datasets/data_example/clone/
 
 TASK_TYPE=code_cls
 # TASK_TYPE=masked_prompt_prefix_cls
@@ -20,8 +20,8 @@ export CUDA_VISIBLE_DEVICES=0,1
 python3 -m torch.distributed.launch --nproc_per_node=2 --master_port=6014 hugnlp_runner.py \
 --model_name_or_path=$path \
 --data_dir=$data_path \
---output_dir=./outputs/code/clone_classification_codebert\
---seed=1234 \
+--output_dir=./outputs/code/clone_classification_plbart\
+--seed=42 \
 --exp_name=default-cls \
 --max_seq_length=$len \
 --max_eval_seq_length=$len \

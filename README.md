@@ -1,7 +1,8 @@
-<p align="center">
-    <br>
-    <img src="images/logo.png" width="360"/>
-    <br>
+e`<p align="center">`
+    `<br>`
+    `<img src="images/logo.png" width="360"/>`
+    `<br>`
+
 </p>
 
 <p align="center" style="font-size:22px;"> <b> Welcome to use HugNLP. 🤗 Hugging for NLP! </b>
@@ -30,7 +31,6 @@ HugNLP is a novel development and application library based on [Hugging Face](ht
 
 **🆕 23-03-13: Add code clone detection and defect task.**
 
-
 ---
 
 # Architecture
@@ -53,8 +53,8 @@ For few-shot learning settings, HugNLP provides a prototypical network in both f
 In addition, we also incorporate some plug-and-play utils in HugNLP.
 
 1. Parameter Freezing. If we want to perform parameter-efficient learning, which aims to freeze some parameters in PLMs to improve the training efficiency, we can set the configure `use_freezing` and freeze the backbone. A use case is shown in Code.
-1. Uncertainty Estimation aims to calculate the model certainty when in semi-supervised learning.
-1. We also design Prediction Calibration, which can be used to further improve the accuracy by calibrating the distribution and alleviating the semantics bias problem.
+2. Uncertainty Estimation aims to calculate the model certainty when in semi-supervised learning.
+3. We also design Prediction Calibration, which can be used to further improve the accuracy by calibrating the distribution and alleviating the semantics bias problem.
 
 ### Processors
 
@@ -88,7 +88,7 @@ So, all the NLP tasks can be unified into the same format and can substantially 
 Inspired by this idea, we extend it into other two paradigms:
 
 1. extractive-style paradigm: we unify various NLP tasks into span extraction, which is the same as extractive question answering.
-1. inference-style paradigm: all the tasks can be viewed as natural language inference to match the relations between inputs and outputs.
+2. inference-style paradigm: all the tasks can be viewed as natural language inference to match the relations between inputs and outputs.
 
 ### Self-training with Uncertainty Estimation
 
@@ -111,27 +111,30 @@ We develop some novel parameter-efficient learning approaches, such as Prefix-tu
 
 At present, the project is still being developed and improved, and there may be some `bugs` in use, please understand. We also look forward to your being able to ask issues or committing some valuable pull requests.
 
-
 # Quick Use
 
-If you want to perform a classification task on user-defined dataset, you can prepare three json files (```train.json```, ```dev.json```, ```test.json```) on a directory. And you can run the script file
+If you want to perform a classification task on user-defined dataset, you can prepare three json files (``train.json``, ``dev.json``, ``test.json``) on a directory. And you can run the script file
+
 > bash ./application/default_applications/run_seq_cls.sh
 
-Before the experiment, you must define the following parameters in the script file ```run_seq_cls.sh```.
+Before the experiment, you must define the following parameters in the script file ``run_seq_cls.sh``.
+
 - --model_name_or_path: the pre-trained model name or path. e.g. bert-base-uncased
-- --data_path: the path of the dataset (including ```train.json```, ```dev.json``` and ```test.json```), e.g. ```./datasets/data_example/cls/```.
-- --user_defined: you must define label_names if there is not exist a ```label_names.txt```.
+- --data_path: the path of the dataset (including ``train.json``, ``dev.json`` and ``test.json``), e.g. ``./datasets/data_example/cls/``.
+- --user_defined: you must define label_names if there is not exist a ``label_names.txt``.
 
 If you want to use prompt-based fine-tuning, you can add the following parameters:
-- --use_prompt_for_cls
-- ---task_type: one of ```masked_prompt_cls```, ```masked_prompt_prefix_cls```,```masked_prompt_ptuning_cls```, ```masked_prompt_adapter_cls```.
 
-You also should add ```template.json``` and ```label_words_mapping.json```.
+- --use_prompt_for_cls
+- ---task_type: one of ``masked_prompt_cls``, ``masked_prompt_prefix_cls``,``masked_prompt_ptuning_cls``, ``masked_prompt_adapter_cls``.
+
+You also should add ``template.json`` and ``label_words_mapping.json``.
 
 If you wang to use parameter-efficient learning, you can add the following parameter:
+
 - --use_freezing
 
-The example of ```run_seq_cls.sh``` is:
+The example of ``run_seq_cls.sh`` is:
 
 ```
 path=chinese-macbert-base
