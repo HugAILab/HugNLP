@@ -6,6 +6,7 @@ import json
 import torch
 import os.path
 import numpy as np
+from tqdm import tqdm
 from itertools import chain
 from dataclasses import dataclass
 from collections import defaultdict
@@ -41,11 +42,12 @@ class GenerativeInstructionProcessor(CLSProcessor):
                          keep_raw_data=keep_raw_data)
 
         self.data_dir = data_args.data_dir
-        self.train_file = os.path.join(data_args.data_dir, "train.json")
-        self.dev_file = os.path.join(data_args.data_dir, "dev.json")
-        self.test_file = os.path.join(data_args.data_dir, "test.json")
+        self.train_file = os.path.join(data_args.data_dir, "instruction_corpora.json")
+        self.dev_file = os.path.join(data_args.data_dir, "instruction_dev.json")
+        self.test_file = os.path.join(data_args.data_dir, "instruction_test.json")
         self.max_len = data_args.max_seq_length
         self.doc_stride = data_args.doc_stride
+        self.data_name = "instruction_corpora"
         self.text_key = "text"
         self.input_key = "input"
         self.output_key = "output"
@@ -71,19 +73,16 @@ class GenerativeInstructionProcessor(CLSProcessor):
 
     def _create_examples(self, lines, set_type):
         """
-        lines example:
-        {
-            "type": "text_only",
-            "instances": [
-                {
-                    "text": "Input: Instruction: What is the scientific name for a beaver? \n Output: The scientific name for a beaver is Castor canadensis. \n\n"
-                },
-            ]
-        }
+        [
+            {
+                "text": "Input: Instruction: What is the scientific name for a beaver? \n Output: The scientific name for a beaver is Castor canadensis. \n\n"
+            },
+            ...
+        ]
+
         """
-        lines = lines[0]
         examples = list()
-        for ei, line in enumerate(lines["instances"]):
+        for ei, line in enumerate(tqdm(lines)):
             idx = "{}-{}".format(set_type, str(ei))
             input_text = ""
             if set_type == "train":
@@ -120,14 +119,26 @@ class GenerativeInstructionProcessor(CLSProcessor):
                 self.raw_datasets = raw_datasets
             return raw_datasets
 
+        for key, value in raw_datasets.items():
+            value.set_cache_files(["cache_local"])
         # remove_columns = [self.sentence_key]
         tokenize_func = self.build_preprocess_function()
+        load_from_cache_file = not self.data_args.overwrite_cache if self.training_args.local_rank in [-1, 0] else True
+        base_cache_dir = os.path.join(self.model_args.cache_dir, "instruction_prompting") if self.model_args.cache_dir else os.path.join(os.path.expanduser("~"), ".cache/huggingface/datasets/")
+        cache_dir = os.path.join(base_cache_dir, self.data_args.task_name, self.data_name)
+        if not os.path.exists(cache_dir):
+            os.makedirs(cache_dir)
 
         with self.training_args.main_process_first(desc="dataset tokenizer map"):
+            tokenize_batch_size = 1000
             raw_datasets = raw_datasets.map(
                 tokenize_func,
                 batched=True,
+                load_from_cache_file=True,
+                batch_size=tokenize_batch_size,
+                num_proc=self.data_args.preprocessing_num_workers,
                 desc="Running tokenizer on dataset",
+                cache_file_names={k: f"{cache_dir}/cache_{self.data_args.task_name}_{self.data_name}_{str(k)}.arrow" for k in raw_datasets},
                 # remove_columns=remove_columns
             )
             if self.keep_raw_data:
@@ -140,7 +151,7 @@ class GenerativeInstructionProcessor(CLSProcessor):
             return lm_datasets
 
 
-    def group_text(self, tokenized_datasets, model_max_length):
+    def group_text(self, tokenized_datasets: DatasetDict, model_max_length):
         """
         Groups texts together to form blocks of maximum length `model_max_length` and returns the processed data as
         a dictionary.
@@ -194,19 +205,27 @@ class GenerativeInstructionProcessor(CLSProcessor):
         # To speed up this part, we use multiprocessing. See the documentation
         # of the map method for more information:
         # https://huggingface.co/docs/datasets/package_reference/main_classes.html#datasets.Dataset.map
+        load_from_cache_file = not self.data_args.overwrite_cache if self.training_args.local_rank in [-1, 0] else True
+        base_cache_dir = os.path.join(self.model_args.cache_dir, "instruction_prompting") if self.model_args.cache_dir else os.path.join(os.path.expanduser("~"), ".cache/huggingface/datasets/")
+        cache_dir = os.path.join(base_cache_dir, self.data_args.task_name, self.data_name + "_group")
+        if not os.path.exists(cache_dir):
+            os.makedirs(cache_dir)
+
         with self.training_args.main_process_first(desc="grouping texts together"):
             group_batch_size = 1000
             # if data_args.disable_group_texts:
             #     group_batch_size = 1
-            lm_datasets = tokenized_datasets.map(
+            tokenized_datasets = tokenized_datasets.map(
                 group_texts,
                 batched=True,
+                load_from_cache_file=load_from_cache_file,
                 batch_size=group_batch_size,
                 num_proc=data_args.preprocessing_num_workers,
                 desc=f"Grouping texts in chunks of {block_size}",
+                cache_file_names={k: f"{cache_dir}/cache_{self.data_args.task_name}_{self.data_name}_{str(k)}.arrow" for k in tokenized_datasets},
             )
 
-        return lm_datasets
+        return tokenized_datasets
 
 
 
