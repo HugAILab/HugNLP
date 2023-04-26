@@ -1,0 +1,11 @@
+{
+    "O": "O",
+    "B-PER": "B-PER",
+    "I-PER": "I-PER",
+    "B-LOC": "B-LOC",
+    "I-LOC": "I-LOC",
+    "B-ORG": "B-ORG",
+    "I-ORG": "I_ORG",
+    "B-MISC": "B-MISC",
+    "I-MISC": "I-MISC"
+}
