@@ -1,0 +1,33 @@
+export CUDA_VISIBLE_DEVICES=0,1,2,3
+python -m torch.distributed.launch --nproc_per_node=4 hugnlp_runner.py \
+  --model_name_or_path=/wjn/pre-trained-lm/chinese_pretrain_mrc_macbert_large \
+  --data_dir=./dataset/cpic/merge_many_template \
+  --output_dir=./outputs/cpic_merge_many_template \
+  --seed=42 \
+  --exp_name=cpic-large-wjn \
+  --max_seq_length=512 \
+  --max_eval_seq_length=512 \
+  --do_train \
+  --do_predict \
+  --per_device_train_batch_size=4 \
+  --per_device_eval_batch_size=8 \
+  --gradient_accumulation_steps=2 \
+  --evaluation_strategy=no \
+  --save_strategy=no \
+  --learning_rate=2e-05 \
+  --num_train_epochs=5 \
+  --logging_steps=100000000 \
+  --save_total_limit=1 \
+  --warmup_steps=100 \
+  --report_to=none \
+  --task_name=cpic \
+  --task_type=global_pointer \
+  --model_type=bert \
+  --metric_for_best_model=macro_f1 \
+  --pad_to_max_length=True \
+  --remove_unused_columns=False \
+  --overwrite_output_dir \
+  --fp16 \
+  --label_names=short_labels \
+  --keep_predict_labels \
+  --do_adv
