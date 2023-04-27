@@ -10,8 +10,8 @@
 
 <div align="center">
 
-[![CircleCI](https://dl.circleci.com/status-badge/img/gh/wjn1996/HugNLP/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/wjn1996/HugNLP/tree/main)
-[![GitHub pull-requests](https://img.shields.io/github/issues-pr/wjn1996/HugNLP.svg)](https://github.com/wjn1996/HugNLP/pull/)
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/HugAILab/HugNLP/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/HugAILab/HugNLP/tree/main)
+[![GitHub pull-requests](https://img.shields.io/github/issues-pr/HugAILab/HugNLP.svg)](https://github.com/HugAILab/HugNLP/pull/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 [![arXiv](https://img.shields.io/badge/arXiv-2302.14286-b31b1b.svg)](https://arxiv.org/abs/2302.14286)
 
@@ -23,7 +23,7 @@ HugNLP is a novel development and application library based on [Hugging Face](ht
 
 ## **News & Highlights
 
-- 🆕 [23-04-06]: Develop a samll ChatGPT, naming HugChat! You can chat with HugNLP! [[see doc](./documents/instruction_prompting/generative_instruction_tuning.md)]
+- 🆕 [23-04-06]: Develop a small ChatGPT-like assistance, naming HugChat! You can chat with HugNLP! [[see doc](./documents/instruction_prompting/generative_instruction_tuning.md)]
 - 🆕 [23-04-02]: Add GPT-style instruction-tuning. You can continual train a small-scale ChatGPT! [[see doc](./documents/instruction_prompting/generative_instruction_tuning.md)]
 - 🆕 [23-03-21]: Finish GPT-style in-context learning for sequence classification. [[see doc](./documents/instruction_prompting/incontext_learning_for_cls.md)]
 - 🆕 [23-03-13]: Add code clone detection and defect task. You can train clone and defect for user-defined dataset.
@@ -101,7 +101,7 @@ We develop some novel parameter-efficient learning approaches, such as Prefix-tu
 
 # Installation
 
-> git clone https://github.com/wjn1996/HugNLP.git
+> git clone https://github.com/HugAILab/HugNLP.git
 >
 > cd HugNLP
 >

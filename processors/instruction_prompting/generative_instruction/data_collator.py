@@ -36,17 +36,16 @@ class DataCollatorForCausalLM:
                     }, )
         batch = self.tokenizer.pad(
             batch,
-            padding=
-            "max_length",  # 为了index不出错直接Padding到max length，如果用longest，后面的np.unravel_index也要改
+            padding="max_length",
             max_length=self.max_length,
             return_tensors="pt")  # {"input_ids": [xxx], xxx}
         # add position_ids
 
         # add labels
-        if "labels" in features[0].keys():
-            batch["labels"] = torch.Tensor([f["labels"] for f in features]).long()
-        else:
-            batch["labels"] = batch["input_ids"].copy()
+        # if "labels" in features[0].keys():
+        #     batch["labels"] = torch.Tensor([f["labels"] for f in features]).long()
+        # else:
+        batch["labels"] = batch["input_ids"].clone()
         # add mask_pos (when using prompt-tuning, need to record the masked position for each input_ids)
 
         if "mask_pos" in features[0].keys():

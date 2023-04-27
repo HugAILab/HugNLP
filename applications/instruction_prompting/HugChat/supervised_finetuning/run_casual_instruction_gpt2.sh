@@ -41,5 +41,6 @@ python3 -m torch.distributed.launch --nproc_per_node=8 --master_port 6013 hugnlp
 --remove_unused_columns=False \
 --cache_dir=/wjn/.cache \
 --overwrite_output_dir \
+--user_defined="causal_lm_name=$model_name language=en" \
 # --deepspeed=./deepspeed/ds_config_fp16_z1.json \
 # --fp16

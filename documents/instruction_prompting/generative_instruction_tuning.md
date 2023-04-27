@@ -1,20 +1,61 @@
-# Generative Instruction-tuning
+# HugChat: Small ChatGPT-like Models via Generative Instruction-tuning
 
 Generative Instruction-tuning aims to unify all NLP task into generative format to train the causal language model (e.g., GPT2, BART).
 Thus document teach you how to use HugNLP to perform instruction-tuning, and continual train a small ChatGPT-style model on user-defined task-specific corpora.
 
 ## HugChat
 
-We develop the HugChat, you can make conversation on terminal:
-
-![](../../images/hugchat_example.jpg)
-
-You can run:
+We develop the HugChat, you can make conversation on terminal. You can run:
 ```bash
 python3 applications/instruction_prompting/HugChat/hugchat.py
 ```
 
-Have fun!
+We demonstrate some examples about GPT2-XL model:
+
+
+![image](../../images/hugchat_hello.jpg)
+
+<details><summary><b>1. Write a story</b></summary>
+
+![image](../../images/hugchat_story.jpg)
+
+</details>
+
+<details><summary><b>2. Write a letter</b></summary>
+
+![image](../../images/hugchat_letter.jpg)
+
+</details>
+
+<details><summary><b>3. Calculation</b></summary>
+
+![image]()
+
+</details>
+
+<details><summary><b>4. Natural Language Understanding (Sentiment, Reading Comprehension, KBQA)</b></summary>
+
+![image](../../images/hugchat_nlu.jpg)
+
+</details>
+
+<details><summary><b>5. Searching</b></summary>
+
+![image](../../images/hugchat_search.jpg)
+
+</details>
+
+<details><summary><b>6. Code Programming</b></summary>
+
+![image](../../images/hugchat_code.jpg)
+
+</details>
+
+
+Please Have fun!
+
+---
+
 
 We will next provide introduction on how to train HugChat.
 
@@ -47,68 +88,51 @@ cd datasets/corpora/instruction/generative_instruction
 bash download_instruction_corpora.sh
 ```
 
-## Running Application
+There are three data:
+- instruction_en_corpora.json: only has English data
+- instruction_zh_corpora.json: only has Chinese data
+- instruction_corpora.json: mixed of English and Chinese.
 
-We prepare a running script for training in ```./application/instruction_prompting/instruction_tuning/run_causal_instruction.sh```.
+## Running for Supervised Fine-tuning (SFT)
 
-At first, you should edit the data_path as ```./datasets/corpora/instruction/generative_instruction``` in ```run_causal_instruction.sh``` at first.
+<!-- We prepare a running script for training a GPT2-XL in ```./application/instruction_prompting/HugChat/supervised_finetuning/run_causal_instruction_gpt2_xl.sh```. -->
+
+At first, you should edit the data_path as ```./datasets/corpora/instruction/generative_instruction``` in the runing script (e.g., ```run_causal_instruction_gpt2_xl.sh```.
 
 You can also define some hyper-parameters, such as:
-- learning_rate=2e-5
-- per_device_train_batch_size=2
-- per_device_eval_batch_size=1
-- gradient_accumulation_steps=2
+- --learning_rate=2e-5
+- --per_device_train_batch_size=2
+- --per_device_eval_batch_size=1
+- --gradient_accumulation_steps=2
 - ...
+
+We recommend you add the following arguments to use deepspeed:
+- --deepspeed=./deepspeed/ds_config_fp16_z1.json \
+- --fp16
 
 then run the script:
 
 ```bash
-bash ./application/instruction_prompting/instruction_tuning/run_causal_instruction.sh
+bash ./application/instruction_prompting/HugChat/supervised_finetuning/run_causal_instruction_gpt2_xl.sh
 ```
 
-> If you select GPT-2 (large) and train on 8 V100 (32G) GPUs with 'per_device_train_batch_size=2, gradient_accumulation_steps=2, and epoch=10', The total training steps are 60K, the training time costs about 22 hours.
+> If you use deepspeed (ZeRO stage 1 with FP16) and select GPT2-XL to train on 8 V100 (32G) GPUs with 'per_device_train_batch_size=2, gradient_accumulation_steps=2, and epoch=3', The total training steps are 210K, the training time costs about 30 hours. It costs about 28G memory at each GPU.
 
-## Pre-built HugChat Modes
+## Pre-built HugChat Models
 
 We design HugChat application based on generative instruction-tuning.
 We have trained following models, and release the weights about HugChat:
 
-| Backbone | Size | Progress | HuggingFace Model Link
-| --- | --- | --- | --- |
-| GPT-2 | base (0.3B) | Finish | [wjn1996/hugnlp-hugchat-gpt2](https://huggingface.co/wjn1996/hugnlp-hugchat-gpt2)
-| GPT-2 | large (0.8B) | Developing |
-| GPT-2 | xlarge (1.3B) | Developing |
-| GPT-Neo | 2.7B | Pending |
-| LLaMA | 7B | Pending |
-
-
-## Demonstration:
-
-We demonstrate the performance of conversations of GPT-2 (base) in the following.
-
-
-```bash
->>> prompt = tokenizer("Input: Hello, how are you? ", return_tensors="pt")
->>> res = model.generate(input_ids=prompt["input_ids"], attention_mask=prompt["attention_mask"], max_length=len(prompt["input_ids"][0]) + 100, pad_token_id=tokenizer.eos_token_id, num_beams=3)
->>> tokenizer.decode(res[0])
-'Input: Hello, how are you? \n Output: I am happy to answer your questions. \n\n'
-```
-
-```bash
->>> prompt = tokenizer("Input: Hello, how are you? \n Output: I am happy to answer your questions. \n Input: Where is Shanghai? ", return_tensors="pt")
->>> res = model.generate(input_ids=prompt["input_ids"], attention_mask=prompt["attention_mask"], max_length=len(prompt["input_ids"][0]) + 100, pad_token_id=tokenizer.eos_token_id, num_beams=3)
->>> tokenizer.decode(res[0])
-'Input: Hello, how are you? \n Output: I am happy to answer your questions. \n Input: Where is Shanghai? \n Output: Shanghai is located in the southern part of the country. \n'
-```
-
-```bash
->>> prompt = tokenizer("Input: Hello, how are you? \n Output: I am happy to answer your questions. \n Input: Where is Shanghai? \n Output: Shanghai is located in the southern part of the country. \n Input: How many people there? ", return_tensors="pt")
->>> res = model.generate(input_ids=prompt["input_ids"], attention_mask=prompt["attention_mask"], max_length=len(prompt["input_ids"][0]) + 100, pad_token_id=tokenizer.eos_token_id, num_beams=3)
->>> tokenizer.decode(res[0])
-'Input: Hello, how are you? \n Output: I am happy to answer your questions. \n Input: Where is Shanghai? \n Output: Shanghai is located in the southern part of the country. \n Input: How many people there? \n Output: There are approximately 20,000,000 people in Shanghai.'
-```
-
-We find the model can make a simple multi-turn conversations.
+| Backbone | Size | Corpora | Config | Progress | Script | HuggingFace Model Link
+| --- | --- | --- | --- | --- | --- | --- |
+| GPT-2 | base (0.3B) | English | V100 8*32G | Finish | [run_causal_instruction_gpt2.sh](../../applications/instruction_prompting/HugChat/supervised_finetuning/run_casual_instruction_gpt2.sh) | [wjn1996/hugnlp-hugchat-gpt2](https://huggingface.co/wjn1996/hugnlp-hugchat-gpt2)
+| GPT-2 | large (0.8B) | English | V100 8*32G | Finish | [run_causal_instruction_gpt2.sh](../../applications/instruction_prompting/HugChat/supervised_finetuning/run_casual_instruction_gpt2.sh) |
+| GPT-2 | xlarge (1.3B) | English | V100 8*32G | Finish | [run_causal_instruction_gpt2_xl.sh]((../../applications/instruction_prompting/HugChat/supervised_finetuning/run_casual_instruction_gpt2_xl.sh)) | [wjn1996/hugnlp-hugchat-gpt2-xl](https://huggingface.co/wjn1996/hugnlp-hugchat-gpt2-xl)
+| OPT | 1.3B | English | V100 8*32G LoRA (dim=8) | Finish | [run_causal_instruction_opt.sh]((../../applications/instruction_prompting/HugChat/supervised_finetuning/run_casual_instruction_opt.sh)) |
+| OPT | 6.7B | English | V100 8*32G LoRA (dim=8) | Developing | [run_causal_instruction_opt_lora.sh]((../../applications/instruction_prompting/HugChat/supervised_finetuning/run_casual_instruction_opt_lora.sh)) |
+| GLM-2B | 2.0B | English | V100 8*32G | Pending | |
+| GPT-Neo | 2.7B | English | V100 8*32G | Pending | |
+| LLaMA | 7B | English | V100 8*32G | Pending | |
 
 ---
 
