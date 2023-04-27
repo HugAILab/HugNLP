@@ -1,2 +1,7 @@
 .vscode/
-not-upload/
+not_upload/
+logs/
+.log
+outputs/
+**/__pycache__/
+.history

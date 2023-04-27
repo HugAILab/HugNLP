@@ -11,12 +11,8 @@ from collections import defaultdict
 from processors.ProcessorBase import CLSProcessor
 from processors.benchmark.clue.clue_processor import clue_processors, clue_output_modes
 from metrics import datatype2metrics
+from tools.computations.softmax import softmax
 from processors.benchmark.clue.data_collator import DataCollator
-
-
-def sofmax(logits):
-    probs = torch.softmax(torch.from_numpy(logits).float(), -1).numpy()
-    return probs
 
 
 class CLUEProcessor(CLSProcessor):
@@ -138,7 +134,7 @@ class CLUEProcessor(CLSProcessor):
             # 获取TopK结果
             # {"prob": prob, "answer": answer}
             # print("logit=", logit)
-            proba = sofmax(logit) # 转换为概率
+            proba = softmax(logit) # 转换为概率
             # print("proba=", proba)
             # print("========")
             indices = np.argsort(-proba)# 获得降序排列后的索引
@@ -293,7 +289,7 @@ class CSLEFLProcessor(CLUEProcessor):
                 # 获取TopK结果
                 # {"prob": prob, "answer": answer}
                 # print("logit=", logit)
-                proba = sofmax(logit) # 转换为概率
+                proba = softmax(logit) # 转换为概率
                 # print("proba=", proba)
                 # print("========")
                 indices = np.argsort(-proba)# 获得降序排列后的索引
@@ -313,7 +309,7 @@ class CSLEFLProcessor(CLUEProcessor):
                 text_a = example["text_a"]
                 # 模板为"【{}】可以作为文章的关键词吗？文章：【{}】"，获取关键词，则只需要前几个token即可
                 keyword = text_a.split("】")[0][1:]
-                proba = sofmax(logit)  # 转换为概率
+                proba = softmax(logit)  # 转换为概率
                 if id_ not in pred_probas.keys():
                     # pred_keywords[id_] = list()
                     pred_probas[id_] = list()

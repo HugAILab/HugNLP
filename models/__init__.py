@@ -8,13 +8,17 @@
 from models.multiple_choice.duma import BertDUMAForMultipleChoice, AlbertDUMAForMultipleChoice, MegatronDumaForMultipleChoice
 from models.span_extraction.global_pointer import BertForEffiGlobalPointer, RobertaForEffiGlobalPointer, RoformerForEffiGlobalPointer, MegatronForEffiGlobalPointer
 from transformers import AutoModelForTokenClassification, AutoModelForSequenceClassification, AutoModelForMaskedLM, AutoModelForMultipleChoice, BertTokenizer, \
-    AutoModelForQuestionAnswering
+    AutoModelForQuestionAnswering, AutoModelForCausalLM
 
+from transformers import AutoTokenizer
 from transformers.models.roformer import RoFormerTokenizer
 from transformers.models.bert import BertTokenizerFast, BertForTokenClassification, BertTokenizer
 from transformers.models.roberta.tokenization_roberta import RobertaTokenizer
-# from transformers.models.bert.modeling_bert import BertForSequenceClassification
 from transformers.models.gpt2.tokenization_gpt2_fast import GPT2TokenizerFast
+from transformers.models.gpt2.tokenization_gpt2 import GPT2Tokenizer
+from transformers.models.bart.tokenization_bart import BartTokenizer
+from transformers.models.t5.tokenization_t5 import T5Tokenizer
+from transformers.models.plbart.tokenization_plbart import PLBartTokenizer
 
 
 # from models.deberta import DebertaV2ForMultipleChoice, DebertaForMultipleChoice
@@ -30,10 +34,15 @@ from models.sequence_matching.fusion_siamese import BertForFusionSiamese, BertFo
 from models.fewshot_learning.span_proto import SpanProto
 from models.fewshot_learning.token_proto import TokenProto
 
-from models.sequence_labeling.softmax_for_ner import BertSoftmaxForNer, RobertaSoftmaxForNer, AlbertSoftmaxForNer, MegatronBertSoftmaxForNer
-from models.sequence_labeling.crf_for_ner import BertCrfForNer, RobertaCrfForNer, AlbertCrfForNer, MegatronBertCrfForNer
+from models.sequence_labeling.head_token_cls import (
+    BertSoftmaxForSequenceLabeling, BertCrfForSequenceLabeling,
+    RobertaSoftmaxForSequenceLabeling, RobertaCrfForSequenceLabeling,
+    AlbertSoftmaxForSequenceLabeling, AlbertCrfForSequenceLabeling,
+    MegatronBertSoftmaxForSequenceLabeling, MegatronBertCrfForSequenceLabeling,
+)
 from models.span_extraction.span_for_ner import BertSpanForNer, RobertaSpanForNer, AlbertSpanForNer, MegatronBertSpanForNer
 
+from models.language_modeling.mlm import BertForMaskedLM
 from models.language_modeling.kpplm import BertForWikiKGPLM, RoBertaKPPLMForProcessedWikiKGPLM, DeBertaKPPLMForProcessedWikiKGPLM
 from models.language_modeling.causal_lm import GPT2ForCausalLM
 
@@ -41,7 +50,8 @@ from models.sequence_classification.head_cls import (
     BertForSequenceClassification, BertPrefixForSequenceClassification,
     BertPtuningForSequenceClassification, BertAdapterForSequenceClassification,
     RobertaForSequenceClassification, RobertaPrefixForSequenceClassification,
-    RobertaPtuningForSequenceClassification,RobertaAdapterForSequenceClassification
+    RobertaPtuningForSequenceClassification,RobertaAdapterForSequenceClassification,
+    BartForSequenceClassification, GPT2ForSequenceClassification
 )
 
 from models.sequence_classification.masked_prompt_cls import (
@@ -51,7 +61,15 @@ from models.sequence_classification.masked_prompt_cls import (
     PromptRobertaPrefixForSequenceClassification, PromptRobertaAdapterForSequenceClassification
 )
 
-from models.language_modeling.mlm import BertForMaskedLM
+from models.sequence_classification.causal_prompt_cls import PromptGPT2ForSequenceClassification
+
+from models.code.code_classification import (
+    RobertaForCodeClassification, CodeBERTForCodeClassification,
+    GraphCodeBERTForCodeClassification, PLBARTForCodeClassification, CodeT5ForCodeClassification
+)
+from models.code.code_generation import (
+    PLBARTForCodeGeneration
+)
 
 # Models for pre-training
 PRETRAIN_MODEL_CLASSES = {
@@ -66,8 +84,11 @@ PRETRAIN_MODEL_CLASSES = {
         "gpt2": GPT2ForCausalLM,
         "bart": None,
         "t5": None,
+        "llama": None
     },
+    "auto_causal_lm": AutoModelForCausalLM
 }
+
 
 CLASSIFICATION_MODEL_CLASSES = {
     "auto_cls": AutoModelForSequenceClassification, # huggingface cls
@@ -75,6 +96,8 @@ CLASSIFICATION_MODEL_CLASSES = {
     "head_cls": {
         "bert": BertForSequenceClassification,
         "roberta": RobertaForSequenceClassification,
+        "bart": BartForSequenceClassification,
+        "gpt2": GPT2ForSequenceClassification
     }, # use standard fine-tuning head for cls, e.g., bert+mlp
     "head_prefix_cls": {
         "bert": BertPrefixForSequenceClassification,
@@ -111,11 +134,29 @@ CLASSIFICATION_MODEL_CLASSES = {
         "roberta": PromptRobertaAdapterForSequenceClassification,
     }, # use masked lm head with adapter-tuning technique for prompt-based cls, e.g., bert+mlm
     "causal_prompt_cls": {
-        "gpt2": None,
+        "gpt2": PromptGPT2ForSequenceClassification,
         "bart": None,
         "t5": None,
     }, # use causal lm head for prompt-tuning, e.g., gpt2+lm
 }
+
+
+TOKEN_CLASSIFICATION_MODEL_CLASSES = {
+    "auto_token_cls": AutoModelForTokenClassification,
+    "head_softmax_token_cls": {
+        "bert": BertSoftmaxForSequenceLabeling,
+        "roberta": RobertaSoftmaxForSequenceLabeling,
+        "albert": AlbertSoftmaxForSequenceLabeling,
+        "megatron": MegatronBertSoftmaxForSequenceLabeling,
+    },
+    "head_crf_token_cls": {
+        "bert": BertCrfForSequenceLabeling,
+        "roberta": RobertaCrfForSequenceLabeling,
+        "albert": AlbertCrfForSequenceLabeling,
+        "megatron": MegatronBertCrfForSequenceLabeling,
+    }
+}
+
 
 SPAN_EXTRACTION_MODEL_CLASSES = {
     "global_pointer": {
@@ -135,21 +176,26 @@ FEWSHOT_MODEL_CLASSES = {
 
 
 CODE_MODEL_CLASSES = {
-
+    "code_cls": {
+        "roberta": RobertaForCodeClassification,
+        "codebert": CodeBERTForCodeClassification,
+        "graphcodebert": GraphCodeBERTForCodeClassification,
+        "codet5": CodeT5ForCodeClassification,
+        "plbart": PLBARTForCodeClassification,
+    },
+    "code_generation": {
+        # "roberta": RobertaForCodeGeneration,
+        # "codebert": BertForCodeGeneration,
+        # "graphcodebert": BertForCodeGeneration,
+        # "codet5": T5ForCodeGeneration,
+        "plbart": PLBARTForCodeGeneration,
+    },
 }
+
 
 # task_type 负责对应model类型
 OTHER_MODEL_CLASSES = {
     # sequence labeling
-    "ner": AutoModelForTokenClassification,
-    "bert_softmax_ner": BertSoftmaxForNer,
-    "roberta_softmax_ner": RobertaSoftmaxForNer,
-    "albert_softmax_ner": AlbertSoftmaxForNer,
-    "megatronbert_softmax_ner": MegatronBertSoftmaxForNer,
-    "bert_crf_ner": BertCrfForNer,
-    "roberta_crf_ner": RobertaCrfForNer,
-    "albert_crf_ner": AlbertCrfForNer,
-    "megatronbert_crf_ner": MegatronBertCrfForNer,
     "bert_span_ner": BertSpanForNer,
     "roberta_span_ner": RobertaSpanForNer,
     "albert_span_ner": AlbertSpanForNer,
@@ -187,10 +233,12 @@ OTHER_MODEL_CLASSES = {
     # "chid_mlm": BertForChidMLM,
 }
 
+
 # MODEL_CLASSES = dict(list(PRETRAIN_MODEL_CLASSES.items()) + list(OTHER_MODEL_CLASSES.items()))
 MODEL_CLASSES_LIST = [
     PRETRAIN_MODEL_CLASSES,
     CLASSIFICATION_MODEL_CLASSES,
+    TOKEN_CLASSIFICATION_MODEL_CLASSES,
     SPAN_EXTRACTION_MODEL_CLASSES,
     FEWSHOT_MODEL_CLASSES,
     CODE_MODEL_CLASSES,
@@ -204,6 +252,8 @@ for model_class in MODEL_CLASSES_LIST:
 
 # model_type 负责对应tokenizer
 TOKENIZER_CLASSES = {
+    # for natural language processing
+    "auto": AutoTokenizer,
     "bert": BertTokenizerFast,
     "roberta": RobertaTokenizer,
     "wobert": RoFormerTokenizer,
@@ -212,6 +262,13 @@ TOKENIZER_CLASSES = {
     "erlangshen": BertTokenizerFast,
     "deberta": BertTokenizer,
     "roformer_v2": BertTokenizerFast,
-    "gpt2": GPT2TokenizerFast,
-    "megatronbert": BertTokenizerFast
+    "gpt2": GPT2Tokenizer,
+    "megatronbert": BertTokenizerFast,
+    "bart": BartTokenizer,
+    "t5": T5Tokenizer,
+    # for programming language processing
+    "codebert": RobertaTokenizer,
+    "graphcodebert": RobertaTokenizer,
+    "codet5": RobertaTokenizer,
+    "plbart": PLBartTokenizer
 }

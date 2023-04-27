@@ -23,6 +23,8 @@ freezer = ParameterFreeze()
 
 logger = logging.getLogger(__name__)
 
+# Note: 如果mask_pos为None，请检查输入的模板是否有<mask>标记，是否修改data_collator文件
+
 """
 Vanilla Prompt-tuning BERT
 """
@@ -441,6 +443,8 @@ class PromptBertPrefixForSequenceClassification(BertPreTrainedModel):
         if return_full_softmax:
             return prediction_mask_scores
 
+        # print("prediction_mask_scores.shape=", prediction_mask_scores.shape) # [batch_size, seq_len, vocab_size]
+
         # Return logits for each label
         logits = []
         for label_id in range(len(self.label_word_list)):
@@ -632,7 +636,7 @@ class PromptBertAdapterForSequenceClassification(BertPreTrainedModel):
 """
 Vanilla Prompt-tuning RoBERTa
 """
-class PromptRobertaForSequenceClassification(BertPreTrainedModel):
+class PromptRobertaForSequenceClassification(RobertaPreTrainedModel):
 
     def __init__(self, config):
         super().__init__(config)
@@ -640,11 +644,11 @@ class PromptRobertaForSequenceClassification(BertPreTrainedModel):
         self.pre_seq_len = self.config.pre_seq_len
         self.hidden_size = self.config.hidden_size
         # backbone
-        self.roberta = BertModel(config)
+        self.roberta = RobertaModel(config)
         if self.config.use_freezing:
             self.roberta = freezer.freeze_lm(self.roberta)
         # mlm head
-        self.cls = BertOnlyMLMHead(config)
+        self.cls = RobertaLMHead(config)
 
         self.init_weights()
 
@@ -754,7 +758,7 @@ class PromptRobertaForSequenceClassification(BertPreTrainedModel):
 """
 P-tuning RoBERTa
 """
-class PromptRobertaPtuningForSequenceClassification(BertPreTrainedModel):
+class PromptRobertaPtuningForSequenceClassification(RobertaPreTrainedModel):
 
     def __init__(self, config):
         super().__init__(config)
@@ -762,11 +766,11 @@ class PromptRobertaPtuningForSequenceClassification(BertPreTrainedModel):
         self.pre_seq_len = self.config.pre_seq_len
         self.hidden_size = self.config.hidden_size
         # backbone
-        self.roberta = BertModel(config)
+        self.roberta = RobertaModel(config)
         if self.config.use_freezing:
             self.roberta = freezer.freeze_lm(self.roberta)
         # mlm head
-        self.cls = BertOnlyMLMHead(config)
+        self.cls = RobertaLMHead(config)
         # prompt encoder
         self.prompt_encoder = None
         # plm embedding layer
@@ -941,7 +945,7 @@ class PromptRobertaPtuningForSequenceClassification(BertPreTrainedModel):
 """
 Prefix-tuning RoBERTa
 """
-class PromptRobertaPrefixForSequenceClassification(BertPreTrainedModel):
+class PromptRobertaPrefixForSequenceClassification(RobertaPreTrainedModel):
 
     def __init__(self, config):
         super().__init__(config)
@@ -956,11 +960,11 @@ class PromptRobertaPrefixForSequenceClassification(BertPreTrainedModel):
         self.n_embd = config.hidden_size // config.num_attention_heads
 
         # backbone
-        self.robert = BertModel(config)
+        self.robert = RobertaModel(config)
         if self.config.use_freezing:
             self.robert = freezer.freeze_lm(self.robert)
         # mlm head
-        self.cls = BertOnlyMLMHead(config)
+        self.cls = RobertaLMHead(config)
         self.dropout = torch.nn.Dropout(config.hidden_dropout_prob)
         # plm embedding layer
         self.backbone_embeddings = self.robert.embeddings.word_embeddings
@@ -1105,13 +1109,13 @@ class PromptRobertaPrefixForSequenceClassification(BertPreTrainedModel):
 """
 Adapter-tuning RoBERTa
 """
-class PromptRobertaAdapterForSequenceClassification(BertPreTrainedModel):
+class PromptRobertaAdapterForSequenceClassification(RobertaPreTrainedModel):
 
     def __init__(self, config):
         super().__init__(config)
         self.num_labels = config.num_labels
-        self.roberta = BertAdaModel(config)
-        self.cls = BertOnlyMLMHead(config)
+        self.roberta = RobertaAdaModel(config)
+        self.cls = RobertaLMHead(config)
         self.init_weights()
 
         if self.config.use_freezing:

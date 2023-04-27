@@ -1,5 +1,44 @@
-# template engineering
-task_to_template = {
+# task instruction: for causal lm
+task_to_instruction = {
+    "cola": {
+        "instruction": "Classify the linguistic acceptability of the title.",
+        "input_prompt": "Title: ",
+        "output_prompt": "Acceptability: "
+    },
+    "mnli": {
+        "instruction": "Whether two sentences are entailed each other?",
+        "input_prompt": "",
+        "output_prompt": "Output: "
+    },
+    "mrpc": {
+        "instruction": "Whether the two question are similar?",
+        "input_prompt": "",
+        "output_prompt": "Output: "
+    },
+    "qnli": {
+        "instruction": "Whether the answer is entailed to the question?",
+        "input_prompt": "",
+        "output_prompt": "Output: "
+    },
+    "qqp": {
+        "instruction": "Whether the two question are similar?",
+        "input_prompt": "",
+        "output_prompt": "Output: "
+    },
+    "rte": {
+        "instruction": "Whether two sentences are entailed each other?",
+        "input_prompt": "",
+        "output_prompt": "Output: "
+    },
+    "sst2": {
+        "instruction": "Classify the sentiment text.",
+        "input_prompt": "Review: ",
+        "output_prompt": "Sentiment: "
+    }
+}
+
+# template engineering: for masked lm
+masked_task_to_template = {
     "cola": [{
         "prefix_template": "",
         "suffix_template": "This is <mask> ."
@@ -27,6 +66,53 @@ task_to_template = {
     "sst2": [{
         "prefix_template": "",
         "suffix_template": "It was <mask> ."
+    }, None],  # prefix / suffix template in each segment.
+}
+
+# template engineering: for causal lm
+causal_task_to_template = {
+    "cola": [{
+        "prefix_template": "",
+        "suffix_template": ""
+    }, None],
+    "mnli": [{
+        "prefix_template": "Text 1: ",
+        "suffix_template": ""
+    }, {
+        "prefix_template": "Text 2: ",
+        "suffix_template": ""
+    }],
+    "mrpc": [{
+        "prefix_template": "Question 1: ",
+        "suffix_template": ""
+    }, {
+        "prefix_template": "Question 2: ",
+        "suffix_template": ""
+    }],
+    "qnli": [{
+        "prefix_template": "Question: ",
+        "suffix_template": ""
+    }, {
+        "prefix_template": "Answer: ",
+        "suffix_template": ""
+    }],
+    "qqp": [{
+        "prefix_template": "Question 1: ",
+        "suffix_template": ""
+    }, {
+        "prefix_template": "Question 2: ",
+        "suffix_template": ""
+    }],
+    "rte": [{
+        "prefix_template": "Text 1: ",
+        "suffix_template": ""
+    }, {
+        "prefix_template": "Text 2: ",
+        "suffix_template": ""
+    }],  # prefix / suffix template in each segment.
+    "sst2": [{
+        "prefix_template": "",
+        "suffix_template": ""
     }, None],  # prefix / suffix template in each segment.
 }
 

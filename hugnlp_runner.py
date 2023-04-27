@@ -5,6 +5,9 @@
 # !/usr/bin/env python
 # coding=utf-8
 
+"""
+This file is the runner of HugNLP.
+"""
 import math
 import os
 import time
@@ -14,15 +17,18 @@ from callback.ema import ExponentialMovingAveragingCallback
 from callback.freeze import FreezeCallback
 from callback.logger import LoggerCallback
 from processors import PROCESSORS
-from transformers import CONFIG_MAPPING, AutoConfig, AutoTokenizer, HfArgumentParser, set_seed
-from hugnlp_trainer import HugTrainer
+from transformers import CONFIG_MAPPING, AutoConfig, AutoTokenizer, HfArgumentParser
+from hugnlp_trainer import HugTrainer, HugSelfTrainer
 from transformers.trainer_utils import get_last_checkpoint
 from transformers import EarlyStoppingCallback
-from config import ModelArguments, DataTrainingArguments, TrainingArguments
+from config import ModelArguments, DataTrainingArguments, TrainingArguments, SemiSupervisedTrainingArguments
 from callback.mlflow import MLflowCallback
 from tools.runner_utils.log_util import init_logger
 from models import MODEL_CLASSES, TOKENIZER_CLASSES
+from models.basic_modules.lora import convert_linear_layer_to_lora, only_optimize_lora_parameters
+from evaluators import EVALUATORS_CLASSES
 from tools.runner_utils.conifg_extensive import config_extensive
+from tools.runner_utils.set_seed import set_seed
 import logging
 
 logger = logging.getLogger(__name__)
@@ -34,20 +40,22 @@ def print_hello():
     print("|" + " "*(length - 2) + "|")
     print(" " + " "*int((length - 2 - 25)/2) + "🤗 Welcome to use HugNLP!" + " "*int((length - 2 - 25)/2)  + " ")
     print("" + " "*(length) + "")
-    print("" + " "*int((length - 2 - 32)/2) + "https://github.com/wjn1996/HugNLP" + " "*int((length - 2 - 33)/2)  + "")
+    print("" + " "*int((length - 2 - 32)/2) + "https://github.com/HugAILab/HugNLP" + " "*int((length - 2 - 33)/2)  + "")
     print("|" + " "*(length - 2) + "|")
     print("+" + "-"*(length - 2) + "+")
 
 def main():
     # See all possible arguments or by passing the --help flag to this script.
-    parser = HfArgumentParser((ModelArguments, DataTrainingArguments, TrainingArguments))
-    model_args, data_args, training_args = parser.parse_args_into_dataclasses()
+    parser = HfArgumentParser((ModelArguments, DataTrainingArguments, TrainingArguments, SemiSupervisedTrainingArguments))
+    model_args, data_args, training_args, semi_training_args = parser.parse_args_into_dataclasses()
 
+    # Print hello world
     if training_args.local_rank == 0:
         print_hello()
 
     training_args.output_dir = os.path.join(training_args.output_dir, list(filter(None, model_args.model_name_or_path.split("/")))[-1])
     os.makedirs(training_args.output_dir, exist_ok=True)
+
     # Setup logging
     log_file = os.path.join(training_args.output_dir,
                             f"{model_args.model_name_or_path.split(os.sep)[-1]}-{data_args.task_name}-{time.strftime('%Y-%m-%d-%H:%M:%S', time.localtime())}.log")
@@ -59,7 +67,6 @@ def main():
         f"Process rank: {training_args.local_rank}, device: {training_args.device}, n_gpu: {training_args.n_gpu}"
         + f"distributed training: {bool(training_args.local_rank != -1)}, 16-bits training: {training_args.fp16}"
     )
-
     if training_args.local_rank == 0:
         logger.info(f"Training/evaluation parameters {training_args}")
 
@@ -77,7 +84,7 @@ def main():
     # Set seed before initializing model.
     set_seed(training_args.seed)
 
-    # obtain tokenizer
+    # Obtain tokenizer
     tokenizer_kwargs = {
         "cache_dir": model_args.cache_dir,
         "use_fast": model_args.use_fast_tokenizer,
@@ -95,11 +102,12 @@ def main():
             "You can do it from another script, save it, and load it from here, using --tokenizer_name."
         )
 
-    # build processors
+    # Build processors
     if data_args.task_name in PROCESSORS:
         processor = PROCESSORS[data_args.task_name](data_args, training_args, model_args, tokenizer=tokenizer)
     else:
         raise ValueError("Unknown task name {}, please check in processor map.".format(data_args.task_name))
+
     # Load pretrained model and tokenizer
     # The .from_pretrained methods guarantee that only one local process can concurrently download model & vocab.
     config_kwargs = {
@@ -108,11 +116,11 @@ def main():
         "finetuning_task": data_args.task_name
     }
 
-    # add num_labels
+    # Add num_labels
     if hasattr(processor, "labels"):
         config_kwargs["num_labels"] = len(processor.labels)
 
-    # set configure
+    # Set configure
     if model_args.config_name:
         config = AutoConfig.from_pretrained(model_args.config_name, **config_kwargs)
     elif model_args.model_name_or_path:
@@ -127,19 +135,20 @@ def main():
             config.update_from_string(model_args.config_overrides)
             logger.info(f"New config: {config}")
 
-    # add label mapping if use prompt-tuning
+    # Add label mapping if use prompt-tuning
     if model_args.use_prompt_for_cls:
         assert hasattr(processor, "label_word_list"), "If you use prompt, you must design label_word_list in processor."
         config.label_word_list = processor.label_word_list
 
-    # add other config
+    # Add other config
     config = config_extensive(config, model_args)
     processor.set_config(config)
 
-    # set model
+    # Set model
     model_class = MODEL_CLASSES[data_args.task_type]
     if type(model_class) == dict:
         model_class = model_class[model_args.model_type]
+
     if training_args.pre_train_from_scratch:
         logger.info("Training new model from scratch")
         model = model_class(config)
@@ -152,16 +161,41 @@ def main():
             cache_dir=model_args.cache_dir,
             revision=model_args.model_revision,
             use_auth_token=True if model_args.use_auth_token else None,
-            ignore_mismatched_sizes=True
+            # ignore_mismatched_sizes=True
         )
 
-    # resize token embeddings
+    # Resize token embeddings
     try:
         model.resize_token_embeddings(len(tokenizer))
     except:
         print("Fail to resize token embeddings.")
 
-    # obtain tokenized data
+    if model_args.lora_dim > 0 and training_args.deepspeed is not None:
+        from peft import prepare_model_for_int8_training, LoraConfig, get_peft_model
+        # model = prepare_model_for_int8_training(model) # INT8 量化
+        # load lora
+        logger.info("You have set LORA parameter-efficient learning.")
+        config = LoraConfig(
+            r=16,
+            lora_alpha=32,
+            target_modules=["q_proj", "v_proj"],
+            lora_dropout=0.05, bias="none",
+            task_type="CAUSAL_LM"
+        )
+        model = get_peft_model(model, config)
+
+    # if model_args.lora_dim > 0 and training_args.deepspeed is not None:
+    #     # 插入lora参数
+    #     model = convert_linear_layer_to_lora(
+    #         model, model_args.lora_module_name,
+    #         model_args.lora_dim)
+    #     # 只对lora参数进行训练
+    #     if model_args.only_optimize_lora:
+    #         model = only_optimize_lora_parameters(model)
+
+    train_dataset, eval_dataset, test_dataset, unlabeled_dataset = None, None, None, None
+
+    # Obtain tokenized data
     tokenized_datasets = processor.get_tokenized_datasets()
     if training_args.do_train:
         if "train" not in tokenized_datasets:
@@ -184,20 +218,38 @@ def main():
         if data_args.max_predict_samples is not None:
             test_dataset = test_dataset.select(range(data_args.max_predict_samples))
 
-    # set data collator
+    if semi_training_args.use_semi:
+        assert "unlabeled_data" in tokenized_datasets.features, "If you choose semi-supervised training, you must define unlabeled data."
+        unlabeled_dataset = tokenized_datasets["unlabeled_dataset"]
+        if semi_training_args.unlabeled_data_num is not None:
+            unlabeled_dataset = unlabeled_dataset.select(range(semi_training_args.unlabeled_data_num))
+
+    # Set evaluator
+    assert data_args.task_type in EVALUATORS_CLASSES, "You must define an evaluator for '{}'".format(data_args.task_type)
+    evaluator_class = EVALUATORS_CLASSES[data_args.task_type]
+    evaluator = evaluator_class(
+        model_args=model_args,
+        data_args=data_args,
+        model=model,
+        training_args=training_args,
+        processor=processor,
+        eval_dataset=eval_dataset,
+        test_dataset=test_dataset,
+    )
+
+    # Set data collator
     data_collator = processor.get_data_collator()
     if hasattr(processor, "compute_metrics"):
+        # first to choose defined "compute_metrics" in processor.
         compute_metrics = processor.compute_metrics
+    elif hasattr(evaluator, "default_compute_metrics"):
+        # second to choose defined "default_compute_metrics" in evaluator.
+        compute_metrics = evaluator.default_compute_metrics
     else:
+        # set None, in this case, evaluating in training time will not calculate metric.
         compute_metrics = None
 
-    # Initialize our Trainer
-    # 添加callback，添加方法如下:
-    # --mlflow_location：添加mlflow tracker
-    # --early_stopping_patience default None, --metric_for_best_model default eval_loss, --load_best_model_at_end, 添加early stopping
-    # --freeze_epochs, --freeze_keyword 冻层操作
-
-    # obtain tracking
+    # Obtain tracking
     callbacks = [LoggerCallback]
     if data_args.mlflow_location or data_args.tracking_uri:
         mlflow_callback = MLflowCallback(model_args, data_args, training_args)
@@ -216,16 +268,32 @@ def main():
         from callback.evaluate import DoPredictDuringTraining
         callbacks.append(DoPredictDuringTraining(test_dataset, processor))
 
-    trainer = HugTrainer(
-        model=model,
-        args=training_args,
-        train_dataset=train_dataset if training_args.do_train else None,
-        eval_dataset=eval_dataset if training_args.do_eval else None,
-        compute_metrics=compute_metrics,
-        tokenizer=tokenizer,
-        data_collator=data_collator,
-        callbacks=callbacks
-    )
+    # Obtain trainer
+    if not semi_training_args.use_semi:
+        # traditional trainer
+        trainer = HugTrainer(
+            model=model,
+            args=training_args,
+            train_dataset=train_dataset if training_args.do_train else None,
+            eval_dataset=eval_dataset if training_args.do_eval else None,
+            compute_metrics=compute_metrics,
+            tokenizer=tokenizer,
+            data_collator=data_collator,
+            callbacks=callbacks
+        )
+    else:
+        # self-trainer
+        trainer = HugSelfTrainer(
+            model=model,
+            args=training_args,
+            train_dataset=train_dataset if training_args.do_train else None,
+            eval_dataset=eval_dataset if training_args.do_eval else None,
+            compute_metrics=compute_metrics,
+            tokenizer=tokenizer,
+            data_collator=data_collator,
+            callbacks=callbacks
+        )
+
 
     # Training
     if training_args.do_train:
@@ -242,68 +310,21 @@ def main():
             data_args.max_train_samples if data_args.max_train_samples is not None else len(train_dataset)
         )
         metrics["train_samples"] = min(max_train_samples, len(train_dataset))
-
         trainer.log_metrics("train", metrics)
         trainer.save_metrics("train", metrics)
         trainer.save_state()
 
+    # Update trainer state
+    evaluator.reset_trainer(trainer if not semi_training_args.use_semi else trainer.student_trainer)
     # Evaluation
     if training_args.do_eval:
         logger.info("*** Evaluate ***")
-        metrics = trainer.evaluate()
-        max_eval_samples = data_args.max_eval_samples if data_args.max_eval_samples is not None else len(eval_dataset)
-        metrics["eval_samples"] = min(max_eval_samples, len(eval_dataset))
-        if data_args.task_type == "mlm":
-            try:
-                perplexity = math.exp(metrics["eval_loss"])
-            except OverflowError:
-                perplexity = float("inf")
-            metrics["perplexity"] = perplexity
-        trainer.log_metrics("eval", metrics)
-        trainer.save_metrics("eval", metrics)
-    # # Test (Evaluate on the testing set with groud truth)
-    # if training_args.do_test:
-    #     logger.info("*** Testing ***")
-    #     metrics = trainer.evaluate()
-    #     max_eval_samples = data_args.max_eval_samples if data_args.max_eval_samples is not None else len(eval_dataset)
-    #     metrics["eval_samples"] = min(max_eval_samples, len(eval_dataset))
-    #     if data_args.task_type == "mlm":
-    #         try:
-    #             perplexity = math.exp(metrics["eval_loss"])
-    #         except OverflowError:
-    #             perplexity = float("inf")
-    #         metrics["perplexity"] = perplexity
-    #     trainer.log_metrics("eval", metrics)
-    #     trainer.save_metrics("eval", metrics)
-    # Test (Evaluate on the testing set with groud truth)
-    # Prediction (Generate answer without groud truth)
+        evaluator.evaluate()
+
+    # Prediction
     if training_args.do_predict and not training_args.do_predict_during_train:
         logger.info("*** Predict ***")
-        if not data_args.keep_predict_labels:
-            for l in ["labels", "label"]:
-                if l in test_dataset.column_names:
-                    test_dataset = test_dataset.remove_columns(l)
-
-        prediction = trainer.predict(test_dataset, metric_key_prefix="predict")
-        logits = prediction.predictions
-        if data_args.keep_predict_labels:
-            label_ids = prediction.label_ids
-        if hasattr(processor, "save_result"):
-            if trainer.is_world_process_zero():
-                if not data_args.keep_predict_labels:
-                    processor.save_result(logits)
-                else:
-                    processor.save_result(logits, label_ids)
-        else:
-            predictions = np.argmax(logits, axis=1)
-            output_predict_file = os.path.join(training_args.output_dir, f"predict_results.txt")
-            if trainer.is_world_process_zero():
-                with open(output_predict_file, "w") as writer:
-                    logger.info(f"***** Predict results {data_args.task_name} *****")
-                    writer.write("index\tprediction\n")
-                    for index, item in enumerate(predictions):
-                        item = processor.labels[item]
-                        writer.write(f"{index}\t{item}\n")
+        evaluator.predict()
 
 if __name__ == "__main__":
     main()

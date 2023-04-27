@@ -117,6 +117,18 @@ class ModelArguments:
         default=128,
         metadata={"help": "The hidden size of adapter. default is 128."},
     )
+    lora_dim: int = field(
+        default=0,
+        metadata={"help": "The hidden size of lora, default is 0."},
+    )
+    lora_module_name: str = field(
+        default="decoder.layers.",
+        metadata={"help": "The scope of LoRA."},
+    )
+    only_optimize_lora: bool = field(
+        default=False,
+        metadata={"help": "Only optimize the LoRA parameters."},
+    )
     pre_seq_len: int = field(
         default=4,
         metadata={
@@ -217,6 +229,12 @@ class DataTrainingArguments:
             "help": "The maximum total input sequence length after tokenization for eval and test set. Sequences longer "
                     "than this will be truncated."
         },
+    )
+    block_size: int = field(
+        default=512,
+        metadata={
+            "help": "The length of each block"
+        }
     )
     preprocessing_num_workers: Optional[int] = field(
         default=None,
@@ -329,4 +347,65 @@ class TrainingArguments(TransformersTrainingArguments):
     pre_train_from_scratch: bool = field(
         default=False,
         metadata={"help": "from scratch"}
+    )
+
+
+@dataclass
+class SemiSupervisedTrainingArguments:
+    use_semi: bool = field(
+        default=False, metadata={"help": "If true, the training process will be transformed into self-training framework."}
+    )
+    unlabeled_data_num: int = field(
+        default=-1,
+        metadata={
+            "help": "The total number of unlabeled data. If set -1 means all the training data (expect of few-shot labeled data)"
+        }
+    )
+    unlabeled_data_batch_size: int = field(
+        default=16,
+        metadata={
+            "help": "The number of unlabeled data in one batch."
+        }
+    )
+    pseudo_sample_num_or_ratio: float = field(
+        default=0.1,
+        metadata={
+            "help": "The number / ratio of pseudo-labeled data sampling. For example, if have 1000 unlabeled data, 0.1 / 100 means sampling 100 pseduo-labeled data."
+        }
+    )
+    teacher_training_epoch: int = field(
+        default=10,
+        metadata={
+            "help": "The epoch number of teacher training at the beginning of self-training."
+        }
+    )
+    teacher_tuning_epoch: int = field(
+        default=10,
+        metadata={
+            "help": "The epoch number of teacher tuning in each self-training iteration."
+        }
+    )
+    student_training_epoch: int = field(
+        default=16,
+        metadata={
+            "help": "The epoch number of student training in each self-training iteration."
+        }
+    )
+    student_learning_rate: float = field(
+        default=1e-5,
+        metadata={
+            "help": "The learning rate of student training in each self-training iteration."
+        }
+    )
+    self_training_epoch: int = field(
+        default=30,
+        metadata={
+            "help": "The number of teacher-student iteration ."
+        }
+    )
+    post_student_train: bool = field(
+        default=False,
+        metadata={
+            "help": "Whether to train a student model on large pseudo-labeled data after self-training iteration"
+        }
     )

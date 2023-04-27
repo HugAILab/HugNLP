@@ -5,6 +5,8 @@ path=/wjn/pre-trained-lm/bert-base-uncased
 MODEL_TYPE=bert
 # MODEL_TYPE=roberta
 
+data_path=./ # you can ignore it
+
 #### task name
 TASK_NAME=glue
 
@@ -67,7 +69,7 @@ lr=1e-05
 
 
 export CUDA_VISIBLE_DEVICES=0,1
-python -m torch.distributed.launch --nproc_per_node=2 --master_port=6014 hugnlp_runner.py \
+python3 -m torch.distributed.launch --nproc_per_node=2 --master_port=6014 hugnlp_runner.py \
   --model_name_or_path=$path \
   --data_dir=$data_path \
   --output_dir=./outputs/glue/$glue_task \
