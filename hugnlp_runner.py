@@ -176,10 +176,10 @@ def main():
         # load lora
         logger.info("You have set LORA parameter-efficient learning.")
         config = LoraConfig(
-            r=16, 
-            lora_alpha=32, 
-            target_modules=["q_proj", "v_proj"], 
-            lora_dropout=0.05, bias="none", 
+            r=16,
+            lora_alpha=32,
+            target_modules=["q_proj", "v_proj"],
+            lora_dropout=0.05, bias="none",
             task_type="CAUSAL_LM"
         )
         model = get_peft_model(model, config)
@@ -187,7 +187,7 @@ def main():
     # if model_args.lora_dim > 0 and training_args.deepspeed is not None:
     #     # 插入lora参数
     #     model = convert_linear_layer_to_lora(
-    #         model, model_args.lora_module_name, 
+    #         model, model_args.lora_module_name,
     #         model_args.lora_dim)
     #     # 只对lora参数进行训练
     #     if model_args.only_optimize_lora:

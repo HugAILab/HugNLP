@@ -10,8 +10,8 @@
 
 <div align="center">
 
-[![CircleCI](https://dl.circleci.com/status-badge/img/gh/wjn1996/HugNLP/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/wjn1996/HugNLP/tree/main)
-[![GitHub pull-requests](https://img.shields.io/github/issues-pr/wjn1996/HugNLP.svg)](https://github.com/wjn1996/HugNLP/pull/)
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/HugAILab/HugNLP/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/HugAILab/HugNLP/tree/main)
+[![GitHub pull-requests](https://img.shields.io/github/issues-pr/HugAILab/HugNLP.svg)](https://github.com/HugAILab/HugNLP/pull/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 [![arXiv](https://img.shields.io/badge/arXiv-2302.14286-b31b1b.svg)](https://arxiv.org/abs/2302.14286)
 
@@ -101,7 +101,7 @@ We develop some novel parameter-efficient learning approaches, such as Prefix-tu
 
 # Installation
 
-> git clone https://github.com/wjn1996/HugNLP.git
+> git clone https://github.com/HugAILab/HugNLP.git
 >
 > cd HugNLP
 >

@@ -224,7 +224,7 @@ class HugTrainer(Trainer):
                     rank=self.args.process_index,
                     seed=self.args.seed,
                 )
-    
+
     """
     User for calculate mc
     """

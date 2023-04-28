@@ -36,7 +36,7 @@ class DataCollatorForCausalLM:
                     }, )
         batch = self.tokenizer.pad(
             batch,
-            padding="max_length", 
+            padding="max_length",
             max_length=self.max_length,
             return_tensors="pt")  # {"input_ids": [xxx], xxx}
         # add position_ids

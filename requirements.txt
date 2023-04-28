@@ -1,5 +1,4 @@
 accelerate
-peft
 bs4
 datasets
 deepspeed==0.8.3
@@ -7,6 +6,7 @@ fairscale
 jieba
 mlflow
 openai
+peft
 pymysql
 roformer
 scikit-learn
