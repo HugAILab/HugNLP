@@ -117,6 +117,18 @@ class ModelArguments:
         default=128,
         metadata={"help": "The hidden size of adapter. default is 128."},
     )
+    lora_dim: int = field(
+        default=0,
+        metadata={"help": "The hidden size of lora, default is 0."},
+    )
+    lora_module_name: str = field(
+        default="decoder.layers.",
+        metadata={"help": "The scope of LoRA."},
+    )
+    only_optimize_lora: bool = field(
+        default=False,
+        metadata={"help": "Only optimize the LoRA parameters."},
+    )
     pre_seq_len: int = field(
         default=4,
         metadata={

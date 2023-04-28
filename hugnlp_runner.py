@@ -25,6 +25,7 @@ from config import ModelArguments, DataTrainingArguments, TrainingArguments, Sem
 from callback.mlflow import MLflowCallback
 from tools.runner_utils.log_util import init_logger
 from models import MODEL_CLASSES, TOKENIZER_CLASSES
+from models.basic_modules.lora import convert_linear_layer_to_lora, only_optimize_lora_parameters
 from evaluators import EVALUATORS_CLASSES
 from tools.runner_utils.conifg_extensive import config_extensive
 from tools.runner_utils.set_seed import set_seed
@@ -39,7 +40,7 @@ def print_hello():
     print("|" + " "*(length - 2) + "|")
     print(" " + " "*int((length - 2 - 25)/2) + "🤗 Welcome to use HugNLP!" + " "*int((length - 2 - 25)/2)  + " ")
     print("" + " "*(length) + "")
-    print("" + " "*int((length - 2 - 32)/2) + "https://github.com/wjn1996/HugNLP" + " "*int((length - 2 - 33)/2)  + "")
+    print("" + " "*int((length - 2 - 32)/2) + "https://github.com/HugAILab/HugNLP" + " "*int((length - 2 - 33)/2)  + "")
     print("|" + " "*(length - 2) + "|")
     print("+" + "-"*(length - 2) + "+")
 
@@ -160,7 +161,7 @@ def main():
             cache_dir=model_args.cache_dir,
             revision=model_args.model_revision,
             use_auth_token=True if model_args.use_auth_token else None,
-            ignore_mismatched_sizes=True
+            # ignore_mismatched_sizes=True
         )
 
     # Resize token embeddings
@@ -168,6 +169,29 @@ def main():
         model.resize_token_embeddings(len(tokenizer))
     except:
         print("Fail to resize token embeddings.")
+
+    if model_args.lora_dim > 0 and training_args.deepspeed is not None:
+        from peft import prepare_model_for_int8_training, LoraConfig, get_peft_model
+        # model = prepare_model_for_int8_training(model) # INT8 量化
+        # load lora
+        logger.info("You have set LORA parameter-efficient learning.")
+        config = LoraConfig(
+            r=16,
+            lora_alpha=32,
+            target_modules=["q_proj", "v_proj"],
+            lora_dropout=0.05, bias="none",
+            task_type="CAUSAL_LM"
+        )
+        model = get_peft_model(model, config)
+
+    # if model_args.lora_dim > 0 and training_args.deepspeed is not None:
+    #     # 插入lora参数
+    #     model = convert_linear_layer_to_lora(
+    #         model, model_args.lora_module_name,
+    #         model_args.lora_dim)
+    #     # 只对lora参数进行训练
+    #     if model_args.only_optimize_lora:
+    #         model = only_optimize_lora_parameters(model)
 
     train_dataset, eval_dataset, test_dataset, unlabeled_dataset = None, None, None, None
 

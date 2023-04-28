@@ -22,6 +22,4 @@ echo "================== Test causal lm incontext learning for classification ==
 
 bash applications/test/test_causal_incontext_cls_cpu.sh # test gpt2 in-context cls
 
-# rm -rf output/
-
-# pip uninstall easynlp -y
+rm -rf output/
