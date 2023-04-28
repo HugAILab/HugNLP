@@ -8,8 +8,9 @@
 from models.multiple_choice.duma import BertDUMAForMultipleChoice, AlbertDUMAForMultipleChoice, MegatronDumaForMultipleChoice
 from models.span_extraction.global_pointer import BertForEffiGlobalPointer, RobertaForEffiGlobalPointer, RoformerForEffiGlobalPointer, MegatronForEffiGlobalPointer
 from transformers import AutoModelForTokenClassification, AutoModelForSequenceClassification, AutoModelForMaskedLM, AutoModelForMultipleChoice, BertTokenizer, \
-    AutoModelForQuestionAnswering
+    AutoModelForQuestionAnswering, AutoModelForCausalLM
 
+from transformers import AutoTokenizer
 from transformers.models.roformer import RoFormerTokenizer
 from transformers.models.bert import BertTokenizerFast, BertForTokenClassification, BertTokenizer
 from transformers.models.roberta.tokenization_roberta import RobertaTokenizer
@@ -85,6 +86,7 @@ PRETRAIN_MODEL_CLASSES = {
         "t5": None,
         "llama": None
     },
+    "auto_causal_lm": AutoModelForCausalLM
 }
 
 
@@ -251,6 +253,7 @@ for model_class in MODEL_CLASSES_LIST:
 # model_type 负责对应tokenizer
 TOKENIZER_CLASSES = {
     # for natural language processing
+    "auto": AutoTokenizer,
     "bert": BertTokenizerFast,
     "roberta": RobertaTokenizer,
     "wobert": RoFormerTokenizer,
@@ -259,7 +262,7 @@ TOKENIZER_CLASSES = {
     "erlangshen": BertTokenizerFast,
     "deberta": BertTokenizer,
     "roformer_v2": BertTokenizerFast,
-    "gpt2": GPT2TokenizerFast,
+    "gpt2": GPT2Tokenizer,
     "megatronbert": BertTokenizerFast,
     "bart": BartTokenizer,
     "t5": T5Tokenizer,

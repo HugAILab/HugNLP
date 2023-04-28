@@ -40,9 +40,12 @@ class GenerativeInstructionProcessor(CLSProcessor):
                          tokenizer,
                          post_tokenizer=post_tokenizer,
                          keep_raw_data=keep_raw_data)
-
+        param = {p.split("=")[0]: p.split("=")[1] for p in (data_args.user_defined).split(" ")}
+        self.causal_lm_name = "gpt2" if "causal_lm_name" not in param.keys() else param["causal_lm_name"] # e.g. GPT, OPT, ...
+        self.stop_token = None if "stop_token" not in param.keys() else param["stop_token"] # e.g., <|endoftext|>
+        self.language = "" if "language" not in param.keys() else param["language"] # e.g., en, zh
         self.data_dir = data_args.data_dir
-        self.train_file = os.path.join(data_args.data_dir, "instruction_corpora.json")
+        self.train_file = os.path.join(data_args.data_dir, "instruction_{}_corpora.json".format(self.language))
         self.dev_file = os.path.join(data_args.data_dir, "instruction_dev.json")
         self.test_file = os.path.join(data_args.data_dir, "instruction_test.json")
         self.max_len = data_args.max_seq_length
@@ -75,7 +78,7 @@ class GenerativeInstructionProcessor(CLSProcessor):
         """
         [
             {
-                "text": "Input: Instruction: What is the scientific name for a beaver? \n Output: The scientific name for a beaver is Castor canadensis. \n\n"
+                "text": "[Human]: Instruction: What is the scientific name for a beaver? \n [HugChat]: The scientific name for a beaver is Castor canadensis. \n\n"
             },
             ...
         ]
@@ -87,12 +90,16 @@ class GenerativeInstructionProcessor(CLSProcessor):
             input_text = ""
             if set_type == "train":
                 input_text = line[self.text_key] if self.text_key in line.keys() else ""
+                if self.stop_token is not None:
+                    input_text = input_text.strip() + " " + self.stop_token
                 examples.append({
                     "idx": idx,
                     self.input_key: input_text,
                 })
             else:
                 input_text = line[self.input_key] if self.input_key in line.keys() else ""
+                if self.stop_token is not None:
+                    input_text = input_text.strip() + " " + self.stop_token
                 output_text = line[self.output_key] if self.output_key in line.keys() else ""
                 examples.append({
                     "idx": idx,
@@ -138,17 +145,17 @@ class GenerativeInstructionProcessor(CLSProcessor):
                 batch_size=tokenize_batch_size,
                 num_proc=self.data_args.preprocessing_num_workers,
                 desc="Running tokenizer on dataset",
-                cache_file_names={k: f"{cache_dir}/cache_{self.data_args.task_name}_{self.data_name}_{str(k)}.arrow" for k in raw_datasets},
+                cache_file_names={k: f"{cache_dir}/cache_{self.data_args.task_name}_{self.data_name}_{self.language}_{self.causal_lm_name}_{str(k)}.arrow" for k in raw_datasets},
                 # remove_columns=remove_columns
             )
             if self.keep_raw_data:
                 self.raw_datasets = raw_datasets
 
-            lm_datasets = self.group_text(
-                tokenized_datasets=raw_datasets,
-                model_max_length=self.data_args.max_seq_length
-            )
-            return lm_datasets
+            # raw_datasets = self.group_text(
+            #     tokenized_datasets=raw_datasets,
+            #     model_max_length=self.data_args.max_seq_length
+            # )
+            return raw_datasets
 
 
     def group_text(self, tokenized_datasets: DatasetDict, model_max_length):
@@ -236,13 +243,14 @@ class GenerativeInstructionProcessor(CLSProcessor):
 
         def func(examples):
 
-            # Tokenize
+            # Tokenizes
             tokenized_examples = tokenizer(
                 examples[self.input_key],
                 truncation=True,
-                # max_length=max_seq_length,
-                # padding="max_length" if self.data_args.pad_to_max_length else False,
+                max_length=max_seq_length,
+                padding="max_length" if self.data_args.pad_to_max_length else False,
             )
+            tokenized_examples["labels"] = tokenized_examples["input_ids"].copy()
             return tokenized_examples
 
         return func

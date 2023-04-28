@@ -12,6 +12,7 @@ import torch
 from torch import nn
 import numpy as np
 from tqdm import tqdm
+from packaging import version
 import datasets
 from datasets import Dataset
 from processors.dataset import DatasetK
@@ -23,7 +24,8 @@ from transformers.trainer_pt_utils import DistributedLengthGroupedSampler as Dis
 from transformers.trainer_pt_utils import LengthGroupedSampler as LengthGroupedSamplerOri
 # from transformers.trainer_utils import has_length
 from transformers.training_args import ParallelMode
-from transformers.trainer import Trainer, _is_torch_generator_available
+from transformers.trainer import Trainer
+from transformers.trainer import *
 from transformers.trainer_utils import denumpify_detensorize, TrainOutput
 from config import TrainingArguments
 
@@ -33,6 +35,10 @@ from tools.processing_utils.sampler import random_sampling
 from tools.model_utils.uncertainty import sample_by_bald_class_easiness
 from tools.runner_utils.log_util import logging
 logger = logging.getLogger(__name__)
+
+if version.parse(torch.__version__) >= version.parse("1.6"):
+    _is_torch_generator_available = True
+
 
 WEIGHTS_NAME = "pytorch_model.bin"
 WEIGHTS_INDEX_NAME = "pytorch_model.bin.index.json"

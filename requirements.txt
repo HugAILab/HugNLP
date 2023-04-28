@@ -1,3 +1,4 @@
+accelerate
 bs4
 datasets
 deepspeed==0.8.3
@@ -5,12 +6,13 @@ fairscale
 jieba
 mlflow
 openai
+peft
 pymysql
 roformer
 scikit-learn
 sentence-transformers
 sentencepiece
-torch==1.8.1
+torch==1.12.1
 tqdm
 transformers==4.21.2
 ujson
