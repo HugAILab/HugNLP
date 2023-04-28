@@ -22,7 +22,7 @@ import torch
 logging.disable(logging.ERROR)
 warnings.filterwarnings("ignore")
 
-CANDIDATE_CAUSAL_MODELS = ["gpt2", "opt", "llama", "glm"]
+CANDIDATE_CAUSAL_MODELS = ["gpt2", "gpt-neo", "opt", "llama", "glm"]
 
 class HugChatAPI:
     def __init__(self, model_type, hugchat_model_name_or_path) -> None:
@@ -51,6 +51,7 @@ class HugChatAPI:
         self.end_string = ["\n\n", "\n\n [HugChat]", "\n\n [Human]", "[Human]:", "<|endoftext|>", "<|endoftext|></s>"]
         self.stop_token = {
             "gpt2": "\n\n",
+            "gpt-neo": "\n\n",
             "opt": "\n\n",
             "llama": None,
             "glm": None,
@@ -75,8 +76,8 @@ class HugChatAPI:
                 do_sample=True,
                 temperature=0.7,
                 # num_beams=3,
-                top_k=40, 
-                top_p=0.8, 
+                top_k=40,
+                top_p=0.8,
                 repetition_penalty=1.02,
                 eos_token_id=self.tokenizer.encode(self.stop_token[self.model_type])[0],
                 pad_token_id=self.tokenizer.pad_token_id
@@ -101,7 +102,7 @@ class HugChatAPI:
         # except ValueError:
         #     response_text += self.end_string[0]
         #     index = response_text.index(self.end_string[0])
-        index = len(response_text) - 1
+        index = len(response_text)
         for end_string in self.end_string:
             try:
                 cur_index = response_text.index(end_string)
@@ -111,7 +112,7 @@ class HugChatAPI:
                 cur_index = response_text.index(end_string)
                 # print("index=", index)
             index = min(cur_index, index)
-        
+
         response_text = response_text[:index]
         # print("response_text=", response_text)
 
@@ -141,8 +142,14 @@ def main():
     # hugchat_model_name_or_path = "./outputs/instruction/causal_lm_gpt2/gpt2-xl/gpt2-xl"
     # hugchat_model_name_or_path = "./outputs/instruction/causal_lm_gpt2/gpt2/gpt2"
 
-    model_type = "opt"
-    hugchat_model_name_or_path = "./outputs/instruction/causal_lm_opt/opt-1.3b/opt-1.3b"
+    model_type = "gpt-neo"
+    hugchat_model_name_or_path = "./outputs/instruction/causal_lm_gpt-neo/gpt-neo-1.3B/gpt-neo-1.3B"
+    # hugchat_model_name_or_path = "./outputs/instruction/causal_lm_gpt-neo/gpt-neo-2.7B/gpt-neo-2.7B"
+
+
+    # model_type = "opt"
+    # hugchat_model_name_or_path = "./outputs/instruction/causal_lm_opt/opt-1.3b/opt-1.3b"
+    # hugchat_model_name_or_path = "./outputs/instruction/causal_lm_opt/opt-6.7b/opt-6.7b"
     # print("Please select a ChatGPT-like model ")
 
     hugchat = HugChatAPI(model_type, hugchat_model_name_or_path)

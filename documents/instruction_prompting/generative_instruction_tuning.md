@@ -1,4 +1,4 @@
-# HugChat: Small ChatGPT-like Models via Generative Instruction-tuning 
+# HugChat: Small ChatGPT-like Models via Generative Instruction-tuning
 
 Generative Instruction-tuning aims to unify all NLP task into generative format to train the causal language model (e.g., GPT2, BART).
 Thus document teach you how to use HugNLP to perform instruction-tuning, and continual train a small ChatGPT-style model on user-defined task-specific corpora.
@@ -128,10 +128,11 @@ We have trained following models, and release the weights about HugChat:
 | GPT-2 | base (0.3B) | English | V100 8*32G | Finish | [run_causal_instruction_gpt2.sh](../../applications/instruction_prompting/HugChat/supervised_finetuning/run_casual_instruction_gpt2.sh) | [wjn1996/hugnlp-hugchat-gpt2](https://huggingface.co/wjn1996/hugnlp-hugchat-gpt2)
 | GPT-2 | large (0.8B) | English | V100 8*32G | Finish | [run_causal_instruction_gpt2.sh](../../applications/instruction_prompting/HugChat/supervised_finetuning/run_casual_instruction_gpt2.sh) |
 | GPT-2 | xlarge (1.3B) | English | V100 8*32G | Finish | [run_causal_instruction_gpt2_xl.sh]((../../applications/instruction_prompting/HugChat/supervised_finetuning/run_casual_instruction_gpt2_xl.sh)) | [wjn1996/hugnlp-hugchat-gpt2-xl](https://huggingface.co/wjn1996/hugnlp-hugchat-gpt2-xl)
-| OPT | 1.3B | English | V100 8*32G LoRA (dim=8) | Finish | [run_causal_instruction_opt.sh]((../../applications/instruction_prompting/HugChat/supervised_finetuning/run_casual_instruction_opt.sh)) | 
-| OPT | 6.7B | English | V100 8*32G LoRA (dim=8) | Developing | [run_causal_instruction_opt_lora.sh]((../../applications/instruction_prompting/HugChat/supervised_finetuning/run_casual_instruction_opt_lora.sh)) |
+| OPT | 1.3B | English | V100 8*32G LoRA (dim=8) | Finish | [run_causal_instruction_opt.sh]((../../applications/instruction_prompting/HugChat/supervised_finetuning/run_casual_instruction_opt.sh)) |
+| OPT | 6.7B | English | V100 8*32G ZeRO-3 FP16 LoRA (dim=8) | Finish | [run_causal_instruction_opt_lora.sh]((../../applications/instruction_prompting/HugChat/supervised_finetuning/run_casual_instruction_opt_lora.sh)) |
 | GLM-2B | 2.0B | English | V100 8*32G | Pending | |
-| GPT-Neo | 2.7B | English | V100 8*32G | Pending | |
+| GPT-Neo | 1.3B | English | V100 8*32G ZeRO-1 FP16 | Finish | [run_causal_instruction_gpt_neo.sh](../../applications/instruction_prompting/HugChat/supervised_finetuning/run_causal_instruction_gpt_neo.sh) | [wjn1996/hugnlp-hugchat-gpt-neo-1.3B](https://huggingface.co/wjn1996/hugnlp-hugchat-gpt-neo-1.3B) |
+| GPT-Neo | 2.7B | English | V100 8*32G ZeRO-3 FP16 | Developing | [run_causal_instruction_gpt_neo.sh](../../applications/instruction_prompting/HugChat/supervised_finetuning/run_causal_instruction_gpt_neo.sh) |
 | LLaMA | 7B | English | V100 8*32G | Pending | |
 
 ---
