@@ -14,6 +14,7 @@ PRETRAIN_EVALUATOR_CLASSES = {
     "mlm": MaskedLanguageModelingEvaluator,
     "auto_mlm": MaskedLanguageModelingEvaluator,
     "causal_lm": CausalLanguageModelingEvaluator,
+    "auto_causal_lm": CausalLanguageModelingEvaluator,
 }
 
 
