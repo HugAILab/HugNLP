@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# @Time    : 2022/08/29 4:09 下午
+# @Time    : 2022/08/29 4:09 p.m.
 # @Author  : JianingWang
 # @File    : hugnlp_runner.py
 # !/usr/bin/env python
@@ -172,7 +172,7 @@ def main():
 
     if model_args.lora_dim > 0 and training_args.deepspeed is not None:
         from peft import prepare_model_for_int8_training, LoraConfig, get_peft_model
-        # model = prepare_model_for_int8_training(model) # INT8 量化
+        # model = prepare_model_for_int8_training(model) # INT8 quantification
         # load lora
         logger.info("You have set LORA parameter-efficient learning.")
         config = LoraConfig(
@@ -183,15 +183,6 @@ def main():
             task_type="CAUSAL_LM"
         )
         model = get_peft_model(model, config)
-
-    # if model_args.lora_dim > 0 and training_args.deepspeed is not None:
-    #     # 插入lora参数
-    #     model = convert_linear_layer_to_lora(
-    #         model, model_args.lora_module_name,
-    #         model_args.lora_dim)
-    #     # 只对lora参数进行训练
-    #     if model_args.only_optimize_lora:
-    #         model = only_optimize_lora_parameters(model)
 
     train_dataset, eval_dataset, test_dataset, unlabeled_dataset = None, None, None, None
 
@@ -293,7 +284,6 @@ def main():
             data_collator=data_collator,
             callbacks=callbacks
         )
-
 
     # Training
     if training_args.do_train:
