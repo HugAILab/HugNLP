@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
-# @Time    : 2022/1/7 3:07 下午
+# @Time    : 2022/1/7 3:07 p.m.
 # @Author  : JianingWang
 # @File    : HugTrainer
 
 """
-This file is the runner of HugNLP.
-Use HugTrainer to perform task training and evaluating.
+This file is the trainer of HugNLP.
+- Use HugTrainer to perform task training and evaluating.
+- Use HugSelfTrainer to perform semi-supervised learning.
 """
 import os
 import torch
@@ -22,13 +23,11 @@ from transformers import PreTrainedModel, DataCollator, PreTrainedTokenizerBase,
 from transformers.trainer_pt_utils import DistributedSamplerWithLoop, get_length_grouped_indices
 from transformers.trainer_pt_utils import DistributedLengthGroupedSampler as DistributedLengthGroupedSamplerOri
 from transformers.trainer_pt_utils import LengthGroupedSampler as LengthGroupedSamplerOri
-# from transformers.trainer_utils import has_length
 from transformers.training_args import ParallelMode
 from transformers.trainer import Trainer
 from transformers.trainer import *
 from transformers.trainer_utils import denumpify_detensorize, TrainOutput
 from config import TrainingArguments
-
 from transformers.file_utils import is_datasets_available
 from models.adversarial import FGM
 from tools.processing_utils.sampler import random_sampling
@@ -36,12 +35,14 @@ from tools.model_utils.uncertainty import sample_by_bald_class_easiness
 from tools.runner_utils.log_util import logging
 logger = logging.getLogger(__name__)
 
+
 if version.parse(torch.__version__) >= version.parse("1.6"):
     _is_torch_generator_available = True
 
 
 WEIGHTS_NAME = "pytorch_model.bin"
 WEIGHTS_INDEX_NAME = "pytorch_model.bin.index.json"
+
 
 class LengthGroupedSampler(LengthGroupedSamplerOri):
     def __iter__(self):
@@ -126,8 +127,7 @@ class HugTrainer(Trainer):
             loss = self.compute_loss(model, inputs)
 
         if self.args.n_gpu > 1 or len(loss.shape) > 0:
-            # 如果是多GPU，或者当前的loss是一个tensor列表
-            loss = loss.mean()  # mean() to average on multi-gpu parallel training
+            loss = loss.mean() # mean() to average on multi-gpu parallel training
 
         if self.args.gradient_accumulation_steps > 1 and not self.deepspeed:
             # deepspeed handles loss scaling by gradient_accumulation_steps in its `backward`
@@ -144,7 +144,8 @@ class HugTrainer(Trainer):
             loss = self.deepspeed.backward(loss)
         else:
             loss.backward()
-        # 对抗训练
+
+        # Adversarial training
         if self.args.do_adv:
             self.fgm.attack()
             with self.autocast_smart_context_manager():
@@ -157,14 +158,12 @@ class HugTrainer(Trainer):
                 self.scaler.scale(loss_adv).backward()
             else:
                 loss_adv.backward()
-            self.fgm.restore()  # 恢复embedding参数
+            self.fgm.restore()
 
         return loss.detach()
 
     def _get_train_sampler(self) -> Optional[torch.utils.data.Sampler]:
-        # if not has_length(self.train_dataset):
-        #     return None
-
+        
         generator = None
         if self.args.world_size <= 1 and _is_torch_generator_available:
             generator = torch.Generator()
@@ -226,7 +225,7 @@ class HugTrainer(Trainer):
                 )
 
     """
-    User for calculate mc
+    User for calculate mc when semi-supervised learning.
     """
     def mc_evaluate(
         self,
@@ -269,7 +268,7 @@ class HugTrainer(Trainer):
         logger.info(f"  Num examples = {unlabeled_data_num}")
         logger.info(f"  Batch size = {batch_size}")
 
-        model.train() # 开启train模式，允许模型进行Dropout
+        model.train() # Allow model using Dropout
 
         if args.past_index >= 0:
             self._past = None
@@ -348,14 +347,15 @@ class HugSelfTrainer(object):
         # self.set_teacher_trainer()
         # self.set_student_trainer()
         self.training_args.per_device_train_batch_size = self.semi_training_args.unlabeled_data_batch_size
-        self.teacher_training_epoch = self.semi_training_args.teacher_training_epoch # 最初teacher模型在labeled data上训练的epoch数
-        self.teacher_tuning_epoch = self.semi_training_args.teacher_tuning_epoch # 每一轮Self-training时，teacher模型继续在labeled data上tune的epoch数
-        self.student_training_epoch = self.semi_training_args.student_training_epoch # 每一轮Self-training时，student模型在pseudo-labeled data上训练的epoch数
-        self.self_training_epoch = self.semi_training_args.self_training_epoch # Self-training迭代数
-        self.unlabeled_data_num = self.semi_training_args.unlabeled_data_num # self-training每轮迭代时，首先挑选一部分用于计算MC dropout uncertainty。-1表示全部计算uncertainty
-        self.pseudo_sample_num_or_ratio = self.semi_training_args.pseudo_sample_num_or_ratio # MC dropout后，从所有计算过uncertainty的unlabeled data上采样的样本比例/数量
+        self.teacher_training_epoch = self.semi_training_args.teacher_training_epoch # epoch number of few-shot learning for teacher model at first
+        self.teacher_tuning_epoch = self.semi_training_args.teacher_tuning_epoch # epoch number of few-shot learning for teacher model in each self-training iteration
+        self.student_training_epoch = self.semi_training_args.student_training_epoch # epoch number of training student model on pseudo-labeled data
+        self.self_training_epoch = self.semi_training_args.self_training_epoch # the iteration number of self-training
+        self.unlabeled_data_num = self.semi_training_args.unlabeled_data_num # the data number of a unlabeled subset for MC dropout uncertainty. -1 means using all data to calculate uncertainty
+        self.pseudo_sample_num_or_ratio = self.semi_training_args.pseudo_sample_num_or_ratio # MC dropout sampling number
         self.student_learning_rate = self.semi_training_args.student_learning_rate
         self.output_dir = self.training_args.output_dir
+
 
     def get_teacher_trainer(
         self,
@@ -367,7 +367,7 @@ class HugSelfTrainer(object):
         training_args.num_train_epochs = num_train_epochs
         if output_dir is not None:
             training_args.output_dir = output_dir
-        # 初始化Teacher训练器
+        # Initialize a teacher trainer
         teacher_trainer = HugTrainer(
             model=base_model,
             args=training_args,
@@ -393,7 +393,7 @@ class HugSelfTrainer(object):
         training_args.learning_rate = student_learning_rate
         if output_dir is not None:
             training_args.output_dir = output_dir
-        # 初始化Student训练器
+        # Initialize a student trainer
         student_trainer = HugTrainer(
             model=base_model,
             args=training_args,
@@ -422,11 +422,11 @@ class HugSelfTrainer(object):
             print("*"*80)
             logger.info("* Directly loading the trained teacher model from {} *".format(resume_from_checkpoint))
             print("*"*80)
-            # 已有teacher模型，直接加载
+            # load the pre-trained teacher model
             teacher_trainer._load_from_checkpoint(resume_from_checkpoint)
         else:
 
-            # 首先对Teacher模型在labeled data上进行full parameter fine-tuning
+            # full parameter few-shot fine-tuning teacher model on labeled data
             logger.info("*"*66)
             logger.info("* Training teacher model over labeled data before self-training. *")
             logger.info("*"*66)
@@ -438,7 +438,6 @@ class HugSelfTrainer(object):
             teacher_model.load_state_dict(torch.load(os.path.join(teacher_trainer.state.best_model_checkpoint, "pytorch_model.bin")))
             teacher_trainer.model = teacher_model
 
-        # 原始的训练结果
         metrics = teacher_trainer.evaluate()
         convention_result = metrics["eval_{}".format(self.metric_for_best_model)]
 
@@ -460,7 +459,7 @@ class HugSelfTrainer(object):
         best_self_training_iteration = None
         best_teacher_model = None
 
-        # 多轮Teacher-Student迭代训练
+        # Teacher-Student self-training
         for iter in range(self.self_training_epoch):
 
             logger.info("*"*34)
@@ -470,8 +469,6 @@ class HugSelfTrainer(object):
             print("* Self-training {}-th iteration *".format(iter))
             print("*"*34)
 
-
-            # 获得Teacher模型在测试集上的效果
             if iter > 0:
                 teacher_trainer.model = teacher_model
                 metrics = teacher_trainer.evaluate()
@@ -500,8 +497,8 @@ class HugSelfTrainer(object):
             if iter == self.self_training_epoch - 1:
                 break
 
-
-            # Teacher模型在unlabeled data上获取pseudo-labeled data，并根据uncertainty estimation进行采样
+            # Obtain pseudo-labeled data by teacher model, and calculate uncertainty for each unlabeled data
+            # Perform sampling by the certainty.
             logger.info("*"*72)
             logger.info("Obtaining pseudo-labeled data and uncertainty estimation via MC dropout.")
             logger.info("*"*72)
@@ -535,13 +532,13 @@ class HugSelfTrainer(object):
             pseudo_labeled_examples = X_batch
             pseudo_labeled_examples["label"] = y_batch
 
-            # 生成pseudo-labeled dataset，并与labeled data混合
+            # generate pseudo-labeled dataset，and combine labeled data
             # pseudo_labeled_dataset = DatasetDict()
             pseudo_labeled_dataset = DatasetK.from_dict(pseudo_labeled_examples)
             for i in range(len(self.train_dataset)):
                 pseudo_labeled_dataset = pseudo_labeled_dataset.add_item(self.train_dataset[i])
 
-            # 初始化一个新的Student模型，并让Student模型在pseudo-labeled data上进行鲁棒学习
+            # Initialize a new student model.
             logger.info("*"*56)
             logger.info("* Training a new student model on pseudo-labeled data. *")
             logger.info("*"*56)
@@ -560,7 +557,7 @@ class HugSelfTrainer(object):
             student_trainer.train()
             student_model.load_state_dict(torch.load(os.path.join(student_trainer.state.best_model_checkpoint, "pytorch_model.bin")))
 
-            # 将Student模型参数赋给Teacher，作为下一轮训练的Teacher初始化
+            # copy the parameters of teacher model and start for the next self-training
             logger.info("*"*64)
             logger.info("* Initializing a new teacher model from trained student model. *")
             logger.info("*"*64)
@@ -568,15 +565,11 @@ class HugSelfTrainer(object):
             print("* Initializing a new teacher model from trained student model. *")
             print("*"*64)
             teacher_model = student_model
-            # teacher_trainer = student_trainer
             teacher_trainer: HugTrainer = self.get_teacher_trainer(
                 base_model=student_model,
                 num_train_epochs=self.teacher_tuning_epoch,
                 output_dir=os.path.join(self.output_dir, "iteration", "teacher_iter_{}".format(iter))
             )
-
-
-
 
         logger.info("********** Finishing Self-training **********")
         logger.info("The best teacher model at {}-th self-training iteration.".format(best_self_training_iteration))
@@ -585,8 +578,7 @@ class HugSelfTrainer(object):
         print("The best teacher model at {}-th self-training iteration.".format(best_self_training_iteration))
         print("The best teacher model testing result is {}.".format(best_test_metric))
 
-
-        # 根据当前最好的Teacher模型，在全部的unlabeled data上打伪标签，并进行mc dropout（样本数量最多不超过50000）
+        # For the last, you can perform mc dropout and choose all certainty unlabeled data for training (no more than 50k)
         if self.semi_training_args.post_student_train:
 
             logger.info("********** Post training **********")
@@ -618,12 +610,10 @@ class HugSelfTrainer(object):
                 y_T=y_T)
             pseudo_labeled_examples = X_batch
             pseudo_labeled_examples["label"] = y_batch
-            # 生成pseudo-labeled dataset
+            # pseudo-labeled dataset
             # pseudo_labeled_dataset = DatasetDict()
             pseudo_labeled_dataset = DatasetK.from_dict(pseudo_labeled_examples)
 
-
-            # 初始化一个新的Student模型，并让Student模型在pseudo-labeled data上进行鲁棒学习
             logger.info("*"*56)
             logger.info("* Training a new student model on pseudo-labeled data. *")
             logger.info("*"*56)
