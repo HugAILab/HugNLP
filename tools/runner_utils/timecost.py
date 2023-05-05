@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-# @Time    : 2022/3/11 3:06 下午
+# @Time    : 2022/3/11 3:06 p.m.
 # @Author  : JianingWang
 # @File    : time
+
 import time
 import logging
 

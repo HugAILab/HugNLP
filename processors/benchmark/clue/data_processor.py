@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-# @Time    : 2022/3/21 9:13 下午
+# @Time    : 2022/3/21 9:13 p.m.
 # @Author  : JianingWang
-# @File    : clue
+# @File    : data_processor.py
+
 import json
 import torch
 import os.path
@@ -164,23 +165,6 @@ class CLUEProcessor(CLSProcessor):
                 json_d = pred
                 writer.write(json.dumps(json_d, ensure_ascii=False) + "\n")
 
-        # if self.data_name == "csl": # acc: 0.9993
-        #     if stage == "dev":
-        #         abst2guid = dict()
-        #         for example in examples:
-        #             id_ = example["guid"]
-        #             id_ = int(id_.split("-")[1])
-        #             abst = example["text_b"]
-        #             if abst not in abst2guid.keys():
-        #                 abst2guid[abst] = list()
-        #             abst2guid[abst].append(id_)
-        #         for abst, guids in abst2guid.items():
-        #             num = int(len(guids) / 2)
-        #             for ei, guid in enumerate(guids):
-        #                 label = 0 if ei < num else 1
-        #                 predictions[guid] = label
-        #         # print(predictions)
-
         return predictions, topk_result
 
     def compute_metrics(self, eval_predictions):
@@ -247,12 +231,6 @@ class CLUEProcessor(CLSProcessor):
                 res = id2label[v]
             answer.append({"id": k, "label": res})
 
-        # outfile = os.path.join(self.training_args.output_dir, "answer.json")
-        # with open(outfile, "w", encoding="utf8") as f:
-        # #     json.dump(predicts, f, ensure_ascii=False, indent=2)
-        #     for res in answer:
-        #         f.write("{}\n".format(str(res)))
-
         output_submit_file = os.path.join(self.training_args.output_dir, "answer.json")
         # 保存标签结果
         with open(output_submit_file, "w") as writer:
@@ -266,7 +244,6 @@ class CLUEProcessor(CLSProcessor):
         topfile = os.path.join(self.training_args.output_dir, "top20_predict.json")
         with open(topfile, "w", encoding="utf-8") as f2:
             json.dump(topk_predictions, f2, ensure_ascii=False, indent=4)
-
 
 
 class CSLEFLProcessor(CLUEProcessor):
@@ -316,13 +293,7 @@ class CSLEFLProcessor(CLUEProcessor):
                     pred_keys[id_] = list()
                 pred_probas[id_].append(proba[1])
                 pred_keys[id_].append(keyword)
-                # if id_ not in predictions.keys():
-                #     # 如果首次预测编号为id的example，暂时先设置最终预测结果为1，等待后续如果出现关键词预测为0的进行处理
-                #     predictions[id_] = 1
-                # if pred == 0:
-                #     # 一旦出现了预测为0，即当前编号id_的example出现了预测为不正确的关键词了，直接将当前的预测结果置为"0"
-                #     # 如果当前example的所有关键词都被预测为1，则一直不会执行该部分，所以最终预测结果一直保持为1
-                #     predictions[id_] = 0
+
             # 还需要获得每个example的预测概率，直接把涉及到的所有关键词的预测概率进行平均即可
             for id_, probas in pred_probas.items():
                 key_length_num = 0
@@ -352,9 +323,6 @@ class CSLEFLProcessor(CLUEProcessor):
                         {"prob": prob, "answer": 1}
                     ]
         return predictions, topk_result
-
-
-
 
 
 # 为Tnews数据集定制的EFL方案
@@ -523,12 +491,6 @@ class TnewsEFLProcessor(CLSProcessor):
             else:
                 res = id2label[v]
             answer.append({"id": k, "label": res})
-
-        # outfile = os.path.join(self.training_args.output_dir, "answer.json")
-        # with open(outfile, "w", encoding="utf8") as f:
-        # #     json.dump(predicts, f, ensure_ascii=False, indent=2)
-        #     for res in answer:
-        #         f.write("{}\n".format(str(res)))
 
         output_submit_file = os.path.join(self.training_args.output_dir, "answer.json")
         # 保存标签结果
