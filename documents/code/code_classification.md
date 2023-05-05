@@ -1,11 +1,8 @@
-ode Clone&Defect Detection
+# Code Clone&Defect Detection
 
 ### 一、数据准备
 
 #### 默认格式
-
-| [click](https://github.com/HugAILab/HugNLP/blob/main/documents/information_extraction/HugIE.md) |
-| -------------------------------------------------------------------------------------------- |
 
 **训练数据文件**：train.json、dev.json、test.json
 
