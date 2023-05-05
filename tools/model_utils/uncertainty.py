@@ -1,5 +1,9 @@
-from sklearn.utils import shuffle
+# -*- coding: utf-8 -*-
+# @Time    : 2023/04/18 08:11 p.m.
+# @Author  : JianingWang
+# @File    : uncertainty.py
 
+from sklearn.utils import shuffle
 import logging
 import numpy as np
 import os
@@ -8,12 +12,14 @@ import random
 
 logger = logging.getLogger(__name__)
 
+
 def get_BALD_acquisition(y_T):
 
 	expected_entropy = - np.mean(np.sum(y_T * np.log(y_T + 1e-10), axis=-1), axis=0)
 	expected_p = np.mean(y_T, axis=0)
 	entropy_expected_p = - np.sum(expected_p * np.log(expected_p + 1e-10), axis=-1)
 	return (entropy_expected_p - expected_entropy)
+
 
 def sample_by_bald_difficulty(tokenizer, X, y_mean, y_var, y, num_samples, num_classes, y_T):
 
@@ -50,6 +56,7 @@ def sample_by_bald_class_easiness(tokenizer, X, y_mean, y_var, y, num_samples, n
 	logger.info (BALD_acq)
 	samples_per_class = num_samples // num_classes
 	X_s_input_ids, X_s_token_type_ids, X_s_attention_mask, X_s_mask_pos, y_s, w_s = [], [], [], [], [], []
+	
 	for label in range(num_classes):
 		# X_input_ids, X_token_type_ids, X_attention_mask = np.array(X['input_ids'])[y == label], np.array(X['token_type_ids'])[y == label], np.array(X['attention_mask'])[y == label]
 		X_input_ids, X_attention_mask = np.array(X['input_ids'])[y == label], np.array(X['attention_mask'])[y == label]
@@ -68,11 +75,6 @@ def sample_by_bald_class_easiness(tokenizer, X, y_mean, y_var, y, num_samples, n
 			replace = True
 		else:
 			replace = False
-		# print("====== label: {} ======".format(label))
-		# print("len(X_input_ids)=", len(X_input_ids))
-		# print("samples_per_class=", samples_per_class)
-		# print("p_norm=", p_norm)
-		# print("replace=", replace)
 		if len(X_input_ids) == 0: # add by wjn
 			continue
 		indices = np.random.choice(len(X_input_ids), samples_per_class, p=p_norm, replace=replace)
@@ -85,6 +87,7 @@ def sample_by_bald_class_easiness(tokenizer, X, y_mean, y_var, y, num_samples, n
 			X_s_mask_pos.extend(X_mask_pos[indices])
 		y_s.extend(y_[indices])
 		w_s.extend(y_var_[indices][:,0])
+	
 	# X_s_input_ids, X_s_token_type_ids, X_s_attention_mask, y_s, w_s = shuffle(X_s_input_ids, X_s_token_type_ids, X_s_attention_mask, y_s, w_s)
 	if "token_type_ids" in X.features and "mask_pos" not in X.features:
 		X_s_input_ids, X_s_token_type_ids, X_s_attention_mask, y_s, w_s = shuffle(X_s_input_ids, X_s_token_type_ids, X_s_attention_mask, y_s, w_s)
@@ -94,8 +97,6 @@ def sample_by_bald_class_easiness(tokenizer, X, y_mean, y_var, y, num_samples, n
 		X_s_input_ids, X_s_token_type_ids, X_s_mask_pos, X_s_attention_mask, y_s, w_s = shuffle(X_s_input_ids, X_s_token_type_ids, X_s_mask_pos, X_s_attention_mask, y_s, w_s)
 	else:
 		X_s_input_ids, X_s_attention_mask, y_s, w_s = shuffle(X_s_input_ids, X_s_attention_mask, y_s, w_s)
-
-	# return {'input_ids': np.array(X_s_input_ids), 'token_type_ids': np.array(X_s_token_type_ids), 'attention_mask': np.array(X_s_attention_mask)}, np.array(y_s), np.array(w_s)
 
 	pseudo_labeled_input = {
 		'input_ids': np.array(X_s_input_ids),

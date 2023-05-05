@@ -11,7 +11,7 @@ setup(
     name="hugnlp",
     version="0.0.1",
     python_requires=">=3.6",
-    author="PAI NLP",
+    author="@Jianing Wang @HugAILab",
     author_email="lygwjn@gmail.com",
     url="https://github.com/wjn1996",
     description="HugNLP Library",

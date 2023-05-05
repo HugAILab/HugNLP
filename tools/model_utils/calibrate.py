@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# @Time    : 2023/3/20 8:02 下午
+# @Time    : 2023/3/20 8:02 p.m.
 # @Author  : Jianing Wang
 # @File    : calibrate.py
 
@@ -16,6 +16,7 @@ class CLSCalibrator:
 """
 Use Causal LM to generate label words for calibrating CLS
 e.g., use gpt2 to generate a label word with in-context prompts, and calibrate for the prediction.
+Paper: http://proceedings.mlr.press/v139/zhao21c.html
 """
 class CausalCLSCalibrator:
 

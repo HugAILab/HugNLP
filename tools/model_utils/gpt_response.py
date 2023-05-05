@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+# @Time    : 2023/3/23 1:02 p.m.
+# @Author  : Jianing Wang
+# @File    : gpt_response.py
+
 import os
 import sys
 import torch
@@ -5,7 +10,8 @@ import openai
 import time
 
 """
-调用或转换输出结果为OpenAI GPT模式
+Call for GPT-style LLM.
+The output format is the same as OpenAI (e.g., GPT-3.5 text-davinci-003)
 """
 class GPTResponse:
 
