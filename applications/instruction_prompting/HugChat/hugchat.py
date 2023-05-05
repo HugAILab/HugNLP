@@ -46,9 +46,24 @@ class HugChatAPI:
         self.max_generation_length = 200
         self.user_name = "[Human]"
         self.hugchat_name = "[HugChat]"
-        self.prompt_before_use = "Your name is HugChat. You are developed by HugNLP library and belong to HugAI Lab and ECNU. Your founder is Jianing Wang. The following is the chat between human and HugChat. \n\n "
+        self.prompt_before_use = """
+        Your name is HugChat. 
+        You are developed by HugNLP library and belong to HugAI Lab and ECNU. 
+        You are from East China Normal Unversity in China.
+        Your founder is Jianing Wang. 
+        The following is the chat between human and HugChat. \n\n 
+        """
         self.dialog_context = self.prompt_before_use
-        self.end_string = ["\n\n", "\n\n [HugChat]", "\n\n [Human]", "[Human]:", "<|endoftext|>", "<|endoftext|></s>"]
+        self.end_string_dict = {
+            "gpt2": ["\n\n [HugChat]", "\n\n [Human]", "\n\n", "[Human]:"],
+            "gpt-neo": ["<|endoftext|>", "<|endoftext|></s>", "\n\n",],
+            "opt": ["<|endoftext|>", "<|endoftext|></s>", "\n\n",],
+            "llama": [],
+            "glm": []
+        }
+        # ["\n\n", "\n\n [HugChat]", "\n\n [Human]", "[Human]:", "<|endoftext|>", "<|endoftext|></s>"]
+        self.end_string = self.end_string_dict[self.model_type]
+        
         self.stop_token = {
             "gpt2": "\n\n",
             "gpt-neo": "\n\n",
@@ -113,7 +128,8 @@ class HugChatAPI:
                 # print("index=", index)
             index = min(cur_index, index)
 
-        response_text = response_text[:index]
+        if index > 0:
+            response_text = response_text[:index]
         # print("response_text=", response_text)
 
         self.dialog_context = "{} \n {}: {} ".format(text, self.hugchat_name, response_text.strip())
@@ -143,8 +159,8 @@ def main():
     # hugchat_model_name_or_path = "./outputs/instruction/causal_lm_gpt2/gpt2/gpt2"
 
     model_type = "gpt-neo"
-    hugchat_model_name_or_path = "./outputs/instruction/causal_lm_gpt-neo/gpt-neo-1.3B/gpt-neo-1.3B"
-    # hugchat_model_name_or_path = "./outputs/instruction/causal_lm_gpt-neo/gpt-neo-2.7B/gpt-neo-2.7B"
+    # hugchat_model_name_or_path = "./outputs/instruction/causal_lm_gpt-neo/gpt-neo-1.3B/gpt-neo-1.3B"
+    hugchat_model_name_or_path = "./outputs/instruction/causal_lm_gpt-neo/gpt-neo-2.7B/gpt-neo-2.7B"
 
 
     # model_type = "opt"

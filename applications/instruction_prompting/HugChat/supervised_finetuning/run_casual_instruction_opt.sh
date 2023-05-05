@@ -1,5 +1,5 @@
 # path=/wjn/pre-trained-lm/opt-1.3b
-path=facebook/opt-6.7b
+path=/wjn/pre-trained-lm/opt-6.7b
 
 model_name=opt
 

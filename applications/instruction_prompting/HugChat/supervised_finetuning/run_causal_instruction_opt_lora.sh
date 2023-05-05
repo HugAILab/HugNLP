@@ -1,5 +1,5 @@
-# path=/wjn/pre-trained-lm/opt-1.3b
-path=facebook/opt-6.7b
+# path=/wjn/pre-trained-lm/opt-6.7b
+path=/wjn/pre-trained-lm/opt-13b
 
 model_name=opt
 
@@ -10,7 +10,11 @@ model_name=opt
 # data_path=/wjn/nlp_task_datasets/instruction/all # 500,000
 data_path=/wjn/nlp_task_datasets/instruction/instruction_corpora
 
-# config1: ZeRO stage=3, fp16, train_bz=4, gradient_acc=1, num_gpus=8, lora_dim=8， cost gpu 25G
+# config1: opt-6.7b ZeRO stage=3, fp16, train_bz=4, gradient_acc=1, num_gpus=8, lora_dim=8， cost gpu 25G
+# config2: opt-13b ZeRO stage=3, fp16, train_bz=4, gradient_acc=1, num_gpus=8, lora_dim=8， cost gpu 32G
+
+
+USE_TOKEN_FAST=False # opt-6.7: true; opt-13b: false
 
 export CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7
 python3 -m torch.distributed.launch --nproc_per_node=8 --master_port 6013 hugnlp_runner.py \
@@ -41,5 +45,6 @@ python3 -m torch.distributed.launch --nproc_per_node=8 --master_port 6013 hugnlp
 --cache_dir=/wjn/.cache \
 --overwrite_output_dir \
 --user_defined="causal_lm_name=$model_name stop_token=<|endoftext|> language=en" \
+--use_fast_tokenizer=$USE_TOKEN_FAST \
 --deepspeed=./deepspeed/ds_config_fp16_z3.json \
 --fp16
