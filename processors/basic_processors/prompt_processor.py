@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+# @Time    : 2023/3/13 10:07 a.m.
+# @Author  : JianingWang
+# @File    : prompt_processor.py
+
 from typing import List, Optional
 from transformers import AutoTokenizer
 from config import DataTrainingArguments
@@ -10,6 +15,8 @@ For prompt-based classification, add task-specific discrete template for each ex
 The base prompt processor
 """
 class PromptBaseProcessor:
+
+    
     def __init__(
         self,
         data_args: DataTrainingArguments,
@@ -51,6 +58,7 @@ class PromptBaseProcessor:
         self.tokenizer = tokenizer
         self.special_token_mapping = get_special_token_mapping(
             tokenizer=self.tokenizer)
+
 
     def add_prompt_into_example(self, examples):
         def replace_mask_token(template):
@@ -113,11 +121,11 @@ class PromptBaseProcessor:
         return label_word_list
 
 
-
 """
 The prompt processor for instruction / in-context tuning
 """
 class InstructionPromptProcessor(PromptBaseProcessor):
+
 
     def __init__(
         self, data_args: DataTrainingArguments,
@@ -136,6 +144,7 @@ class InstructionPromptProcessor(PromptBaseProcessor):
         self.output_prompt = self.instruction["output_prompt"] if "output_prompt" in self.instruction.keys() else ""
         self.input_prompt = self.input_prompt.strip()
         self.output_prompt = self.output_prompt.strip()
+
 
     def construct_incontext_prompt(
         self,
