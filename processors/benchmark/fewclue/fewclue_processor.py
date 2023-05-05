@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-# @Time    : 2022/9/5 00:20 上午
+# @Time    : 2022/9/5 00:20 a.m.
 # @Author  : JianingWang
 # @File    : fewclue_processor.py
-""" CLUE processors and helpers """
+
 
 import logging
 import os
@@ -13,6 +13,7 @@ from processors.benchmark.fewclue.utils import DataProcessor, InputExample, Inpu
 
 logger = logging.getLogger(__name__)
 
+""" CLUE processors and helpers """
 
 def collate_fn(batch):
     """
