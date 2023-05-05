@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-# @Time    : 2022/3/21 9:13 下午
+# @Time    : 2022/3/21 3:12 p.m.
 # @Author  : JianingWang
-# @File    : cmrc2018
+# @File    : data_processor.py
+
 import json
 import torch
 import os.path

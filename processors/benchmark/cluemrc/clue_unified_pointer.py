@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-# @Time    : 2022/3/21 9:13 下午
+# @Time    : 2022/3/21 9:13 p.m.
 # @Author  : JianingWang
-# @File    : clue_unified_pointer
+# @File    : clue_unified_pointer.py
+
 import json
 import torch
 import os.path
@@ -13,7 +14,9 @@ from transformers import PreTrainedTokenizerBase
 from processors.ProcessorBase import CLSProcessor
 from metrics import datatype2metrics
 
-# CLUE榜单，除了多项选择外，其余任务全部转换为MRC任务
+"""
+CLUE榜单，除了多项选择外，其余任务全部转换为MRC任务
+"""
 
 @dataclass
 class DataCollatorForGlobalPointer:
