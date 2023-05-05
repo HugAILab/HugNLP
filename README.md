@@ -19,16 +19,18 @@
 
 # About HugNLP
 
-HugNLP is a novel development and application library based on [Hugging Face](https://huggingface.co/) for improving the convenience and effectiveness of NLP researchers. The founder and main developer is [Jianing Wang](https://wjn1996.github.io/). The collaborators are [Nuo Chen](https://github.com/nchen909) and [Qiushi Sun](https://github.com/QiushiSun).
+HugNLP is a novel development and application library based on [Hugging Face](https://huggingface.co/) for improving the convenience and effectiveness of NLP researchers. 
+<!-- The founder and main developer is [Jianing Wang](https://wjn1996.github.io/). The collaborators are [Nuo Chen](https://github.com/nchen909), [Qiushi Sun](https://github.com/QiushiSun) and . -->
 
 ## **News & Highlights
 
+- 🆕 [23-05-05]: HugNLP is released at @HugAILab !
 - 🆕 [23-04-06]: Develop a small ChatGPT-like assistance, naming HugChat! You can chat with HugNLP! [[see doc](./documents/instruction_prompting/generative_instruction_tuning.md)]
 - 🆕 [23-04-02]: Add GPT-style instruction-tuning. You can continual train a small-scale ChatGPT! [[see doc](./documents/instruction_prompting/generative_instruction_tuning.md)]
 - 🆕 [23-03-21]: Finish GPT-style in-context learning for sequence classification. [[see doc](./documents/instruction_prompting/incontext_learning_for_cls.md)]
-- 🆕 [23-03-13]: Add code clone detection and defect task. You can train clone and defect for user-defined dataset.
+- 🆕 [23-03-13]: Add code clone detection and defect task. You can train clone and defect for user-defined dataset. [[see doc](./documents/code/code_classification.md)]
 - 🆕 [23-03-03]: Add HugIE API and corresponding training script. You can use it to perform information extraction on Chinese data. [[see doc](./documents/information_extraction/HugIE.md)]
-- 🆕 [23-02-18]: The HugNLP is open!
+- 🆕 [23-02-18]: The HugNLP is started.
 
 # Architecture
 
@@ -225,18 +227,67 @@ HugNLP is easy to use and develop. We draw a workflow in the following figure to
 It consists of five main steps, including library installation, data preparation, processor selection or design, model selection or design, and application design.
 This illustrates that HugNLP can simplify the implementation of complex NLP models and tasks.
 
-# Demo API Example
+# Prebuilt Products
 
-Here, we show an example of the pre-built API application: **HugIE: Towards Chinese Unified Information Extraction via Extractive MRC and Instruction-tuning**.
+Here, we show two examples of the pre-built API applications. 
 
-### Introduction:
+### HugChat: Towards Generative Instruction-tuning for ChatGPT-like PLMs
+
+HugChat a small ChatGPT-like model and is based on generative instruction-tuning, which aims to unify all NLP task into generative format to train the causal language model (e.g., GPT2, BART). 
+You can directly use HugNLP to perform instruction-tuning, and continual train a small ChatGPT-style model on user-defined task-specific corpora.
+
+You can chat with HugChat by run:
+> python3 applications/instruction_prompting/HugChat/hugchat.py
+
+
+
+![image](./images/hugchat_hello.jpg)
+
+<details><summary><b>1. Write a story</b></summary>
+
+![image](./images/hugchat_story.jpg)
+
+</details>
+
+<details><summary><b>2. Write a letter</b></summary>
+
+![image](./images/hugchat_letter.jpg)
+
+</details>
+
+<details><summary><b>3. Calculation</b></summary>
+
+![image]()
+
+</details>
+
+<details><summary><b>4. Natural Language Understanding (Sentiment, Reading Comprehension, KBQA)</b></summary>
+
+![image](./images/hugchat_nlu.jpg)
+
+</details>
+
+<details><summary><b>5. Searching</b></summary>
+
+![image](./images/hugchat_search.jpg)
+
+</details>
+
+<details><summary><b>6. Code Programming</b></summary>
+
+![image](./images/hugchat_code.jpg)
+
+</details>
+
+
+Please Have fun, more details can be found in [here](./documents/instruction_prompting/generative_instruction_tuning.md).
+
+### HugIE: Towards Chinese Unified Information Extraction via Extractive MRC and Instruction-tuning
 
 Information Extraction (IE) aims to extract structure knowledge from un-structure text. The structure knowledge is formed as a triple ""(head_entity, relation, tail_entity)"". IE consists of two main tasks:
 
 - Named Entity Recognition (NER) aims to extract all entity mentions of one type.
 - Relation Extraction (RE). It has two kinds of goal, the first aims to classify the relation between two entities, and the second aims to predict the tail entity when given one head entity and the corresponding relation.
-
-### Solutions:
 
 - We unify the tasks of NER and RE into the paradigm of extractive question answering (i.e., machine reading comprehension).
 - We design task-specific instruction and language prompts for NER and RE.
@@ -250,8 +301,6 @@ Information Extraction (IE) aims to extract structure knowledge from un-structur
 > - instruction: "找到文章中【{head_entity}】的【{relation}】？文章：【{passage_text}】"
 
 - During the training, we utilize Global Pointer with Chinese-Macbert as the basic model.；
-
-### Usage:
 
 Our model is saved in Hugging Face: [https://huggingface.co/wjn1996/wjn1996-hugnlp-hugie-large-zh](https://huggingface.co/wjn1996/wjn1996-hugnlp-hugie-large-zh).
 
@@ -299,10 +348,24 @@ topk_predictions:
 """
 ```
 
+# Contributors
+
+<a href="https://github.com/HugAILab/HugNLP/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=HugAILab/HugNLP" />
+</a>
+
+
 # Contact
 
-You can contact the author `Jianing Wang` from github.
-The interaction group in QQ or dingding will come soon.
+If you have any questions or suggestions, you can join the dingding interaction groups:
+
+<p align="center">
+    <br>
+    <img src="images/dingding.jpg" width="250"/>
+    <br>
+</p>
+
+or you can contact the author [`Jianing Wang`](https://wjn1996.github.io).
 
 # Cite Me
 
@@ -320,11 +383,13 @@ If you find this repository helpful, feel free to cite our paper:
 
 # References
 
-1. Jianing Wang, Wenkang Huang, Minghui Qiu, Qiuhui Shi, Hongbin Wang, Xiang Li, Ming Gao:
+1. Jianing Wang, Nuo Chen, Qiushi Sun, Wenkang Huang, Chengyu Wang, Ming Gao:
+HugNLP: A Unified and Comprehensive Library for Natural Language Processing. CoRR abs/2302.14286 (2023)
+2. Jianing Wang, Wenkang Huang, Minghui Qiu, Qiuhui Shi, Hongbin Wang, Xiang Li, Ming Gao:
    Knowledge Prompting in Pre-trained Language Model for Natural Language Understanding. EMNLP 2022: 3164-3177
-2. Chengyu Wang, Jianing Wang, Minghui Qiu, Jun Huang, Ming Gao: TransPrompt: Towards an Automatic Transferable Prompting Framework for Few-shot Text Classification. EMNLP 2021: 2792-2802
-3. Jianing Wang, Chengyu Wang, Jun Huang, Ming Gao, Aoying Zhou: Uncertainty-aware Self-training for Low-resource Neural Sequence Labeling. AAAI 2023.
+3. Chengyu Wang, Jianing Wang, Minghui Qiu, Jun Huang, Ming Gao: TransPrompt: Towards an Automatic Transferable Prompting Framework for Few-shot Text Classification. EMNLP 2021: 2792-2802
+4. Jianing Wang, Chengyu Wang, Jun Huang, Ming Gao, Aoying Zhou: Uncertainty-aware Self-training for Low-resource Neural Sequence Labeling. AAAI 2023.
 
 # Acknowledgement
 
-We thank to the Platform of AI (PAI) in Alibaba Group to support our work. The friend framework is [EasyNLP](https://github.com/alibaba/EasyNLP). We also thank all the developers that contribute to our work!
+We thank to the Platform of AI (PAI) in Alibaba Group and Ant Group to support our work. The friend framework is [EasyNLP](https://github.com/alibaba/EasyNLP). We also thank all the developers that contribute to our work!
