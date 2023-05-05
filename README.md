@@ -229,7 +229,7 @@ This illustrates that HugNLP can simplify the implementation of complex NLP mode
 
 # Prebuilt Products
 
-Here, we show two examples of the pre-built API application. 
+Here, we show two examples of the pre-built API applications. 
 
 ### HugChat: Towards Generative Instruction-tuning for ChatGPT-like PLMs
 
