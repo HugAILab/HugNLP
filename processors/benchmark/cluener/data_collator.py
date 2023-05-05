@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# @Time    : 2022/6/28 23:23 下午
+# @Time    : 2022/6/28 23:23 p.m.
 # @Author  : JianingWang
 # @File    : data_collator.py
 

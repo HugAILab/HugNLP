@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-# @Time    : 2022/3/21 9:13 下午
+# @Time    : 2022/3/21 9:13 p.m.
 # @Author  : JianingWang
-# @File    : cmrc2018
+# @File    : cmrc2018.py
+
 import json
 import os.path
 import time

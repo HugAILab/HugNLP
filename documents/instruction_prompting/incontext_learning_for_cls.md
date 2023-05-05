@@ -8,7 +8,9 @@ OpenAI在2020年发布的GPT-3模型中提出了新的概念叫做**In-Context L
 In-Context Learning可以完成分类和生成两种任务。HugNLP为此实现基于GPT-family模型的In-Context Learning的Application并分别用于分类和生成任务上。
 <a name="m1JWE"></a>
 ### 一、基于In-Context Learning的文本分类
-基于ICL的分类样例如下图所示：<br />![image.png](https://cdn.nlark.com/yuque/0/2023/png/12897066/1679374196765-09b03064-b86f-4fae-b6d2-b32bdca040c6.png#averageHue=%23e9e9dd&clientId=ud0fe072c-aa38-4&from=paste&height=242&id=u91f78124&originHeight=484&originWidth=830&originalType=binary&ratio=2&rotation=0&showTitle=false&size=76646&status=done&style=none&taskId=u25036381-f558-4c0b-91cd-c8107108353&title=&width=415)<br />给定 $K$标注样本 $D=\{(x_i, y_i)\}_{i=1}^{K}$以及一个测试样本 $x_{test}$，每个标注样本包括输入句子 $x_i$和对应的标签 $y_i$。通过模板 $\mathcal{P}$将这些样本拼接成为一个Prompt，记作 $P=\mathcal{P}(D, x_{test})$。例如上图的例子，$K=3$，并在每个输入句子和标签之间插入换行符“\n”。最后喂入GPT系列模型中，生成出结果。
+基于ICL的分类样例如下图所示：
+![image.png](https://cdn.nlark.com/yuque/0/2023/png/12897066/1679374196765-09b03064-b86f-4fae-b6d2-b32bdca040c6.png#averageHue=%23e9e9dd&clientId=ud0fe072c-aa38-4&from=paste&height=242&id=u91f78124&originHeight=484&originWidth=830&originalType=binary&ratio=2&rotation=0&showTitle=false&size=76646&status=done&style=none&taskId=u25036381-f558-4c0b-91cd-c8107108353&title=&width=415)
+给定 $K$标注样本 $D=\{(x_i, y_i)\}_{i=1}^{K}$以及一个测试样本 $x_{test}$，每个标注样本包括输入句子 $x_i$和对应的标签 $y_i$。通过模板 $\mathcal{P}$将这些样本拼接成为一个Prompt，记作 $P=\mathcal{P}(D, x_{test})$。例如上图的例子，$K=3$，并在每个输入句子和标签之间插入换行符“\n”。最后喂入GPT系列模型中，生成出结果。
 
 由于是分类任务，我们需要获得每个类别标签对应的概率。因此我们采用Prompt-tuning中的**Verbalizer**实现。Verbalizer可以简单描述为标签词对类别的映射关系。例如在情感分析中，“great”可以映射为“positive”类别，而“bad”可以映射为“negative”类别。当GPT模型生成出一些结果时，我们可以获得标签词对应的概率来代表对应类别的概率。
 
@@ -16,7 +18,8 @@ In-Context Learning可以完成分类和生成两种任务。HugNLP为此实现�
 
 <a name="MVwnT"></a>
 #### 1.1 数据与格式
-指定数据目录，该目录需要存在如下文件，如图所示：<br />
+指定数据目录，该目录需要存在如下文件，如图所示：
+
 
 <p align="center">
     <img src="https://cdn.nlark.com/yuque/0/2023/png/12897066/1679375443888-4da35763-517d-4315-9df9-2709f310a9ab.png#averageHue=%23262627&clientId=u58c3411b-1d62-4&from=paste&height=155&id=u11214516&originHeight=310&originWidth=374&originalType=binary&ratio=2&rotation=0&showTitle=false&size=32233&status=done&style=none&taskId=udcb08971-8a45-4288-bb95-7e54757e93e&title=&width=187" width="150"/>
@@ -70,7 +73,8 @@ In-Context Learning可以完成分类和生成两种任务。HugNLP为此实现�
 - prefix_template：句子前缀模板；
 - suffix_template：句子后缀模板；
 
-在In-Context Learning场景下，这两个参数有时候与instruction.json中的input_prompt和output_prompt一样。<br />例如如果输入的样本为：
+在In-Context Learning场景下，这两个参数有时候与instruction.json中的input_prompt和output_prompt一样。
+例如如果输入的样本为：
 > {"sentence1": "a joyous occasion", "label": "1"}
 
 例如如果文件定义为如下所示：
@@ -81,7 +85,8 @@ In-Context Learning可以完成分类和生成两种任务。HugNLP为此实现�
 
 <a name="HYwLu"></a>
 #### 1.2 Processor定义
-位置：HugNLP/processors/instruction_prompting/incontext_learning/data_processor.py<br />指定超参数：user_defined参数，需包含如下两个参数：
+位置：HugNLP/processors/instruction_prompting/incontext_learning/data_processor.py
+指定超参数：user_defined参数，需包含如下两个参数：
 
 - data_name（可选）：当前数据集的名称；
 - num_incontext_example（必选）：In-Context Example的数量，即 $K$大小；
@@ -147,5 +152,9 @@ python3 -m torch.distributed.launch --nproc_per_node=1 --master_port=6020 hugnlp
   --user_defined="num_incontext_example=4 l=1 use_calibrate=True" \
   --use_prompt_for_cls
 ```
-评测结果样例：<br />Calibrate校准前：<br />![image.png](https://cdn.nlark.com/yuque/0/2023/png/12897066/1680098810923-11ae52eb-177b-4027-80b8-1aab195df22b.png#averageHue=%23202020&clientId=uc34f5563-049c-4&from=paste&height=229&id=uff2f0610&originHeight=458&originWidth=1216&originalType=binary&ratio=2&rotation=0&showTitle=false&size=94949&status=done&style=none&taskId=uc43b414b-502a-42a0-a872-ddafe8f7061&title=&width=608)<br />Calibrate校准后：<br />![image.png](https://cdn.nlark.com/yuque/0/2023/png/12897066/1680098496003-5166f392-f1d4-4a7e-b758-e73fd7cd210e.png#averageHue=%231d1d1d&clientId=uc34f5563-049c-4&from=paste&height=290&id=ua390d931&originHeight=580&originWidth=1214&originalType=binary&ratio=2&rotation=0&showTitle=false&size=123915&status=done&style=none&taskId=u314848c6-68b6-40d0-b8d9-6f4433328cc&title=&width=607)
+评测结果样例：
+Calibrate校准前：
+![image.png](https://cdn.nlark.com/yuque/0/2023/png/12897066/1680098810923-11ae52eb-177b-4027-80b8-1aab195df22b.png#averageHue=%23202020&clientId=uc34f5563-049c-4&from=paste&height=229&id=uff2f0610&originHeight=458&originWidth=1216&originalType=binary&ratio=2&rotation=0&showTitle=false&size=94949&status=done&style=none&taskId=uc43b414b-502a-42a0-a872-ddafe8f7061&title=&width=608)
+Calibrate校准后：
+![image.png](https://cdn.nlark.com/yuque/0/2023/png/12897066/1680098496003-5166f392-f1d4-4a7e-b758-e73fd7cd210e.png#averageHue=%231d1d1d&clientId=uc34f5563-049c-4&from=paste&height=290&id=ua390d931&originHeight=580&originWidth=1214&originalType=binary&ratio=2&rotation=0&showTitle=false&size=123915&status=done&style=none&taskId=u314848c6-68b6-40d0-b8d9-6f4433328cc&title=&width=607)
 

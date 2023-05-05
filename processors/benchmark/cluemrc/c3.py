@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-# @Time    : 2022/2/27 12:58 下午
+# @Time    : 2022/2/27 12:58 p.m.
 # @Author  : JianingWang
 # @File    : c3
+
 import json
 import os.path
 from dataclasses import dataclass
@@ -9,13 +10,13 @@ from itertools import chain
 from typing import Union, Optional
 import numpy as np
 import torch
-
 from processors.ProcessorBase import DataProcessor, CLSProcessor
 from transformers import PreTrainedTokenizerBase
 from transformers.file_utils import PaddingStrategy
 import logging
 
 logger = logging.getLogger(__name__)
+
 
 @dataclass
 class DataCollatorForMultipleChoice:
@@ -62,7 +63,6 @@ class DataCollatorForMultipleChoice:
         if self.pseudo_train:
             pseudo = [feature.pop("pseudo") for feature in features]
             batch["pseudo"] = torch.tensor(pseudo, dtype=torch.int64)
-        # batch["token_type_ids"] = torch.zeros_like(batch["input_ids"], dtype=torch.long)
         return batch
 
 
@@ -76,6 +76,7 @@ class C3Processor(CLSProcessor):
         self.test_file = os.path.join(data_args.data_dir, "test1.1.json")
         self.pseudo_train = False
 
+
     def get_data_collator(self):
         pad_to_multiple_of_8 = self.training_args.fp16 and not self.data_args.pad_to_max_length
         is_duma = self.data_args.task_type.startswith("duma")
@@ -86,6 +87,7 @@ class C3Processor(CLSProcessor):
                                              pad_to_multiple_of=8 if pad_to_multiple_of_8 else None,
                                              is_duma=is_duma,
                                              pseudo_train=self.pseudo_train)
+
 
     def get_examples(self, set_type):
         if set_type == "train":
@@ -103,6 +105,7 @@ class C3Processor(CLSProcessor):
             examples = self._create_examples(self._read_json(self.test_file), "test")
             self.test_examples = examples
         return examples
+
 
     def _create_examples(self, lines, set_type, pseudo=False):
         num_map = {"①": 1, "②": 2, "③": 3, "④": 4, "⑤": 5, "⑥": 6}
@@ -142,6 +145,7 @@ class C3Processor(CLSProcessor):
                     pass
         return examples
 
+
     def cut(self, text, q, choices):
         from math import ceil
         try:
@@ -166,15 +170,17 @@ class C3Processor(CLSProcessor):
         max_idx = scores.index(max(scores))
         return text_split[max_idx]
 
+
     def get_predict_result(self, logits, examples):
         pass
+
 
     def compute_metrics(self, eval_predictions):
         predictions, label_ids = eval_predictions
         preds = np.argmax(predictions, axis=1)
         res = {"eval_acc": (preds == label_ids).astype(np.float32).mean().item()}
-        # print("res=", res)
         return res
+
 
     def save_result(self, logits, label_ids):
         predictions = np.argmax(logits, axis=1)

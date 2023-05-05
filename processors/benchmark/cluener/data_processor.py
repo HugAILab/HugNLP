@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-# @Time    : 2022/6/28 23:23 下午
+# @Time    : 2022/6/26 11:11 p.m.
 # @Author  : JianingWang
-# @File    : clue_ner
+# @File    : data_processor.py
+
 import random
 import re
 import json

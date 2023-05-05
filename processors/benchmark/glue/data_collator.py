@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-# @Time    : 2022/3/21 9:13 下午
+# @Time    : 2022/3/21 9:13 p.m.
 # @Author  : JianingWang
 # @File    : data_collator.py
+
 import torch
 from dataclasses import dataclass
 from typing import Optional

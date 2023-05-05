@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-# @Time    : 2022/5/1 9:13 下午
+# @Time    : 2022/5/4 9:14 下午
 # @Author  : JianingWang
-# @File    : cpic_process
+# @File    : data_processor.py
+
 import json
 import torch
 import os.path

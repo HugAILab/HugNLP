@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-# @Time    : 2022/2/27 12:58 下午
+# @Time    : 2022/2/27 12:58 p.m.
 # @Author  : JianingWang
 # @File    : c3
+
 import json
 import re
 import os
@@ -192,17 +193,6 @@ class ChidTagProcessor(CLSProcessor):
                         "qid": qid,
                         "pseudo": 1 if pseudo else 0
                     }
-                    # hard negative sample 是否在训练时候继续增加一些负样本作为候选
-                    # if self.add_had_negative and set_type == "train":
-                    #     n = 0
-                    #     for hard in self.hard_negative[idiom]: # 额外增加5个负样本
-                    #         if n >= 5:
-                    #             break
-                    #         if hard in candidates:
-                    #             continue
-                    #         example["candidates"].append(hard)
-                    #         n += 1
-                    #     assert len(example["candidates"]) == 15
                     if set_type == "train":
                         example["is_train"] = True
                     else:

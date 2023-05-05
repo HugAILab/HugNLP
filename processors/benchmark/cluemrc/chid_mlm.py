@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-# @Time    : 2022/4/18 12:02 上午
+# @Time    : 2022/4/18 12:02 a.m.
 # @Author  : JianingWang
 # @File    : chid_mlm.py
+
 import json
 import re
 import os
@@ -153,7 +154,6 @@ class ChidMLMProcessor(CLSProcessor):
         for idiom, candi in zip(self.test_idiom, top20):
             idiom_20 = [self.labels[c] for c in candi]
             out[idiom] = idiom_20
-        # outfile = os.path.join(self.training_args.output_dir, "c3_train_mlm_top20.json")
         outfile = os.path.join(self.data_args.data_dir, "c3_train_mlm_top20.json")
         with open(outfile, "w", encoding="utf8") as f:
             json.dump(out, f, indent=4, ensure_ascii=False)
