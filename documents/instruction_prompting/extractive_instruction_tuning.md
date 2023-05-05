@@ -1,4 +1,4 @@
-# Instruction-tuning 技术文档
+# Extractive Instruction-tuning 技术文档
 
 
 ### 基于MRC的中文instruction-tuning
@@ -32,3 +32,7 @@ xxx
 - "entities": 对于实体识别任务，则列出所有实体；
 
 （3）训练与推理instruction-tuning
+
+执行下面脚本即可实现抽取式训练：
+> bash applications/information_extraction/HugIE/run_extractive_unified_ie.sh
+

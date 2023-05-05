@@ -1,7 +1,7 @@
 # HugChat: Small ChatGPT-like Models via Generative Instruction-tuning
 
 Generative Instruction-tuning aims to unify all NLP task into generative format to train the causal language model (e.g., GPT2, BART).
-Thus document teach you how to use HugNLP to perform instruction-tuning, and continual train a small ChatGPT-style model on user-defined task-specific corpora.
+This document teach you how to use HugNLP to perform instruction-tuning, and continual train a small ChatGPT-style model on user-defined task-specific corpora.
 
 ## HugChat
 
