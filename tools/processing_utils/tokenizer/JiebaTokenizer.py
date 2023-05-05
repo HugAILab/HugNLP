@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-# @Time    : 2021/12/8 12:07 上午
+# @Time    : 2021/12/8 12:07 a.m.
 # @Author  : JianingWang
 # @File    : JiebaTokenizer
+
 import jieba
 from transformers import BertTokenizer
 

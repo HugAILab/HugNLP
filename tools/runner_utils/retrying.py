@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# @Time    : 2021/12/24 4:05 下午
+# @Time    : 2021/12/24 4:05 p.m.
 # @Author  : JianingWang
 # @File    : retrying.py
 
