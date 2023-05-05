@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-# @Time    : 2023/2/20 17:13 下午
+# @Time    : 2023/2/20 17:13 p.m.
 # @Author  : JianingWang
-# @File    : glue.py
+# @File    : data_processor.py
+
 import json
 import torch
 import random
