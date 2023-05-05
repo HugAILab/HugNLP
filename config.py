@@ -1,7 +1,12 @@
 # -*- coding: utf-8 -*-
-# @Time    : 2021/11/25 2:52 下午
+# @Time    : 2022/11/25 2:52 p.m.
 # @Author  : JianingWang
 # @File    : config.py
+
+
+"""
+This file is the configures for HugNLP.
+"""
 from dataclasses import dataclass, field, asdict
 from enum import Enum
 from typing import Optional
@@ -69,24 +74,24 @@ class ModelArguments:
     freeze_epochs: Optional[float] = field(
         default=None,
         metadata={
-            "help": "对前n个epoch进行冻层操作, float类型如 0.5"
+            "help": "freezing parameters before epoch iterations, float (e.g., 0.5)"
         }
     )
     freeze_keyword: Optional[str] = field(
         default="encoder",
         metadata={
-            "help": "包含keyword的layer将会被冻层"
+            "help": "freezing the parameters layers with name 'keyword'"
         }
     )
 
     ema: bool = field(
         default=False,
-        metadata={"help": "是否使用ema"}
+        metadata={"help": "whether use ema"}
     )
 
     ema_decay: float = field(
         default=0.999,
-        metadata={"help": "ema系数"}
+        metadata={"help": "ema decay"}
     )
     do_lower_case: bool = field(
         default=False,
@@ -178,10 +183,10 @@ class DataTrainingArguments:
         default=None, metadata={"help": "The name of the task."}
     )
     task_type: Optional[str] = field(
-        default="classification", metadata={"help": "任务类型：classification, mlm"}
+        default="classification", metadata={"help": "task type, e.g., classification, mlm, head_cls"}
     )
     data_dir: Optional[str] = field(
-        default=None, metadata={"help": "数据路径"}
+        default=None, metadata={"help": "data_dir: the path of data resource"}
     )
     exp_name: Optional[str] = field(
         default=None, metadata={"help": "The name of the experiment."}
