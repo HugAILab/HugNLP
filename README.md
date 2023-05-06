@@ -22,7 +22,7 @@
 HugNLP is a novel development and application library based on [Hugging Face](https://huggingface.co/) for improving the convenience and effectiveness of NLP researchers. 
 <!-- The founder and main developer is [Jianing Wang](https://wjn1996.github.io/). The collaborators are [Nuo Chen](https://github.com/nchen909), [Qiushi Sun](https://github.com/QiushiSun) and . -->
 
-## **News & Highlights
+## News & Highlights
 
 - 🆕 [23-05-05]: HugNLP is released at @HugAILab !
 - 🆕 [23-04-06]: Develop a small ChatGPT-like assistance, naming HugChat! You can chat with HugNLP! [[see doc](./documents/instruction_prompting/generative_instruction_tuning.md)]
@@ -83,8 +83,8 @@ We integrate some novel approaches into HugNLP, such as PET, P-tuning, etc.
 ### Instruction Tuning & In-Context Learning
 
 Instruction-tuning and in-context learning enable few/zero-shot learning without parameter update, which aims to concatenate the task-aware instructions or example-based demonstrations to prompt GPT-style PLMs to generate reliable responses.
-So, all the NLP tasks can be unified into the same format and can substantially improve the models" generalization.
-Inspired by this idea, we extend it into other two paradigms:
+So, all the NLP tasks can be unified into the same format and can substantially improve the models' generalization.
+Inspired by this concept, we extend it into other two paradigms:
 
 1. extractive-style paradigm: we unify various NLP tasks into span extraction, which is the same as extractive question answering.
 2. inference-style paradigm: all the tasks can be viewed as natural language inference to match the relations between inputs and outputs.
@@ -109,7 +109,7 @@ We develop some novel parameter-efficient learning approaches, such as Prefix-tu
 >
 > python3 setup.py install
 
-At present, the project is still being developed and improved, and there may be some `bugs` in use, please understand. We also look forward to your being able to ask issues or committing some valuable pull requests.
+At present, the project is still being developed and improved, and there may be some `bugs` in use and your understanding is greatly appreciated. We also look forward to your being able to ask issues or committing some valuable pull requests.
 
 # Pre-built Applications Overview
 
@@ -284,7 +284,7 @@ Please Have fun, more details can be found in [here](./documents/instruction_pro
 
 ### HugIE: Towards Chinese Unified Information Extraction via Extractive MRC and Instruction-tuning
 
-Information Extraction (IE) aims to extract structure knowledge from un-structure text. The structure knowledge is formed as a triple ""(head_entity, relation, tail_entity)"". IE consists of two main tasks:
+Information Extraction (IE) aims to extract structure knowledge from unstructured text. The structure knowledge is formed as a triple ""(head_entity, relation, tail_entity)"". IE consists of two main tasks:
 
 - Named Entity Recognition (NER) aims to extract all entity mentions of one type.
 - Relation Extraction (RE). It has two kinds of goal, the first aims to classify the relation between two entities, and the second aims to predict the tail entity when given one head entity and the corresponding relation.
@@ -384,12 +384,16 @@ If you find this repository helpful, feel free to cite our paper:
 # References
 
 1. Jianing Wang, Nuo Chen, Qiushi Sun, Wenkang Huang, Chengyu Wang, Ming Gao:
-HugNLP: A Unified and Comprehensive Library for Natural Language Processing. CoRR abs/2302.14286 (2023)
+HugNLP: A Unified and Comprehensive Library for Natural Language Processing. CoRR abs/2302.14286 (2023) [Paper](https://arxiv.org/abs/2302.14286)
 2. Jianing Wang, Wenkang Huang, Minghui Qiu, Qiuhui Shi, Hongbin Wang, Xiang Li, Ming Gao:
-   Knowledge Prompting in Pre-trained Language Model for Natural Language Understanding. EMNLP 2022: 3164-3177
-3. Chengyu Wang, Jianing Wang, Minghui Qiu, Jun Huang, Ming Gao: TransPrompt: Towards an Automatic Transferable Prompting Framework for Few-shot Text Classification. EMNLP 2021: 2792-2802
-4. Jianing Wang, Chengyu Wang, Jun Huang, Ming Gao, Aoying Zhou: Uncertainty-aware Self-training for Low-resource Neural Sequence Labeling. AAAI 2023.
+   Knowledge Prompting in Pre-trained Language Model for Natural Language Understanding. EMNLP 2022: 3164-3177 [Paper](https://aclanthology.org/2022.emnlp-main.207/)
+3. Chengyu Wang, Jianing Wang, Minghui Qiu, Jun Huang, Ming Gao: TransPrompt: Towards an Automatic Transferable Prompting Framework for Few-shot Text Classification. EMNLP 2021: 2792-2802 [Paper](https://aclanthology.org/2021.emnlp-main.221/)
+4. Jianing Wang, Chengyu Wang, Jun Huang, Ming Gao, Aoying Zhou: Uncertainty-aware Self-training for Low-resource Neural Sequence Labeling. AAAI 2023. [Paper](https://arxiv.org/abs/2302.08659)
 
 # Acknowledgement
 
 We thank to the Platform of AI (PAI) in Alibaba Group and Ant Group to support our work. The friend framework is [EasyNLP](https://github.com/alibaba/EasyNLP). We also thank all the developers that contribute to our work!
+
+# Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=HugAILab/HugNLP&type=Date)](https://star-history.com/#HugAILab/HugNLP&Date)
