@@ -97,9 +97,9 @@ There are three data:
 
 <!-- We prepare a running script for training a GPT2-XL in ```./application/instruction_prompting/HugChat/supervised_finetuning/run_causal_instruction_gpt2_xl.sh```. -->
 
-At first, you should edit the data_path as ```./datasets/corpora/instruction/generative_instruction``` in the runing script (e.g., ```run_causal_instruction_gpt2_xl.sh```.
+At first, you should edit the script in the data_path as ```./datasets/corpora/instruction/HugChat/supervised_finetuning``` (e.g., ```run_causal_instruction_gpt2_xl.sh```) and set some arguments.
 
-You can also define some hyper-parameters, such as:
+Specifically, you can also define some hyper-parameters, such as:
 - --learning_rate=2e-5
 - --per_device_train_batch_size=2
 - --per_device_eval_batch_size=1
@@ -107,10 +107,24 @@ You can also define some hyper-parameters, such as:
 - ...
 
 We recommend you add the following arguments to use deepspeed:
-- --deepspeed=./deepspeed/ds_config_fp16_z1.json \
+- --deepspeed=./deepspeed/ds_config_fp16_z1.json
 - --fp16
 
-then run the script:
+You can also add the following arguments to set parameter-efficient learning via LoRA:
+- --deepspeed=./deepspeed/ds_config_fp16_z1.json
+- --lora_dim=8
+
+We define some scripts for you to running for SFT:
+
+| script name | config |
+| --- | --- |
+| run_casual_instruction_gpt2.sh | full fine-tuning
+| run_casual_instruction_gpt2-xl.sh | deepspeed ZeRO stage1 + FP16
+| run_casual_instruction_gpt_neo.sh | deepspeed ZeRO stage1/3 + FP16
+| run_casual_instruction_opt.sh | deepspeed ZeRO stage3 + FP16
+| run_casual_instruction_opt.sh | deepspeed ZeRO stage3 + FP16 + LoRA
+
+For example, you can directly run the following scripts to perform SFT with GPT2 (1.3B) with deepspeed ZeRO stage1 and FP16:
 
 ```bash
 bash ./application/instruction_prompting/HugChat/supervised_finetuning/run_causal_instruction_gpt2_xl.sh
