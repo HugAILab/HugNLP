@@ -71,6 +71,10 @@ from models.code.code_generation import (
     PLBARTForCodeGeneration
 )
 
+from reinforcement_learning.actor import CausalActor
+from reinforcement_learning.critic import AutoModelCritic
+from reinforcement_learning.reward_model import AutoModelReward
+
 # Models for pre-training
 PRETRAIN_MODEL_CLASSES = {
     "mlm": {
@@ -192,6 +196,11 @@ CODE_MODEL_CLASSES = {
     },
 }
 
+REINFORCEMENT_MODEL_CLASSES = {
+    "causal_actor": CausalActor,
+    "auto_critic": AutoModelCritic, 
+    "auto_reward": AutoModelReward,
+}
 
 # task_type 负责对应model类型
 OTHER_MODEL_CLASSES = {
@@ -242,6 +251,7 @@ MODEL_CLASSES_LIST = [
     SPAN_EXTRACTION_MODEL_CLASSES,
     FEWSHOT_MODEL_CLASSES,
     CODE_MODEL_CLASSES,
+    REINFORCEMENT_MODEL_CLASSES,
     OTHER_MODEL_CLASSES,
 ]
 
