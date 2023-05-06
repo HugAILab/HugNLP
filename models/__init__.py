@@ -71,9 +71,9 @@ from models.code.code_generation import (
     PLBARTForCodeGeneration
 )
 
-from reinforcement_learning.actor import CausalActor
-from reinforcement_learning.critic import AutoModelCritic
-from reinforcement_learning.reward_model import AutoModelReward
+from models.reinforcement_learning.actor import CausalActor
+from models.reinforcement_learning.critic import AutoModelCritic
+from models.reinforcement_learning.reward_model import AutoModelReward
 
 # Models for pre-training
 PRETRAIN_MODEL_CLASSES = {
