@@ -15,6 +15,7 @@ from processors.benchmark.clue.clue_processor import clue_processors, clue_outpu
 from metrics import datatype2metrics
 from tools.computations.softmax import softmax
 from processors.default_task_processors.data_collator import DataCollatorForDefaultSequenceClassification
+from processors.code.code_defect.data_collator import DataCollatorForDefectClassification
 from processors.basic_processors.prompt_processor import PromptBaseProcessor
 from tools.processing_utils.tokenizer.tokenizer_utils import get_special_token_mapping
 
@@ -108,7 +109,7 @@ class CodeDefectProcessor(CLSProcessor):
 
     def get_data_collator(self):
         pad_to_multiple_of_8 = self.training_args.fp16 and not self.data_args.pad_to_max_length
-        return DataCollatorForDefaultSequenceClassification(
+        return DataCollatorForDefectClassification(
             self.tokenizer,
             max_length=self.data_args.max_seq_length,
             pad_to_multiple_of=8 if pad_to_multiple_of_8 else None,
