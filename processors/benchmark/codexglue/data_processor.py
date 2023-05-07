@@ -58,7 +58,7 @@ class CodeXGLUEProcessor(CLSProcessor):
             self.raw_datasets = load_dataset("nchen909/devign-processed")
         if self.data_name=='bcb':
             self.raw_datasets = load_dataset("nchen909/bigclonebench-processed")
-        self.labels = self.raw_datasets["train"]["label"]#self.raw_datasets["train"].features["label"].names
+        self.labels = [0,1]#self.raw_datasets["train"].features["label"].names
         self.sentence1_key, self.sentence2_key = task_to_keys[self.data_name]
 
     def get_data_collator(self):

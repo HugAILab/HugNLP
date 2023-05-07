@@ -4,7 +4,7 @@ Author: nchen909 NuoChen
 Date: 2023-05-06 16:16:16
 FilePath: /HugNLP/processors/benchmark/codexglue/codexglue_processor.py
 '''
-"""Dataset utils for different data settings for GLUE."""
+"""Dataset utils for different data settings for CodeXGLUE."""
 
 import os
 import copy
@@ -18,7 +18,7 @@ import itertools
 import random
 import transformers
 from processors.benchmark.codexglue.utils import DataProcessor, InputExample, InputFeatures, DefectExample, CloneExample
-from transformers.data.processors.glue import *
+# from transformers.data.processors.glue import *
 from transformers.data.metrics import acc_and_f1
 import dataclasses
 from dataclasses import dataclass, asdict
@@ -61,7 +61,7 @@ class BigCloneBenchProcessor(DataProcessor):
 
     def get_labels(self):
         """See base class."""
-        return ["0", "1"]
+        return [0,1]
 
     def _create_examples(self, lines, set_type):
         """Creates examples for the training, dev and test sets."""
@@ -111,7 +111,7 @@ class DevignProcessor(DataProcessor):
 
     def get_labels(self):
         """See base class."""
-        return ["0", "1"]
+        return [0,1]
 
     def _create_examples(self, lines, set_type):
         """Creates examples for the training, dev and test sets."""

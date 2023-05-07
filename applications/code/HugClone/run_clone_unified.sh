@@ -2,17 +2,16 @@
 ###
  # # -*- coding: utf-8 -*-
  # @Author: nchen909 NuoChen
- # @Date: 2023-05-06 21:32:46
- # @FilePath: /HugNLP/applications/benchmark/codexglue/run_codexglue_devign.sh
+ # @Date: 2023-05-07 16:59:40
+ # @FilePath: /HugNLP/applications/code/HugClone/run_clone_unified.sh
 ###
-path=/root/autodl-tmp/CodePrompt/data/huggingface_models/codebert-base/
-MODEL_TYPE=codebert
+path=/root/autodl-tmp/CodePrompt/data/huggingface_models/plbart-base/
+MODEL_TYPE=plbart
 
 #### task data path (use should change this path)
-data_path=/root/autodl-tmp/HugCode/data/defect/
+data_path=/root/autodl-tmp/HugNLP/datasets/data_example/clone/
 
 TASK_TYPE=code_cls
-codexglue_task=devign
 # TASK_TYPE=masked_prompt_prefix_cls
 
 len=196
@@ -24,11 +23,11 @@ lr=1e-05
 
 
 export CUDA_VISIBLE_DEVICES=0,1
-python3 -m torch.distributed.launch --nproc_per_node=2 --master_port=12383 hugnlp_runner.py \
+python3 -m torch.distributed.launch --nproc_per_node=2 --master_port=6014 hugnlp_runner.py \
 --model_name_or_path=$path \
 --data_dir=$data_path \
---output_dir=./outputs/codexglue/$codexglue_task \
---seed=1234 \
+--output_dir=./outputs/code/clone_classification_plbart\
+--seed=42 \
 --exp_name=default-cls \
 --max_seq_length=$len \
 --max_eval_seq_length=$len \
@@ -48,7 +47,7 @@ python3 -m torch.distributed.launch --nproc_per_node=2 --master_port=12383 hugnl
 --warmup_steps=$wr_step \
 --load_best_model_at_end \
 --report_to=none \
---task_name=codexglue \
+--task_name=code_clone \
 --task_type=$TASK_TYPE \
 --model_type=$MODEL_TYPE \
 --metric_for_best_model=acc \
@@ -57,4 +56,4 @@ python3 -m torch.distributed.launch --nproc_per_node=2 --master_port=12383 hugnl
 --overwrite_output_dir \
 --label_names=labels \
 --keep_predict_labels \
---user_defined="label_names=0,1 max_target_length=3 data_name=$codexglue_task" \
+--user_defined="label_names=0,1" \
