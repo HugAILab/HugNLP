@@ -27,8 +27,8 @@ logger = logging.getLogger(__name__)
 
 class MrpcProcessor(DataProcessor):
     """Processor for the MRPC data set (GLUE version)."""
-    def __init__(self, task_name):
-        self.task_name = task_name
+    def __init__(self):
+        pass
 
     def get_example_from_tensor_dict(self, tensor_dict):
         """See base class."""
@@ -80,8 +80,8 @@ class MrpcProcessor(DataProcessor):
 
 class MnliProcessor(DataProcessor):
     """Processor for the MultiNLI data set (GLUE version)."""
-    def __init__(self, task_name):
-        self.task_name = task_name
+    def __init__(self):
+        pass
 
     def get_example_from_tensor_dict(self, tensor_dict):
         """See base class."""
@@ -133,8 +133,8 @@ class MnliProcessor(DataProcessor):
 
 class MnliMismatchedProcessor(MnliProcessor):
     """Processor for the MultiNLI Mismatched data set (GLUE version)."""
-    def __init__(self, task_name):
-        self.task_name = task_name
+    def __init__(self):
+        pass
 
     def get_dev_examples(self, data_dir):
         """See base class."""
@@ -151,8 +151,8 @@ class MnliMismatchedProcessor(MnliProcessor):
 
 class SnliProcessor(DataProcessor):
     """Processor for the MultiNLI data set (GLUE version)."""
-    def __init__(self, task_name):
-        self.task_name = task_name
+    def __init__(self):
+        pass
 
     def get_example_from_tensor_dict(self, tensor_dict):
         """See base class."""
@@ -202,8 +202,8 @@ class SnliProcessor(DataProcessor):
 
 class ColaProcessor(DataProcessor):
     """Processor for the CoLA data set (GLUE version)."""
-    def __init__(self, task_name):
-        self.task_name = task_name
+    def __init__(self):
+        pass
 
     def get_example_from_tensor_dict(self, tensor_dict):
         """See base class."""
@@ -252,8 +252,8 @@ class ColaProcessor(DataProcessor):
 
 class Sst2Processor(DataProcessor):
     """Processor for the SST-2 data set (GLUE version)."""
-    def __init__(self, task_name):
-        self.task_name = task_name
+    def __init__(self):
+        pass
 
     def get_example_from_tensor_dict(self, tensor_dict):
         """See base class."""
@@ -306,8 +306,8 @@ class Sst2Processor(DataProcessor):
 
 class StsbProcessor(DataProcessor):
     """Processor for the STS-B data set (GLUE version)."""
-    def __init__(self, task_name):
-        self.task_name = task_name
+    def __init__(self):
+        pass
 
     def get_example_from_tensor_dict(self, tensor_dict):
         """See base class."""
@@ -357,8 +357,8 @@ class StsbProcessor(DataProcessor):
 
 class QqpProcessor(DataProcessor):
     """Processor for the QQP data set (GLUE version)."""
-    def __init__(self, task_name):
-        self.task_name = task_name
+    def __init__(self):
+        pass
 
     def get_example_from_tensor_dict(self, tensor_dict):
         """See base class."""
@@ -414,8 +414,8 @@ class QqpProcessor(DataProcessor):
 
 class QnliProcessor(DataProcessor):
     """Processor for the QNLI data set (GLUE version)."""
-    def __init__(self, task_name):
-        self.task_name = task_name
+    def __init__(self):
+        pass
 
     def get_example_from_tensor_dict(self, tensor_dict):
         """See base class."""
@@ -465,8 +465,8 @@ class QnliProcessor(DataProcessor):
 
 class RteProcessor(DataProcessor):
     """Processor for the RTE data set (GLUE version)."""
-    def __init__(self, task_name):
-        self.task_name = task_name
+    def __init__(self):
+        pass
 
     def get_example_from_tensor_dict(self, tensor_dict):
         """See base class."""
@@ -516,8 +516,8 @@ class RteProcessor(DataProcessor):
 
 class WnliProcessor(DataProcessor):
     """Processor for the WNLI data set (GLUE version)."""
-    def __init__(self, task_name):
-        self.task_name = task_name
+    def __init__(self):
+        pass
 
     def get_example_from_tensor_dict(self, tensor_dict):
         """See base class."""
@@ -567,9 +567,6 @@ class WnliProcessor(DataProcessor):
 
 class TextClassificationProcessor(DataProcessor):
     """Data processor for text classification datasets (mr, sst-5, subj, trec, cr, mpqa)."""
-    def __init__(self, task_name):
-        self.task_name = task_name
-
     def __init__(self, task_name):
         self.task_name = task_name
 

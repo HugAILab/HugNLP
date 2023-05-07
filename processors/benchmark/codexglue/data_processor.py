@@ -222,11 +222,11 @@ class CodeXGLUEProcessor(CLSProcessor):
         predicts, topk_predictions = self.get_predict_result(logits,
                                                              examples,
                                                              stage="test")
-        clue_processor = codexglue_processors[self.data_name]()
-        label_list = clue_processor.get_labels()
+        codexglue_processor = codexglue_processors[self.data_name]()
+        label_list = codexglue_processor.get_labels()
         id2label = {i: label for i, label in enumerate(label_list)}
 
-        ### submit 格式转换为clue的
+        ### submit 格式转换为codexglue的
         answer = list()
         for k, v in predicts.items():
             if v not in id2label.keys():
