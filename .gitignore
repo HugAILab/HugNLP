@@ -5,3 +5,4 @@ logs/
 outputs/
 **/__pycache__/
 .history
+nohup.out
