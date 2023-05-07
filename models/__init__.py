@@ -73,7 +73,9 @@ from models.code.code_generation import (
 
 from models.reinforcement_learning.actor import CausalActor
 from models.reinforcement_learning.critic import AutoModelCritic
-from models.reinforcement_learning.reward_model import AutoModelReward
+from models.reinforcement_learning.reward_model import (
+    RobertaForReward, GPT2ForReward
+)
 
 # Models for pre-training
 PRETRAIN_MODEL_CLASSES = {
@@ -199,7 +201,13 @@ CODE_MODEL_CLASSES = {
 REINFORCEMENT_MODEL_CLASSES = {
     "causal_actor": CausalActor,
     "auto_critic": AutoModelCritic, 
-    "auto_reward": AutoModelReward,
+    "rl_reward": {
+        "roberta": RobertaForReward,
+        "gpt2": GPT2ForReward,
+        "gpt-neo": None,
+        "opt": None,
+        "llama": None,
+    }
 }
 
 # task_type 负责对应model类型

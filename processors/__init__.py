@@ -32,6 +32,8 @@ from processors.default_task_processors.data_processor import (
     DefaultSequenceClassificationProcessor,
     DefaultSequenceLabelingProcessor
 )
+# reinforcement learning
+from processors.reinforcement_learning.data_processor import PairwiseRewardProcessor
 
 # Pre-training Tasks
 PRETRAINING_PROCESSORS = {
@@ -80,13 +82,16 @@ INSTRUCTION_PROCESSORS = {
 }
 
 
-
 CODE_PROCESSORS = {
     "code_clone": CodeCloneProcessor,
     "code_defect": CodeDefectProcessor,
     "code_refine": None,
     "code_translation": None,
     "code_summarization": None,
+}
+
+REINFORCEMENT_PROCESSORS = {
+    "pairwise_reward": PairwiseRewardProcessor,
 }
 
 OTHER_PROCESSORS = {
@@ -111,6 +116,7 @@ PROCESSORS_LIST = [
     INSTRUCTION_PROCESSORS,
     BENCHMARKS_PROCESSORS,
     CODE_PROCESSORS,
+    REINFORCEMENT_PROCESSORS,
     OTHER_PROCESSORS,
 ]
 
