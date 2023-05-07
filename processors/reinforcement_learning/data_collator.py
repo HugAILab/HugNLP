@@ -24,10 +24,14 @@ class DataCollatorForDefaultPairwiseRewardTraining:
         for f in features:
 
             chosen_sequences = f["chosen_sequences"] + [self.tokenizer.pad_token_id] * (self.max_length - len(f["chosen_sequences"]))
-            chosen_attention_mask = f["chosen_attention_mask"] + [self.tokenizer.pad_token_id] * (self.max_length - len(f["chosen_attention_mask"]))
+            chosen_attention_mask = f["chosen_attention_mask"] + [0] * (self.max_length - len(f["chosen_attention_mask"]))
             rejected_sequences = f["rejected_sequences"] + [self.tokenizer.pad_token_id] * (self.max_length - len(f["rejected_sequences"]))
-            rejected_attention_mask = f["rejected_attention_mask"] + [self.tokenizer.pad_token_id] * (self.max_length - len(f["rejected_attention_mask"]))
+            rejected_attention_mask = f["rejected_attention_mask"] + [0] * (self.max_length - len(f["rejected_attention_mask"]))
 
+            # print("chosen_sequences=", chosen_sequences)
+            # print("chosen_attention_mask=", chosen_attention_mask)
+            # print("rejected_sequences=", rejected_sequences)
+            # print("rejected_attention_mask=", rejected_attention_mask)
             
             batch.append({
                 "chosen_sequences": chosen_sequences,

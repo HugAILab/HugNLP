@@ -85,7 +85,7 @@ class GPT2ForReward(GPT2PreTrainedModel):
         # Model parallel
         self.model_parallel = False
         self.device_map = None
-        
+
         self.post_init()
 
     def forward(
@@ -111,7 +111,6 @@ class GPT2ForReward(GPT2PreTrainedModel):
             rejected_values = self.value_head(rejected_last_hidden_states)[:, :-1]
             rejected_values = rejected_values.mean(dim=1).squeeze(1)    # ensure shape is (B)
             return_dict["rejected_values"] = rejected_values
-            
             loss_fn = LogSigLoss()
             loss = loss_fn(chosen_values, rejected_values)
             
