@@ -1,4 +1,3 @@
-
 <p align="center">
     <br>
     <img src="images/logo.png" width="360"/>
@@ -19,10 +18,11 @@
 
 # About HugNLP
 
-HugNLP is a novel development and application library based on [Hugging Face](https://huggingface.co/) for improving the convenience and effectiveness of NLP researchers. 
+HugNLP is a novel development and application library based on [Hugging Face](https://huggingface.co/) for improving the convenience and effectiveness of NLP researchers.
+
 <!-- The founder and main developer is [Jianing Wang](https://wjn1996.github.io/). The collaborators are [Nuo Chen](https://github.com/nchen909), [Qiushi Sun](https://github.com/QiushiSun) and . -->
 
-## News & Highlights
+## **News & Highlights
 
 - 🆕 [23-05-05]: HugNLP is released at @HugAILab !
 - 🆕 [23-04-06]: Develop a small ChatGPT-like assistance, naming HugChat! You can chat with HugNLP! [[see doc](./documents/instruction_prompting/generative_instruction_tuning.md)]
@@ -83,8 +83,8 @@ We integrate some novel approaches into HugNLP, such as PET, P-tuning, etc.
 ### Instruction Tuning & In-Context Learning
 
 Instruction-tuning and in-context learning enable few/zero-shot learning without parameter update, which aims to concatenate the task-aware instructions or example-based demonstrations to prompt GPT-style PLMs to generate reliable responses.
-So, all the NLP tasks can be unified into the same format and can substantially improve the models' generalization.
-Inspired by this concept, we extend it into other two paradigms:
+So, all the NLP tasks can be unified into the same format and can substantially improve the models" generalization.
+Inspired by this idea, we extend it into other two paradigms:
 
 1. extractive-style paradigm: we unify various NLP tasks into span extraction, which is the same as extractive question answering.
 2. inference-style paradigm: all the tasks can be viewed as natural language inference to match the relations between inputs and outputs.
@@ -109,32 +109,32 @@ We develop some novel parameter-efficient learning approaches, such as Prefix-tu
 >
 > python3 setup.py install
 
-At present, the project is still being developed and improved, and there may be some `bugs` in use and your understanding is greatly appreciated. We also look forward to your being able to ask issues or committing some valuable pull requests.
+At present, the project is still being developed and improved, and there may be some `bugs` in use, please understand. We also look forward to your being able to ask issues or committing some valuable pull requests.
 
 # Pre-built Applications Overview
 
 We demonstrate all pre-built applications in HugNLP. You can choose one application to use HugNLP. You can also click the link to see the details document.
 
-| **Applications** | **Runing Tasks** | **Task Notes** | **PLM Models** | **Documents** |
-| --- | --- | --- | --- | --- |
-| **Default Application** | run_seq_cls.sh | **Goal**: Standard **Fine-tuning** or **Prompt-tuning** for sequence classification on user-defined dataset. <br> **Path**: applications/default_applications | BERT, RoBERTa, DeBERTa | [click](./documents/default_tasks/default_sequence_classification.md) |
-|  | run_seq_labeling.sh | **Goal**: Standard **Fine-tuning** for sequence labeling on user-defined dataset. <br> **Path**: applications/default_applications | BERT, RoBERTa, ALBERT |   |
-| **Pre-training** | run_pretrain_mlm.sh | **Goal**: Pre-training via **Masked Language Modeling** (MLM). <br> **Path**: applications/pretraining/ | BERT, RoBERTa | [click](./documents/pretraining/Masked%20LM%20for%20Continual%20Pre-training.md) |
-|  | run_pretrain_casual_lm.sh | **Goal**: Pre-training via **Causal Language Modeling** (CLM). <br> **Path**: applications/pretraining | BERT, RoBERTa | [click](./documents/pretraining/Causal%20LM%20for%20Continual%20Pre-training.md) |
-| **GLUE Benchmark** | run_glue.sh | **Goal**: Standard **Fine-tuning** or **Prompt-tuning** for GLUE classification tasks. <br> **Path**: applications/benchmark/glue | BERT, RoBERTa, DeBERTa |  |
-|  | run_causal_incontext_glue.sh | **Goal**: **In-context learning** for GLUE classification tasks. <br> **Path**: applications/benchmark/glue | GPT-2 |  |
-| **CLUE Benchmark** | clue_finetune_dev.sh | **Goal**: Standard **Fine-tuning** and **Prompt-tuning** for CLUE classification task。 <br> **Path**: applications/benchmark/clue | BERT, RoBERTa, DeBERTa |  |
-|  | run_clue_cmrc.sh | **Goal**: Standard **Fine-tuning** for CLUE CMRC2018 task. <br> **Path**: applications/benchmark/cluemrc | BERT, RoBERTa, DeBERTa |  |
-|  | run_clue_c3.sh | **Goal**: Standard **Fine-tuning** for CLUE C3 task. <br> **Path**: applications/benchmark/cluemrc | BERT, RoBERTa, DeBERTa |  |
-|  | run_clue_chid.sh | **Goal**: Standard **Fine-tuning** for CLUE CHID task. <br> **Path**: applications/benchmark/cluemrc | BERT, RoBERTa, DeBERTa |  |
-| **Instruction-Prompting** | run_causal_instruction.sh | **Goal**: **Cross-task training** via generative Instruction-tuning based on causal PLM. <font color='red'>**You can use it to train a small ChatGPT**</font>. <br> **Path**: applications/instruction_prompting/instruction_tuning | GPT2 | [click](./documents/instruction_prompting/generative_instruction_tuning.md) |
-|  | run_zh_extract_instruction.sh | **Goal**: **Cross-task training** via extractive Instruction-tuning based on Global Pointer model. <br> **Path**: applications/instruction_prompting/chinese_instruction | BERT, RoBERTa, DeBERTa | [click](./documents/instruction_prompting/extractive_instruction_tuning.md) |
-|  | run_causal_incontext_cls.sh | **Goal**: **In-context learning** for user-defined classification tasks. <br> **Path**: applications/instruction_prompting/incontext_learning | GPT-2 | [click](./documents/instruction_prompting/incontext_learning_for_cls.md) |
-| **Information Extraction** | run_extractive_unified_ie.sh | **Goal**: **HugIE**: training a unified chinese information extraction via extractive instruction-tuning. <br> **Path**: applications/information_extraction/HugIE | BERT, RoBERTa, DeBERTa | [click](./documents/information_extraction/HugIE.md) |
-|  | api_test.py | **Goal**: HugIE: API test. <br> **Path**: applications/information_extraction/HugIE | - | [click](./documents/information_extraction/HugIE.md) |
-|  | run_fewnerd.sh | **Goal**: **Prototypical learning** for named entity recognition, including SpanProto, TokenProto <br> **Path**: applications/information_extraction/fewshot_ner | BERT |  |
-| **Code NLU** | run_clone_cls.sh | **Goal**: Standard **Fine-tuning** for code clone classification task. <br> **Path**: applications/code/code_clone | CodeBERT, CodeT5, GraphCodeBERT, PLBART | [click](./documents/code/code_classification.md) |
-|  | run_defect_cls.sh | **Goal**: Standard **Fine-tuning** for code defect classification task. <br> **Path**: applications/code/code_defect | CodeBERT, CodeT5, GraphCodeBERT, PLBART | [click](./documents/code/code_classification.md) |
+| **Applications**           | **Runing Tasks**        | **Task Notes**                                                                                                                                                                                                                                                    | **PLM Models**                    | **Documents**                                                           |
+| -------------------------------- | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- | ----------------------------------------------------------------------------- |
+| **Default Application**    | run_seq_cls.sh                | **Goal**: Standard **Fine-tuning** or **Prompt-tuning** for sequence classification on user-defined dataset. `<br>` **Path**: applications/default_applications                                                                               | BERT, RoBERTa, DeBERTa                  | [click](./documents/default_tasks/default_sequence_classification.md)            |
+|                                  | run_seq_labeling.sh           | **Goal**: Standard **Fine-tuning** for sequence labeling on user-defined dataset. `<br>` **Path**: applications/default_applications                                                                                                                | BERT, RoBERTa, ALBERT                   |                                                                               |
+| **Pre-training**           | run_pretrain_mlm.sh           | **Goal**: Pre-training via **Masked Language Modeling** (MLM). `<br>` **Path**: applications/pretraining/                                                                                                                                           | BERT, RoBERTa                           | [click](./documents/pretraining/Masked%20LM%20for%20Continual%20Pre-training.md) |
+|                                  | run_pretrain_casual_lm.sh     | **Goal**: Pre-training via **Causal Language Modeling** (CLM). `<br>` **Path**: applications/pretraining                                                                                                                                            | BERT, RoBERTa                           | [click](./documents/pretraining/Causal%20LM%20for%20Continual%20Pre-training.md) |
+| **GLUE Benchmark**         | run_glue.sh                   | **Goal**: Standard **Fine-tuning** or **Prompt-tuning** for GLUE classification tasks. `<br>` **Path**: applications/benchmark/glue                                                                                                           | BERT, RoBERTa, DeBERTa                  |                                                                               |
+|                                  | run_causal_incontext_glue.sh  | **Goal**: **In-context learning** for GLUE classification tasks. `<br>` **Path**: applications/benchmark/glue                                                                                                                                       | GPT-2                                   |                                                                               |
+| **CLUE Benchmark**         | clue_finetune_dev.sh          | **Goal**: Standard **Fine-tuning** and **Prompt-tuning** for CLUE classification task。 `<br>` **Path**: applications/benchmark/clue                                                                                                          | BERT, RoBERTa, DeBERTa                  |                                                                               |
+|                                  | run_clue_cmrc.sh              | **Goal**: Standard **Fine-tuning** for CLUE CMRC2018 task. `<br>` **Path**: applications/benchmark/cluemrc                                                                                                                                          | BERT, RoBERTa, DeBERTa                  |                                                                               |
+|                                  | run_clue_c3.sh                | **Goal**: Standard **Fine-tuning** for CLUE C3 task. `<br>` **Path**: applications/benchmark/cluemrc                                                                                                                                                | BERT, RoBERTa, DeBERTa                  |                                                                               |
+|                                  | run_clue_chid.sh              | **Goal**: Standard **Fine-tuning** for CLUE CHID task. `<br>` **Path**: applications/benchmark/cluemrc                                                                                                                                              | BERT, RoBERTa, DeBERTa                  |                                                                               |
+| **Instruction-Prompting**  | run_causal_instruction.sh     | **Goal**: **Cross-task training** via generative Instruction-tuning based on causal PLM. `<font color='red'>`**You can use it to train a small ChatGPT**`</font>`. `<br>` **Path**: applications/instruction_prompting/instruction_tuning | GPT2                                    | [click](./documents/instruction_prompting/generative_instruction_tuning.md)      |
+|                                  | run_zh_extract_instruction.sh | **Goal**: **Cross-task training** via extractive Instruction-tuning based on Global Pointer model. `<br>` **Path**: applications/instruction_prompting/chinese_instruction                                                                          | BERT, RoBERTa, DeBERTa                  | [click](./documents/instruction_prompting/extractive_instruction_tuning.md)      |
+|                                  | run_causal_incontext_cls.sh   | **Goal**: **In-context learning** for user-defined classification tasks. `<br>` **Path**: applications/instruction_prompting/incontext_learning                                                                                                     | GPT-2                                   | [click](./documents/instruction_prompting/incontext_learning_for_cls.md)         |
+| **Information Extraction** | run_extractive_unified_ie.sh  | **Goal**: **HugIE**: training a unified chinese information extraction via extractive instruction-tuning. `<br>` **Path**: applications/information_extraction/HugIE                                                                                | BERT, RoBERTa, DeBERTa                  | [click](./documents/information_extraction/HugIE.md)                             |
+|                                  | api_test.py                   | **Goal**: HugIE: API test. `<br>` **Path**: applications/information_extraction/HugIE                                                                                                                                                                     | -                                       | [click](./documents/information_extraction/HugIE.md)                             |
+|                                  | run_fewnerd.sh                | **Goal**: **Prototypical learning** for named entity recognition, including SpanProto, TokenProto `<br>` **Path**: applications/information_extraction/fewshot_ner                                                                                  | BERT                                    |                                                                               |
+| **Code NLU**               | run_clone_cls.sh              | **Goal**: Standard **Fine-tuning** for code clone classification task. `<br>` **Path**: applications/code/code_clone                                                                                                                                | CodeBERT, CodeT5, GraphCodeBERT, PLBART | [click](./documents/code/code_classification.md)                                 |
+|                                  | run_defect_cls.sh             | **Goal**: Standard **Fine-tuning** for code defect classification task. `<br>` **Path**: applications/code/code_defect                                                                                                                              | CodeBERT, CodeT5, GraphCodeBERT, PLBART | [click](./documents/code/code_classification.md)                                 |
 
 More details of the pre-built applications and settings with the designed models and processors can be found in [HugNLP Documents](./documents/README.md).
 
@@ -229,17 +229,16 @@ This illustrates that HugNLP can simplify the implementation of complex NLP mode
 
 # Prebuilt Products
 
-Here, we show two examples of the pre-built API applications. 
+Here, we show two examples of the pre-built API applications.
 
 ### HugChat: Towards Generative Instruction-tuning for ChatGPT-like PLMs
 
-HugChat a small ChatGPT-like model and is based on generative instruction-tuning, which aims to unify all NLP task into generative format to train the causal language model (e.g., GPT2, BART). 
+HugChat a small ChatGPT-like model and is based on generative instruction-tuning, which aims to unify all NLP task into generative format to train the causal language model (e.g., GPT2, BART).
 You can directly use HugNLP to perform instruction-tuning, and continual train a small ChatGPT-style model on user-defined task-specific corpora.
 
 You can chat with HugChat by run:
+
 > python3 applications/instruction_prompting/HugChat/hugchat.py
-
-
 
 ![image](./images/hugchat_hello.jpg)
 
@@ -279,16 +278,14 @@ You can chat with HugChat by run:
 
 </details>
 
-
 Please Have fun, more details can be found in [here](./documents/instruction_prompting/generative_instruction_tuning.md).
 
 ### HugIE: Towards Chinese Unified Information Extraction via Extractive MRC and Instruction-tuning
 
-Information Extraction (IE) aims to extract structure knowledge from unstructured text. The structure knowledge is formed as a triple ""(head_entity, relation, tail_entity)"". IE consists of two main tasks:
+Information Extraction (IE) aims to extract structure knowledge from un-structure text. The structure knowledge is formed as a triple ""(head_entity, relation, tail_entity)"". IE consists of two main tasks:
 
 - Named Entity Recognition (NER) aims to extract all entity mentions of one type.
 - Relation Extraction (RE). It has two kinds of goal, the first aims to classify the relation between two entities, and the second aims to predict the tail entity when given one head entity and the corresponding relation.
-
 - We unify the tasks of NER and RE into the paradigm of extractive question answering (i.e., machine reading comprehension).
 - We design task-specific instruction and language prompts for NER and RE.
 
@@ -354,7 +351,6 @@ topk_predictions:
   <img src="https://contrib.rocks/image?repo=HugAILab/HugNLP" />
 </a>
 
-
 # Contact
 
 If you have any questions or suggestions, you can join the dingding interaction groups:
@@ -384,16 +380,13 @@ If you find this repository helpful, feel free to cite our paper:
 # References
 
 1. Jianing Wang, Nuo Chen, Qiushi Sun, Wenkang Huang, Chengyu Wang, Ming Gao:
-HugNLP: A Unified and Comprehensive Library for Natural Language Processing. CoRR abs/2302.14286 (2023) [Paper](https://arxiv.org/abs/2302.14286)
+   HugNLP: A Unified and Comprehensive Library for Natural Language Processing. CoRR abs/2302.14286 (2023)
 2. Jianing Wang, Wenkang Huang, Minghui Qiu, Qiuhui Shi, Hongbin Wang, Xiang Li, Ming Gao:
-   Knowledge Prompting in Pre-trained Language Model for Natural Language Understanding. EMNLP 2022: 3164-3177 [Paper](https://aclanthology.org/2022.emnlp-main.207/)
-3. Chengyu Wang, Jianing Wang, Minghui Qiu, Jun Huang, Ming Gao: TransPrompt: Towards an Automatic Transferable Prompting Framework for Few-shot Text Classification. EMNLP 2021: 2792-2802 [Paper](https://aclanthology.org/2021.emnlp-main.221/)
-4. Jianing Wang, Chengyu Wang, Jun Huang, Ming Gao, Aoying Zhou: Uncertainty-aware Self-training for Low-resource Neural Sequence Labeling. AAAI 2023. [Paper](https://arxiv.org/abs/2302.08659)
+   Knowledge Prompting in Pre-trained Language Model for Natural Language Understanding. EMNLP 2022: 3164-3177
+3. Chengyu Wang, Jianing Wang, Minghui Qiu, Jun Huang, Ming Gao: TransPrompt: Towards an Automatic Transferable Prompting Framework for Few-shot Text Classification. EMNLP 2021: 2792-2802
+4. Jianing Wang, Chengyu Wang, Jun Huang, Ming Gao, Aoying Zhou: Uncertainty-aware Self-training for Low-resource Neural Sequence Labeling. AAAI 2023.
+5. Nuo Chen, Qiushi Sun, Renyu Zhu, Xiang Li, Xuesong Lu, Ming Gao: CAT-probing: A Metric-based Approach to Interpret How Pre-trained Models for Programming Language Attend Code Structure. EMNLP 2022 Findings: 4000--4008
 
 # Acknowledgement
 
 We thank to the Platform of AI (PAI) in Alibaba Group and Ant Group to support our work. The friend framework is [EasyNLP](https://github.com/alibaba/EasyNLP). We also thank all the developers that contribute to our work!
-
-# Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=HugAILab/HugNLP&type=Date)](https://star-history.com/#HugAILab/HugNLP&Date)
