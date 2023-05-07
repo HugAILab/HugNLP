@@ -3,17 +3,19 @@
 # @Author  : JianingWang
 # @File    : reward_model.py
 
-from typing import Optional
+from typing import Optional, Tuple
 
 import torch
 import torch.nn as nn
 from transformers import AutoModel, AutoConfig
-
+from loss.rl_loss import LogSigLoss, LogExpLoss
+from transformers.models.roberta.modeling_roberta import RobertaPreTrainedModel, RobertaModel
+from transformers.models.gpt2.modeling_gpt2 import GPT2PreTrainedModel, GPT2Model
 
 """
-Reward Model
+RoERTa for Reward Model
 """
-class RewardModel(nn.Module):
+class RobertaForReward(RobertaPreTrainedModel):
     """
     Reward model base class.
 
@@ -22,54 +24,108 @@ class RewardModel(nn.Module):
         value_head (nn.Module): Value head to get reward score.
     """
 
-    def __init__(self,
-                 model: nn.Module,
-                 value_head: Optional[nn.Module] = None) -> None:
-        self.model = model
+    def __init__(self, config) -> None:
+        super().__init__(config)
+        self.config = config
+        self.roberta = RobertaModel(config)
+        self.value_head = nn.Linear(self.config.n_embd, 1)
+        self.init_weights()
 
-        if value_head is not None:
-            if value_head.out_features != 1:
-                raise ValueError("The value head of reward model's output dim should be 1!")
-            self.value_head = value_head
-        else:
-            self.value_head = nn.Linear(model.config.n_embd, 1)
+    def forward(
+            self, 
+            chosen_sequences: torch.LongTensor, 
+            chosen_attention_mask: Optional[torch.Tensor],
+            rejected_sequences: Optional[torch.LongTensor] = None,
+            rejected_attention_mask: Optional[torch.Tensor] = None,
+        ) -> torch.Tensor:
+        # obtain reward value of chosen sequence
+        chosen_outputs = self.roberta(chosen_sequences, attention_mask=chosen_attention_mask)
+        chosen_last_hidden_states = chosen_outputs['last_hidden_state']
+        chosen_values = self.value_head(chosen_last_hidden_states)[:, :-1]
+        chosen_values = chosen_values.mean(dim=1).squeeze(1)    # ensure shape is (B)
 
-    def forward(self, sequences: torch.LongTensor, attention_mask: Optional[torch.Tensor] = None) -> torch.Tensor:
-        outputs = self.model(sequences, attention_mask=attention_mask)
-        last_hidden_states = outputs['last_hidden_state']
-        values = self.value_head(last_hidden_states)[:, :-1]
-        value = values.mean(dim=1).squeeze(1)    # ensure shape is (B)
-        return value
+        return_dict = {
+            "chosen_values": chosen_values,
+        }
+        # if has rejected, obtain reward of rejected sequence, and calculate the loss
+        if rejected_sequences is not None:
+            rejected_outputs = self.roberta(rejected_sequences, attention_mask=rejected_attention_mask)
+            rejected_last_hidden_states = rejected_outputs['last_hidden_state']
+            rejected_values = self.value_head(rejected_last_hidden_states)[:, :-1]
+            rejected_values = rejected_values.mean(dim=1).squeeze(1)    # ensure shape is (B)
+            return_dict["rejected_values"] = rejected_values
+            
+            loss_fn = LogSigLoss()
+            loss = loss_fn(chosen_values, rejected_values)
+            
+            return_dict["loss"] = loss
+        
+        return return_dict
 
 
 """
-AutoModle for Reward
+GPT2 for Reward Model
 """
-class AutoModelReward(RewardModel):
+class GPT2ForReward(GPT2PreTrainedModel):
+    _keys_to_ignore_on_load_missing = [r"attn.masked_bias", r"attn.bias", r"lm_head.weight"]
     """
-    AutoModel LM Reward model.
+    Reward model base class.
 
     Args:
-        pretrained (str): Pretrained model name or path.
-        config (AutoConfig): Model config.
-        checkpoint (bool): Enable gradient checkpointing.
-
+        model (nn.Module): Reward model.
+        value_head (nn.Module): Value head to get reward score.
     """
 
-    def __init__(self,
-                 pretrained: str = None,
-                 config: Optional[AutoConfig] = None,
-                 checkpoint: bool = False,
-                 lora_rank: int = 0,
-                 lora_train_bias: str = 'none') -> None:
-        if pretrained is not None:
-            model = AutoModel.from_pretrained(pretrained)
-        elif config is not None:
-            model = AutoModel(config)
-        else:
-            model = AutoModel(AutoConfig())
-        if checkpoint:
-            model.gradient_checkpointing_enable()
-        value_head = nn.Linear(model.config.hidden_size, 1)
-        value_head.weight.data.normal_(mean=0.0, std=1 / (model.config.hidden_size + 1))
-        super().__init__(model, value_head, lora_rank, lora_train_bias)
+    def __init__(self, config) -> None:
+        super().__init__(config)
+        self.config = config
+        self.transformer = GPT2Model(config)
+        self.value_head = nn.Linear(self.config.n_embd, 1)
+
+        # Model parallel
+        self.model_parallel = False
+        self.device_map = None
+
+        self.post_init()
+
+    def forward(
+            self, 
+            chosen_sequences: torch.LongTensor, 
+            chosen_attention_mask: Optional[torch.Tensor],
+            rejected_sequences: Optional[torch.LongTensor] = None,
+            rejected_attention_mask: Optional[torch.Tensor] = None,
+        ) -> torch.Tensor:
+        # obtain reward value of chosen sequence
+        chosen_outputs = self.transformer(chosen_sequences, attention_mask=chosen_attention_mask)
+        chosen_last_hidden_states = chosen_outputs['last_hidden_state']
+        chosen_values = self.value_head(chosen_last_hidden_states)[:, :-1]
+        chosen_values = chosen_values.mean(dim=1).squeeze(1)    # ensure shape is (B)
+
+        return_dict = {
+            "chosen_values": chosen_values,
+        }
+        # if has rejected, obtain reward of rejected sequence, and calculate the loss
+        if rejected_sequences is not None:
+            rejected_outputs = self.transformer(rejected_sequences, attention_mask=rejected_attention_mask)
+            rejected_last_hidden_states = rejected_outputs['last_hidden_state']
+            rejected_values = self.value_head(rejected_last_hidden_states)[:, :-1]
+            rejected_values = rejected_values.mean(dim=1).squeeze(1)    # ensure shape is (B)
+            return_dict["rejected_values"] = rejected_values
+            loss_fn = LogSigLoss()
+            loss = loss_fn(chosen_values, rejected_values)
+            
+            return_dict["loss"] = loss
+        
+        return return_dict
+    
+    @staticmethod
+    def _reorder_cache(past: Tuple[Tuple[torch.Tensor]], beam_idx: torch.Tensor) -> Tuple[Tuple[torch.Tensor]]:
+        """
+        This function is used to re-order the `past_key_values` cache if [`~PreTrainedModel.beam_search`] or
+        [`~PreTrainedModel.beam_sample`] is called. This is required to match `past_key_values` with the correct
+        beam_idx at every generation step.
+        """
+        return tuple(
+            tuple(past_state.index_select(0, beam_idx.to(past_state.device)) for past_state in layer_past)
+            for layer_past in past
+        )
