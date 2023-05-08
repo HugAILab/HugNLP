@@ -13,7 +13,7 @@
 [![GitHub pull-requests](https://img.shields.io/github/issues-pr/HugAILab/HugNLP.svg)](https://github.com/HugAILab/HugNLP/pull/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 [![arXiv](https://img.shields.io/badge/arXiv-2302.14286-b31b1b.svg)](https://arxiv.org/abs/2302.14286)
-
+[[中文](./README_zh.md)]
 </div>
 
 # About HugNLP
