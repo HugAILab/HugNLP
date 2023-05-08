@@ -3,7 +3,7 @@
     <img src="images/logo.png" width="360"/>
     <br>
 </p>
-<p align="center" style="font-size:22px;"> <b> 欢迎使用HugNLP！🤗 拥抱NLP! </b>
+<p align="center" style="font-size:22px;"> <b> 欢迎使用HugNLP！🤗 拥抱NLP! [[English](./README.md)]</b>
 </p>
 
 
@@ -13,7 +13,7 @@
 [![GitHub pull-requests](https://img.shields.io/github/issues-pr/HugAILab/HugNLP.svg)](https://github.com/HugAILab/HugNLP/pull/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 [![arXiv](https://img.shields.io/badge/arXiv-2302.14286-b31b1b.svg)](https://arxiv.org/abs/2302.14286)
-[[英文](./README.md)]
+
     
 </div>
 
