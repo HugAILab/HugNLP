@@ -3,7 +3,8 @@
     <img src="images/logo.png" width="360"/>
     <br>
 </p>
-<p align="center" style="font-size:22px;"> <b> 欢迎使用HugNLP！🤗 拥抱NLP! [[English](./README.md)]</b>
+<p align="center" style="font-size:22px;"> <b> 欢迎使用HugNLP！🤗 拥抱NLP! </b>
+    [[English](./README.md)]
 </p>
 
 
