@@ -4,10 +4,9 @@
     <br>
 </p>
 <p align="center" style="font-size:22px;"> <b> 欢迎使用HugNLP！🤗 拥抱NLP! </b>
-    [[English](./README.md)]
 </p>
 
-
+[[English](./README.md)]
 <div align="center">
 
 [![CircleCI](https://dl.circleci.com/status-badge/img/gh/HugAILab/HugNLP/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/HugAILab/HugNLP/tree/main)
