@@ -73,17 +73,20 @@ We provide some core capacities to support the NLP downstream applications.
 
 Conventional pre-training methods lack factual knowledge.
 To deal with this issue, we present KP-PLM with a novel knowledge prompting paradigm for knowledge-enhanced pre-training.
+
 Specifically, we construct a knowledge sub-graph for each input text by recognizing entities and aligning with the knowledge base and decompose this sub-graph into multiple relation paths, which can be directly transformed into language prompts.
 
 ### Prompt-based Fine-tuning
 
 Prompt-based fine-tuning aims to reuse the pre-training objective (e.g., Masked Language Modeling, Causal Language Modeling) and utilizes a well-designed template and verbalizer to make predictions, which has achieved great success in low-resource settings.
+
 We integrate some novel approaches into HugNLP, such as PET, P-tuning, etc.
 
 ### Instruction Tuning & In-Context Learning
 
 Instruction-tuning and in-context learning enable few/zero-shot learning without parameter update, which aims to concatenate the task-aware instructions or example-based demonstrations to prompt GPT-style PLMs to generate reliable responses.
 So, all the NLP tasks can be unified into the same format and can substantially improve the models" generalization.
+
 Inspired by this idea, we extend it into other two paradigms:
 
 1. extractive-style paradigm: we unify various NLP tasks into span extraction, which is the same as extractive question answering.
@@ -94,6 +97,7 @@ Inspired by this idea, we extend it into other two paradigms:
 
 Self-training can address the labeled data scarcity issue by leveraging the large-scale unlabeled data in addition to labeled data, which is one of the mature paradigms in semi-supervised learning.
 However, the standard self-training may generate too much noise, inevitably degrading the model performance due to confirmation bias.
+
 Thus, we present uncertainty-aware self-training. Specifically, we train a teacher model on few-shot labeled data, and then use Monte Carlo (MC) dropout technique in Bayesian neural network (BNN) to approximate the model certainty, and judiciously select the examples that have a higher model certainty of the teacher.
 
 ### Parameter-Efficient Learning
@@ -103,11 +107,11 @@ We develop some novel parameter-efficient learning approaches, such as Prefix-tu
 
 # Installation
 
-> git clone https://github.com/HugAILab/HugNLP.git
->
-> cd HugNLP
->
-> python3 setup.py install
+```
+$ git clone https://github.com/HugAILab/HugNLP.git
+$ cd HugNLP
+$ python3 setup.py install
+```
 
 At present, the project is still being developed and improved, and there may be some `bugs` in use, please understand. We also look forward to your being able to ask issues or committing some valuable pull requests.
 
@@ -143,7 +147,9 @@ More details of the pre-built applications and settings with the designed models
 Here we provide an example to show you to quick use HugNLP.
 If you want to perform a classification task on user-defined dataset, you can prepare three json files (``train.json``, ``dev.json``, ``test.json``) on a directory. And you can run the script file
 
-> bash ./application/default_applications/run_seq_cls.sh
+```
+$ bash ./application/default_applications/run_seq_cls.sh
+```
 
 Before the experiment, you must define the following parameters in the script file ``run_seq_cls.sh``.
 
@@ -238,7 +244,9 @@ You can directly use HugNLP to perform instruction-tuning, and continual train a
 
 You can chat with HugChat by run:
 
-> python3 applications/instruction_prompting/HugChat/hugchat.py
+```
+$ python3 applications/instruction_prompting/HugChat/hugchat.py
+```
 
 ![image](./images/hugchat_hello.jpg)
 
