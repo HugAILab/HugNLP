@@ -1,12 +1,11 @@
-
 <p align="center">
     <br>
     <img src="images/logo.png" width="360"/>
     <br>
 </p>
-
-<p align="center" style="font-size:22px;"> <b> Welcome to use HugNLP. 🤗 Hugging for NLP! </b>
+<p align="center" style="font-size:22px;"> <b> 欢迎使用HugNLP！🤗 拥抱NLP! </b>
 </p>
+
 
 <div align="center">
 
@@ -14,94 +13,94 @@
 [![GitHub pull-requests](https://img.shields.io/github/issues-pr/HugAILab/HugNLP.svg)](https://github.com/HugAILab/HugNLP/pull/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 [![arXiv](https://img.shields.io/badge/arXiv-2302.14286-b31b1b.svg)](https://arxiv.org/abs/2302.14286)
-
+[[English](./README.md)]
+    
 </div>
 
-# About HugNLP
+# 关于HugNLP
 
 HugNLP是一个基于[Hugging Face](https://huggingface.co/)开发的全面统一的NLP开源框架。
 <!-- The founder and main developer is [Jianing Wang](https://wjn1996.github.io/). The collaborators are [Nuo Chen](https://github.com/nchen909), [Qiushi Sun](https://github.com/QiushiSun) and . -->
 
-## **News & Highlights
+## **最新消息
 
-- 🆕 [23-05-05]: HugNLP is released at @HugAILab !
-- 🆕 [23-04-06]: Develop a small ChatGPT-like assistance, naming HugChat! You can chat with HugNLP! [[see doc](./documents/instruction_prompting/generative_instruction_tuning.md)]
-- 🆕 [23-04-02]: Add GPT-style instruction-tuning. You can continual train a small-scale ChatGPT! [[see doc](./documents/instruction_prompting/generative_instruction_tuning.md)]
-- 🆕 [23-03-21]: Finish GPT-style in-context learning for sequence classification. [[see doc](./documents/instruction_prompting/incontext_learning_for_cls.md)]
-- 🆕 [23-03-13]: Add code clone detection and defect task. You can train clone and defect for user-defined dataset. [[see doc](./documents/code/code_classification.md)]
-- 🆕 [23-03-03]: Add HugIE API and corresponding training script. You can use it to perform information extraction on Chinese data. [[see doc](./documents/information_extraction/HugIE.md)]
-- 🆕 [23-02-18]: The HugNLP is started.
+- 🆕 [23-05-05]: HugNLP已发布于@HugAILab !
+- 🆕 [23-04-06]: 类ChatGPT聊天助手HugChat上线! 欢迎与HugChat聊天! [[文档](./documents/instruction_prompting/generative_instruction_tuning.md)]
+- 🆕 [23-04-02]: 增加GPT风格的指令调优。可持续训练一个小规模的ChatGPT! [[文档](./documents/instruction_prompting/generative_instruction_tuning.md)]
+- 🆕 [23-03-21]: 完成序列分类的GPT-style情景学习。 [[文档](./documents/instruction_prompting/incontext_learning_for_cls.md)]
+- 🆕 [23-03-13]: 增加代码克隆检测和缺陷检测任务。用户可自定义数据集用来训练。 [[文档](./documents/code/code_classification.md)]
+- 🆕 [23-03-03]: 添加HugIE API和相应的训练脚本。你可以用它对中文数据进行信息抽取。 [[文档](./documents/information_extraction/HugIE.md)]
+- 🆕 [23-02-18]: HugNLP项目已开源！
 
-# Architecture
+# 架构
 
-The framework overview is shown as follows:
+HugNLP框架概览如下：
 
 <p align="center">
     <br>
     <img src="images/overview.png" width="80%"/>
     <br>
 <p>
+### 模型（Models）
 
-### Models
+在HugNLP中，我们提供了一些流行的基于transformer的模型作为骨干，如BERT、RoBERTa、GPT-2等。我们还发布了KP-PLM，一种新颖的知识增强型预训练范式，可用于注入事实知识，并可轻松用于任意的PLM。
+除了基本的PLMs，我们还实现了一些特定任务的模型，涉及序列分类、匹配、标注、词元抽取、多项选择和文本生成等。
+我们同时开发了标准微调（基于分类头和提示调优模型），使PLM在分类任务上可调优。
+对于小样本学习设置，HugNLP在小样本分类和命名实体识别（NER）方面都提供了一个原型网络。
 
-In HugNLP, we provide some popular transformer-based models as backbones, such as BERT, RoBERTa, GPT-2, etc. We also release our pre-built KP-PLM, a novel knowledge-enhanced pre-training paradigm to inject factual knowledge and can be easily used for arbitrary PLMs.
-Apart from basic PLMs, we also implement some task-specific models, involving sequence classification, matching, labeling, span extraction, multi-choice, and text generation.
-Notably, we develop standard fine-tuning (based on CLS Head and prompt-tuning models that enable PLM tuning on classification tasks.
-For few-shot learning settings, HugNLP provides a prototypical network in both few-shot text classification and named entity recognition (NER).
+此外，我们还在HugNLP中加入了一些即插即用的工具。
 
-In addition, we also incorporate some plug-and-play utils in HugNLP.
+1. 参数冻结：如果我们想进行参数有效性学习，冻结PLM中的一些参数以提高训练效率，我们可以设置`use_freezing`，并冻结骨干模型。
+2. 不确定性估计：目的是在半监督学习中计算模型的确定性。
+3. 预测校准：可以通过校准分布及缓解语义偏差问题来进一步提高准确性。
 
-1. Parameter Freezing. If we want to perform parameter-efficient learning, which aims to freeze some parameters in PLMs to improve the training efficiency, we can set the configure `use_freezing` and freeze the backbone. A use case is shown in Code.
-2. Uncertainty Estimation aims to calculate the model certainty when in semi-supervised learning.
-3. We also design Prediction Calibration, which can be used to further improve the accuracy by calibrating the distribution and alleviating the semantics bias problem.
+### 处理器（Processors）
 
-### Processors
+处理器旨在加载数据集，并在一个包含句子次元化、采样和张量生成的流水线中处理任务的examples。
+用户也可以直接通过`load_dataset`获得数据，即可以从互联网上直接下载或从本地磁盘上加载。
+对不同的任务，用户应该定义一个任务特定的数据整理器（data collator），其目的是将原始实例（examples）转化为模型输入张量features（特征）。
 
-Processors aim to load the dataset and process the task examples in a pipeline containing sentence tokenization, sampling, and tensor generation.
-Specifically, users can directly obtain the data through `load_dataset`, which can directly download it from the Internet or load it from the local disk.
-For different tasks, users should define a task-specific data collator, which aims to transform the original examples into model input tensor features.
+### 应用（Applications）
 
-### Applications
+应用为用户提供了丰富的模块，通过在模型和处理器的一系列设置中进行选择，建立现实世界的应用和产品。
 
-It provides rich modules for users to build real-world applications and products by selecting among an array of settings from Models and Processors.
+# 核心功能
 
-# Core Capacities
+我们提供一些核心能力来支持NLP的下游应用。
 
-We provide some core capacities to support the NLP downstream applications.
+### 知识增强的预训练语言模型
 
-### Knowledge-enhanced Pre-trained Language Model
+传统的预训练方法缺乏事实性知识。
+为了处理这个问题，我们提出了KP-PLM，它有一个新颖的知识提示范式，用于知识增强的预训练。
+具体来说，我们通过识别实体为每个输入文本构建一个知识子图，并与知识库对齐，然后将这个子图分解为多个关系路径，这些关系路径可以直接转化为语言提示。
 
-Conventional pre-training methods lack factual knowledge.
-To deal with this issue, we present KP-PLM with a novel knowledge prompting paradigm for knowledge-enhanced pre-training.
-Specifically, we construct a knowledge sub-graph for each input text by recognizing entities and aligning with the knowledge base and decompose this sub-graph into multiple relation paths, which can be directly transformed into language prompts.
+### 基于提示的微调
 
-### Prompt-based Fine-tuning
+基于提示的微调旨在重用预训练目标任务（如掩码语言建模、因果语言建模），并利用设计好的template和verbalizer进行预测，这在低资源环境下颇有成效。
+我们也将一些新方法整合到HugNLP中，如PET、P-Tuning等。
 
-Prompt-based fine-tuning aims to reuse the pre-training objective (e.g., Masked Language Modeling, Causal Language Modeling) and utilizes a well-designed template and verbalizer to make predictions, which has achieved great success in low-resource settings.
-We integrate some novel approaches into HugNLP, such as PET, P-tuning, etc.
+### 指令调优和情景学习
 
-### Instruction Tuning & In-Context Learning
+指令调优和情景学习可以在不更新参数的情况下进行小样本和零样本学习，其目的是将任务相关的指令或演示示例串联起来，促使GPT-style PLM产生可靠的反应。
+因此，所有的NLP任务都可以被统一到相同的格式中，并大幅提高模型的泛化能力。
+在该想法的启发下，我们把它扩展到其他几个范式：
 
-Instruction-tuning and in-context learning enable few/zero-shot learning without parameter update, which aims to concatenate the task-aware instructions or example-based demonstrations to prompt GPT-style PLMs to generate reliable responses.
-So, all the NLP tasks can be unified into the same format and can substantially improve the models" generalization.
-Inspired by this idea, we extend it into other two paradigms:
+1.抽取式范式：我们将各种NLP任务统一为词元抽取，这与抽取式问题回答相同。
+2.推理式范式：所有的任务都可以被视为自然语言推理，以匹配输入和输出之间的关系。
+3.生成式范式：我们将所有的任务统一为自然语言推理（NLI），并基于指令调优、情景学习或思维链来训练因果模型。
 
-1. extractive-style paradigm: we unify various NLP tasks into span extraction, which is the same as extractive question answering.
-2. inference-style paradigm: all the tasks can be viewed as natural language inference to match the relations between inputs and outputs.
-3. generative-style paradigm: we unify all the tasks into generative format, and train the causal models based on instruction-tuning, in-context learning or chain-of-thought.
+### 不确定性估计的自训练
 
-### Self-training with Uncertainty Estimation
+自训练可以通过利用大规模的未标记数据来解决标记数据稀缺的问题，这也是半监督学习中的一个成熟范式。
+然而，标准的自训练可能会产生过多的噪音，不可避免地会因为确认偏差而降低模型的性能。
+因此，我们提出了不确定性感知的自训练。具体来说，我们在少数标签数据上训练教师模型，然后在贝叶斯神经网络（BNN）中使用蒙特卡洛（MC）dropout技术来近似估计模型的确定性，并选择教师模型确定性较高的例子。
 
-Self-training can address the labeled data scarcity issue by leveraging the large-scale unlabeled data in addition to labeled data, which is one of the mature paradigms in semi-supervised learning.
-However, the standard self-training may generate too much noise, inevitably degrading the model performance due to confirmation bias.
-Thus, we present uncertainty-aware self-training. Specifically, we train a teacher model on few-shot labeled data, and then use Monte Carlo (MC) dropout technique in Bayesian neural network (BNN) to approximate the model certainty, and judiciously select the examples that have a higher model certainty of the teacher.
+### 参数有效性学习
 
-### Parameter-Efficient Learning
+为提高HugNLP的训练效率，我们还实现了参数有效性学习，其目的是将一些参数冻结在骨干网络中，这样我们在模型训练中只需调整少数参数。
+我们开发了一些新的参数效率学习方法，如Prefix-tuning、Adapter-Tuning、BitFit和LoRA等。
 
-To improve the training efficiency of HugNLP, we also implement parameter-efficient learning, which aims to freeze some parameters in the backbone so that we only tune a few parameters during model training.
-We develop some novel parameter-efficient learning approaches, such as Prefix-tuning, Adapter-tuning, BitFit and LoRA, etc.
-
-# Installation
+# 安装
 
 > git clone https://github.com/HugAILab/HugNLP.git
 >
@@ -109,60 +108,60 @@ We develop some novel parameter-efficient learning approaches, such as Prefix-tu
 >
 > python3 setup.py install
 
-At present, the project is still being developed and improved, and there may be some `bugs` in use, please understand. We also look forward to your being able to ask issues or committing some valuable pull requests.
+目前，该项目仍在开发和改进中，使用过程中可能会有一些bugs，请谅解。我们也期待着你能提出issues或pull requests。
 
-# Pre-built Applications Overview
+# 预建应用概览
 
-We demonstrate all pre-built applications in HugNLP. You can choose one application to use HugNLP. You can also click the link to see the details document.
+我们在HugNLP中演示了所有预建的应用。你可以选择一个应用来使用HugNLP，也可以点击链接查看详细的文件。
 
-| **Applications** | **Runing Tasks** | **Task Notes** | **PLM Models** | **Documents** |
-| --- | --- | --- | --- | --- |
-| **Default Application** | run_seq_cls.sh | **Goal**: Standard **Fine-tuning** or **Prompt-tuning** for sequence classification on user-defined dataset. <br> **Path**: applications/default_applications | BERT, RoBERTa, DeBERTa | [click](./documents/default_tasks/default_sequence_classification.md) |
-|  | run_seq_labeling.sh | **Goal**: Standard **Fine-tuning** for sequence labeling on user-defined dataset. <br> **Path**: applications/default_applications | BERT, RoBERTa, ALBERT |   |
-| **Pre-training** | run_pretrain_mlm.sh | **Goal**: Pre-training via **Masked Language Modeling** (MLM). <br> **Path**: applications/pretraining/ | BERT, RoBERTa | [click](./documents/pretraining/Masked%20LM%20for%20Continual%20Pre-training.md) |
-|  | run_pretrain_casual_lm.sh | **Goal**: Pre-training via **Causal Language Modeling** (CLM). <br> **Path**: applications/pretraining | BERT, RoBERTa | [click](./documents/pretraining/Causal%20LM%20for%20Continual%20Pre-training.md) |
-| **GLUE Benchmark** | run_glue.sh | **Goal**: Standard **Fine-tuning** or **Prompt-tuning** for GLUE classification tasks. <br> **Path**: applications/benchmark/glue | BERT, RoBERTa, DeBERTa |  |
-|  | run_causal_incontext_glue.sh | **Goal**: **In-context learning** for GLUE classification tasks. <br> **Path**: applications/benchmark/glue | GPT-2 |  |
-| **CLUE Benchmark** | clue_finetune_dev.sh | **Goal**: Standard **Fine-tuning** and **Prompt-tuning** for CLUE classification task。 <br> **Path**: applications/benchmark/clue | BERT, RoBERTa, DeBERTa |  |
-|  | run_clue_cmrc.sh | **Goal**: Standard **Fine-tuning** for CLUE CMRC2018 task. <br> **Path**: applications/benchmark/cluemrc | BERT, RoBERTa, DeBERTa |  |
-|  | run_clue_c3.sh | **Goal**: Standard **Fine-tuning** for CLUE C3 task. <br> **Path**: applications/benchmark/cluemrc | BERT, RoBERTa, DeBERTa |  |
-|  | run_clue_chid.sh | **Goal**: Standard **Fine-tuning** for CLUE CHID task. <br> **Path**: applications/benchmark/cluemrc | BERT, RoBERTa, DeBERTa |  |
-| **Instruction-Prompting** | run_causal_instruction.sh | **Goal**: **Cross-task training** via generative Instruction-tuning based on causal PLM. <font color='red'>**You can use it to train a small ChatGPT**</font>. <br> **Path**: applications/instruction_prompting/instruction_tuning | GPT2 | [click](./documents/instruction_prompting/generative_instruction_tuning.md) |
-|  | run_zh_extract_instruction.sh | **Goal**: **Cross-task training** via extractive Instruction-tuning based on Global Pointer model. <br> **Path**: applications/instruction_prompting/chinese_instruction | BERT, RoBERTa, DeBERTa | [click](./documents/instruction_prompting/extractive_instruction_tuning.md) |
-|  | run_causal_incontext_cls.sh | **Goal**: **In-context learning** for user-defined classification tasks. <br> **Path**: applications/instruction_prompting/incontext_learning | GPT-2 | [click](./documents/instruction_prompting/incontext_learning_for_cls.md) |
-| **Information Extraction** | run_extractive_unified_ie.sh | **Goal**: **HugIE**: training a unified chinese information extraction via extractive instruction-tuning. <br> **Path**: applications/information_extraction/HugIE | BERT, RoBERTa, DeBERTa | [click](./documents/information_extraction/HugIE.md) |
-|  | api_test.py | **Goal**: HugIE: API test. <br> **Path**: applications/information_extraction/HugIE | - | [click](./documents/information_extraction/HugIE.md) |
-|  | run_fewnerd.sh | **Goal**: **Prototypical learning** for named entity recognition, including SpanProto, TokenProto <br> **Path**: applications/information_extraction/fewshot_ner | BERT |  |
-| **Code NLU** | run_clone_cls.sh | **Goal**: Standard **Fine-tuning** for code clone classification task. <br> **Path**: applications/code/code_clone | CodeBERT, CodeT5, GraphCodeBERT, PLBART | [click](./documents/code/code_classification.md) |
-|  | run_defect_cls.sh | **Goal**: Standard **Fine-tuning** for code defect classification task. <br> **Path**: applications/code/code_defect | CodeBERT, CodeT5, GraphCodeBERT, PLBART | [click](./documents/code/code_classification.md) |
+| **应用**           | **运行任务**                  | **任务笔记**                                                 | **预训练模型**                          | **文档**                                                     |
+| ------------------ | ----------------------------- | ------------------------------------------------------------ | --------------------------------------- | ------------------------------------------------------------ |
+| **默认应用**       | run_seq_cls.sh                | **目标**: 用户自定义数据下序列分类的标准 **微调** 或 **提示调优**  <br> **路径**: applications/default_applications | BERT, RoBERTa, DeBERTa                  | [查看](./documents/default_tasks/default_sequence_classification.md) |
+|                    | run_seq_labeling.sh           | **目标**: 用户自定义数据下序列标注的标准 **微调**  <br> **路径**: applications/default_applications | BERT, RoBERTa, ALBERT                   |                                                              |
+| **预训练**         | run_pretrain_mlm.sh           | **目标**: 通过**掩码语言建模**(MLM)的预训练 <br> **路径**: applications/pretraining/ | BERT, RoBERTa                           | [查看](./documents/pretraining/Masked%20LM%20for%20Continual%20Pre-training.md) |
+|                    | run_pretrain_casual_lm.sh     | **目标**: 通过**因果语言建模** (CLM)的预训练 <br> **路径**: applications/pretraining | BERT, RoBERTa                           | [查看](./documents/pretraining/Causal%20LM%20for%20Continual%20Pre-training.md) |
+| **GLUE Benchmark** | run_glue.sh                   | **目标**: GLUE分类任务的标准 **微调** 或 **提示调优** <br> **路径**: applications/benchmark/glue | BERT, RoBERTa, DeBERTa                  |                                                              |
+|                    | run_causal_incontext_glue.sh  | **目标**: GLUE分类任务的**上下文学习** <br> **路径**: applications/benchmark/glue | GPT-2                                   |                                                              |
+| **CLUE Benchmark** | clue_finetune_dev.sh          | **目标**: GLUE分类任务的标准 **微调** 或 **提示调优**  <br> **路径**: applications/benchmark/clue | BERT, RoBERTa, DeBERTa                  |                                                              |
+|                    | run_clue_cmrc.sh              | **目标**: CLUE CMRC2018任务的标准 **微调** <br> **路径**: applications/benchmark/cluemrc | BERT, RoBERTa, DeBERTa                  |                                                              |
+|                    | run_clue_c3.sh                | **目标**: CLUE C3任务的标准 **微调** <br> **路径**: applications/benchmark/cluemrc | BERT, RoBERTa, DeBERTa                  |                                                              |
+|                    | run_clue_chid.sh              | **目标**: CLUE CHID任务的标准 **微调**<br> **路径**: applications/benchmark/cluemrc | BERT, RoBERTa, DeBERTa                  |                                                              |
+| **指令调优**       | run_causal_instruction.sh     | **目标**: 通过基于因果预训练模型的生成式指令调优进行**跨任务训练**. <font color='red'>**你可用来训练一个小型的ChatGPT**</font>. <br> **路径**: applications/instruction_prompting/instruction_tuning | GPT2                                    | [查看](./documents/instruction_prompting/generative_instruction_tuning.md) |
+|                    | run_zh_extract_instruction.sh | **目标**: 通过基于Global Pointer模型的抽取式指令调优进行**跨任务训练** <br> **路径**: applications/instruction_prompting/chinese_instruction | BERT, RoBERTa, DeBERTa                  | [查看](./documents/instruction_prompting/extractive_instruction_tuning.md) |
+|                    | run_causal_incontext_cls.sh   | **目标**: 用户自定义分类任务下的**上下文学习** <br> **路径**: applications/instruction_prompting/incontext_learning | GPT-2                                   | [查看](./documents/instruction_prompting/incontext_learning_for_cls.md) |
+| **信息抽取**       | run_extractive_unified_ie.sh  | **目标**: **HugIE**: 通过抽取式指令调优训练一个统一的中文信息抽取应用. <br> **路径**: applications/information_extraction/HugIE | BERT, RoBERTa, DeBERTa                  | [查看](./documents/information_extraction/HugIE.md)          |
+|                    | api_test.py                   | **目标**: HugIE: API测试. <br> **路径**: applications/information_extraction/HugIE | -                                       | [查看](./documents/information_extraction/HugIE.md)          |
+|                    | run_fewnerd.sh                | **目标**: 用于命名实体识别的**原型学习**, 包括 SpanProto, TokenProto <br> **路径**: applications/information_extraction/fewshot_ner | BERT                                    |                                                              |
+| **代码理解任务**   | run_clone_cls.sh              | **目标**: 用于代码克隆检测任务的标准**微调** <br> **路径**: applications/code/code_clone | CodeBERT, CodeT5, GraphCodeBERT, PLBART | [查看](./documents/code/code_classification.md)              |
+|                    | run_defect_cls.sh             | **目标**: 用于缺陷检测任务的标准**微调** <br> **路径**: applications/code/code_defect | CodeBERT, CodeT5, GraphCodeBERT, PLBART | [查看](./documents/code/code_classification.md)              |
 
-More details of the pre-built applications and settings with the designed models and processors can be found in [HugNLP Documents](./documents/README.md).
+更多关于预建应用以及模型和处理器设置的细节可以在[HugNLP文档](./documents/README.md)中找到。
 
-# Quick Use
+# 快速上手
 
-Here we provide an example to show you to quick use HugNLP.
-If you want to perform a classification task on user-defined dataset, you can prepare three json files (``train.json``, ``dev.json``, ``test.json``) on a directory. And you can run the script file
+这里我们提供一个例子来告诉你如何快速使用HugNLP。
+如果你想在用户定义的数据集上执行分类任务，你可以在一个目录上准备三个json文件 (``train.json``, ``dev.json``, ``test.json``)，然后运行以下脚本文件
 
 > bash ./application/default_applications/run_seq_cls.sh
 
-Before the experiment, you must define the following parameters in the script file ``run_seq_cls.sh``.
+在实验之前，你需要在脚本文件``run_seq_cls.sh``中定义以下参数。
 
-- --model_name_or_path: the pre-trained model name or path. e.g. bert-base-uncased
-- --data_path: the path of the dataset (including ``train.json``, ``dev.json`` and ``test.json``), e.g. ``./datasets/data_example/cls/``.
-- --user_defined: you must define label_names if there is not exist a ``label_names.txt``.
+- --model_name_or_path: 预训练的模型名称或路径，例如：bert-base-uncased。
+- --data_path: 数据集的路径（包括`train.json`，`dev.json`和`test.json`），例如：`./datasets/data_example/cls/`。
+- --user_defined: 如果没有`label_names.txt`，你需要定义标签名称。
 
-If you want to use prompt-based fine-tuning, you can add the following parameters:
+如果你想进行基于提示的微调，你可以添加以下参数：
 
 - --use_prompt_for_cls
 - ---task_type: one of ``masked_prompt_cls``, ``masked_prompt_prefix_cls``,``masked_prompt_ptuning_cls``, ``masked_prompt_adapter_cls``.
 
-You also should add ``template.json`` and ``label_words_mapping.json``.
+你需要添加 ``template.json`` 和 ``label_words_mapping.json``文件.
 
-If you wang to use parameter-efficient learning, you can add the following parameter:
+如果你想使用参数有效性学习，你可以添加以下参数：
 
 - --use_freezing
 
-The example of ``run_seq_cls.sh`` is:
+以``run_seq_cls.sh`` 为例:
 
 ```bash
 path=chinese-macbert-base
@@ -214,97 +213,97 @@ python3 -m torch.distributed.launch --nproc_per_node=2 --master_port=6014 hugnlp
 --user_defined="label_names=entailment,neutral,contradiction"
 ```
 
-# Quick Develop
+# 快速开发
 
-This section is for developer.
-HugNLP is easy to use and develop. We draw a workflow in the following figure to show how to develop a new running task.
+本节是为开发人员准备的。
+HugNLP很容易使用和开发。我们在下图中画了一个工作流程，以显示如何开发一个新的运行任务。
 
 <p align="center">
     <br>
     <img src="images/workflow.png" width="90%"/>
     <br>
 </p>
-It consists of five main steps, including library installation, data preparation, processor selection or design, model selection or design, and application design.
-This illustrates that HugNLP can simplify the implementation of complex NLP models and tasks.
+它含有五个主要步骤，包括库的安装、数据准备、处理器选择或设计、模型选择或设计以及应用设计。
+这说明HugNLP可以简化复杂NLP模型和任务的实施。
 
-# Prebuilt Products
+# 预建产品
 
-Here, we show two examples of the pre-built API applications. 
+下面我们展示了两个预建API应用的例子。 
 
-### HugChat: Towards Generative Instruction-tuning for ChatGPT-like PLMs
+### HugChat： 面向生成式指令调优的类ChatGPT PLMs
 
-HugChat a small ChatGPT-like model and is based on generative instruction-tuning, which aims to unify all NLP task into generative format to train the causal language model (e.g., GPT2, BART). 
-You can directly use HugNLP to perform instruction-tuning, and continual train a small ChatGPT-style model on user-defined task-specific corpora.
+HugChat是一个类ChatGPT的小模型，基于生成式指令调优，旨在将所有NLP任务统一为生成格式来训练因果语言模型（如GPT2、BART）。
+你可以直接使用HugNLP来进行指令调优，并在用户定义的特定任务语料上持续训练一个小型的类ChatGPT模型。
 
-You can chat with HugChat by run:
+你可以通过运行以下命令与HugChat聊天：
 > python3 applications/instruction_prompting/HugChat/hugchat.py
 
 
 
 ![image](./images/hugchat_hello.jpg)
 
-<details><summary><b>1. Write a story</b></summary>
+<details><summary><b>1. 写故事</b></summary>
 
 ![image](./images/hugchat_story.jpg)
 
 </details>
 
-<details><summary><b>2. Write a letter</b></summary>
+<details><summary><b>2. 写信</b></summary>
 
 ![image](./images/hugchat_letter.jpg)
 
 </details>
 
-<details><summary><b>3. Calculation</b></summary>
+<details><summary><b>3. 计算</b></summary>
 
 ![image]()
 
 </details>
 
-<details><summary><b>4. Natural Language Understanding (Sentiment, Reading Comprehension, KBQA)</b></summary>
+<details><summary><b>4. 自然语言理解 (情感, 阅读理解, KBQA)</b></summary>
 
 ![image](./images/hugchat_nlu.jpg)
 
 </details>
 
-<details><summary><b>5. Searching</b></summary>
+<details><summary><b>5. 搜索</b></summary>
 
 ![image](./images/hugchat_search.jpg)
 
 </details>
 
-<details><summary><b>6. Code Programming</b></summary>
+<details><summary><b>6. 写代码</b></summary>
 
 ![image](./images/hugchat_code.jpg)
 
 </details>
 
 
-Please Have fun, more details can be found in [here](./documents/instruction_prompting/generative_instruction_tuning.md).
+祝玩得愉快！更多的细节可以在[这里](./documents/instruction_prompting/generative_instruction_tuning.md)找到。
 
-### HugIE: Towards Chinese Unified Information Extraction via Extractive MRC and Instruction-tuning
+### HugIE：通过抽取式MRC和指令调优的统一中文信息抽取应用
 
-Information Extraction (IE) aims to extract structure knowledge from un-structure text. The structure knowledge is formed as a triple ""(head_entity, relation, tail_entity)"". IE consists of two main tasks:
+信息抽取（IE）旨在从非结构性文本中提取结构知识。结构知识是由""(head_entity, relation, tail_entity)""组成的三元组。IE由以下两个主要任务组成：
 
-- Named Entity Recognition (NER) aims to extract all entity mentions of one type.
-- Relation Extraction (RE). It has two kinds of goal, the first aims to classify the relation between two entities, and the second aims to predict the tail entity when given one head entity and the corresponding relation.
+- 命名实体识别（NER）：旨在提取一种类型的所有实体。
+- 关系抽取（RE）。它有两种目标，第一种目标是对两个实体之间的关系进行分类，第二种目标是在给定一个头实体和相应的关系时预测尾实体。
 
-- We unify the tasks of NER and RE into the paradigm of extractive question answering (i.e., machine reading comprehension).
-- We design task-specific instruction and language prompts for NER and RE.
+我们将NER和RE的任务统一到抽取式问题回答（即机器阅读理解）的范式中。
+我们为NER和RE设计了特定任务的指令和语言提示。
 
-> For the NER task:
+> NER 任务:
 >
 > - instruction: "找到文章中所有【{entity_type}】类型的实体？文章：【{passage_text}】"
 >
-> For the RE task:
+> RE 任务:
 >
 > - instruction: "找到文章中【{head_entity}】的【{relation}】？文章：【{passage_text}】"
 
-- During the training, we utilize Global Pointer with Chinese-Macbert as the basic model.；
+在训练过程中，我们利用Global Pointer和Chines-Macbert作为基本模型。
 
-Our model is saved in Hugging Face: [https://huggingface.co/wjn1996/wjn1996-hugnlp-hugie-large-zh](https://huggingface.co/wjn1996/wjn1996-hugnlp-hugie-large-zh).
+我们的模型保存在Hugging Face中: [https://huggingface.co/wjn1996/wjn1996-hugnlp-hugie-large-zh](https://huggingface.co/wjn1996/wjn1996-hugnlp-hugie-large-zh).
 
-Quick use HugIE for Chinese information extraction：
+快速使用HugIE进行中文信息抽取：
 
 ```python
 from applications.information_extraction.HugIE.api_test import HugIEAPI
@@ -348,16 +347,16 @@ topk_predictions:
 """
 ```
 
-# Contributors
+# 贡献者
 
 <a href="https://github.com/HugAILab/HugNLP/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=HugAILab/HugNLP" />
 </a>
 
 
-# Contact
+# 联系我们
 
-If you have any questions or suggestions, you can join the dingding interaction groups:
+如果你有任何问题或建议，你可以加入钉钉小组：
 
 <p align="center">
     <br>
@@ -365,11 +364,11 @@ If you have any questions or suggestions, you can join the dingding interaction 
     <br>
 </p>
 
-or you can contact the author [`Jianing Wang`](https://wjn1996.github.io).
+或直接联系作者 [`王嘉宁`](https://wjn1996.github.io).
 
-# Cite Me
+# 引用
 
-If you find this repository helpful, feel free to cite our paper:
+如果你觉得这个资源库有帮助，请引用我们的论文：
 
 ```latex
 @misc{wang2023hugnlp,
@@ -381,7 +380,7 @@ If you find this repository helpful, feel free to cite our paper:
 }
 ```
 
-# References
+# 参考文献
 
 1. Jianing Wang, Nuo Chen, Qiushi Sun, Wenkang Huang, Chengyu Wang, Ming Gao:
 HugNLP: A Unified and Comprehensive Library for Natural Language Processing. CoRR abs/2302.14286 (2023)
@@ -390,6 +389,6 @@ HugNLP: A Unified and Comprehensive Library for Natural Language Processing. CoR
 3. Chengyu Wang, Jianing Wang, Minghui Qiu, Jun Huang, Ming Gao: TransPrompt: Towards an Automatic Transferable Prompting Framework for Few-shot Text Classification. EMNLP 2021: 2792-2802
 4. Jianing Wang, Chengyu Wang, Jun Huang, Ming Gao, Aoying Zhou: Uncertainty-aware Self-training for Low-resource Neural Sequence Labeling. AAAI 2023.
 
-# Acknowledgement
+# 致谢
 
-We thank to the Platform of AI (PAI) in Alibaba Group and Ant Group to support our work. The friend framework is [EasyNLP](https://github.com/alibaba/EasyNLP). We also thank all the developers that contribute to our work!
+我们感谢阿里巴巴集团的人工智能平台（PAI）和蚂蚁集团对我们工作的支持。我们的合作框架是[EasyNLP]（https://github.com/alibaba/EasyNLP）。我们也感谢所有为我们的工作做出贡献的开发者!
