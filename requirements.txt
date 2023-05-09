@@ -12,7 +12,7 @@ roformer
 scikit-learn
 sentence-transformers
 sentencepiece
-torch==1.12.1
+torch==1.13.1
 tqdm
 transformers==4.21.2
 ujson
