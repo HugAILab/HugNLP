@@ -19,36 +19,36 @@
 
 # 关于HugNLP
 
-HugNLP是一个基于[Hugging Face](https://huggingface.co/)开发的全面统一的NLP开源框架。
-<!-- The founder and main developer is [Jianing Wang](https://wjn1996.github.io/). The collaborators are [Nuo Chen](https://github.com/nchen909), [Qiushi Sun](https://github.com/QiushiSun) and . -->
+HugNLP 是一个基于 [Hugging Face](https://huggingface.co/) 开发的全面统一的NLP开源框架。
 
 ## **最新消息
 
-- 🆕 [23-05-05]: HugNLP已发布于@HugAILab !
-- 🆕 [23-04-06]: 类ChatGPT聊天助手HugChat上线! 欢迎与HugChat聊天! [[文档](./documents/instruction_prompting/generative_instruction_tuning.md)]
-- 🆕 [23-04-02]: 增加GPT风格的指令调优。可持续训练一个小规模的ChatGPT! [[文档](./documents/instruction_prompting/generative_instruction_tuning.md)]
-- 🆕 [23-03-21]: 完成序列分类的GPT-style情景学习。 [[文档](./documents/instruction_prompting/incontext_learning_for_cls.md)]
+- 🆕 [23-05-05]: HugNLP 已发布于 @HugAILab !
+- 🆕 [23-04-06]: 类 ChatGPT 聊天助手 HugChat 上线! 欢迎与 HugChat 聊天! [[文档](./documents/instruction_prompting/generative_instruction_tuning.md)]
+- 🆕 [23-04-02]: 增加 GPT 风格的指令调优。可持续训练一个小规模的 ChatGPT! [[文档](./documents/instruction_prompting/generative_instruction_tuning.md)]
+- 🆕 [23-03-21]: 完成序列分类的 GPT-style 情景学习。 [[文档](./documents/instruction_prompting/incontext_learning_for_cls.md)]
 - 🆕 [23-03-13]: 增加代码克隆检测和缺陷检测任务。用户可自定义数据集用来训练。 [[文档](./documents/code/code_classification.md)]
-- 🆕 [23-03-03]: 添加HugIE API和相应的训练脚本。你可以用它对中文数据进行信息抽取。 [[文档](./documents/information_extraction/HugIE.md)]
-- 🆕 [23-02-18]: HugNLP项目已开源！
+- 🆕 [23-03-03]: 添加 HugIE API 和相应的训练脚本。你可以用它对中文数据进行信息抽取。 [[文档](./documents/information_extraction/HugIE.md)]
+- 🆕 [23-02-18]: HugNLP 项目已开源！
 
 # 架构
 
-HugNLP框架概览如下：
+HugNLP 框架概览如下：
 
 <p align="center">
     <br>
     <img src="images/overview.png" width="80%"/>
     <br>
 <p>
+
 ### 模型（Models）
 
-在HugNLP中，我们提供了一些流行的基于transformer的模型作为骨干，如BERT、RoBERTa、GPT-2等。我们还发布了KP-PLM，一种新颖的知识增强型预训练范式，可用于注入事实知识，并可轻松用于任意的PLM。
-除了基本的PLMs，我们还实现了一些特定任务的模型，涉及序列分类、匹配、标注、词元抽取、多项选择和文本生成等。
-我们同时开发了标准微调（基于分类头和提示调优模型），使PLM在分类任务上可调优。
-对于小样本学习设置，HugNLP在小样本分类和命名实体识别（NER）方面都提供了一个原型网络。
+在 HugNLP 中，我们提供了一些流行的基于 Transformer 的模型作为骨干，如 BERT、RoBERTa、GPT-2 等。我们还发布了 KP-PLM，一种新颖的知识增强型预训练范式，可用于注入事实知识，并可轻松用于任意的 PLM。
+除了基本的 PLMs，我们还实现了一些特定任务的模型，涉及序列分类、匹配、标注、词元抽取、多项选择和文本生成等。
+我们同时开发了标准微调（基于分类头和提示调优模型），使 PLM 在分类任务上可调优。
+对于小样本学习设置，HugNLP 在小样本分类和命名实体识别（NER）方面都提供了一个原型网络。
 
-此外，我们还在HugNLP中加入了一些即插即用的工具。
+此外，我们还在 HugNLP 中加入了一些即插即用的工具。
 
 1. 参数冻结：如果我们想进行参数有效性学习，冻结PLM中的一些参数以提高训练效率，我们可以设置`use_freezing`，并冻结骨干模型。
 2. 不确定性估计：目的是在半监督学习中计算模型的确定性。
@@ -56,17 +56,17 @@ HugNLP框架概览如下：
 
 ### 处理器（Processors）
 
-处理器旨在加载数据集，并在一个包含句子次元化、采样和张量生成的流水线中处理任务的examples。
-用户也可以直接通过`load_dataset`获得数据，即可以从互联网上直接下载或从本地磁盘上加载。
-对不同的任务，用户应该定义一个任务特定的数据整理器（data collator），其目的是将原始实例（examples）转化为模型输入张量features（特征）。
+处理器旨在加载数据集，并在一个包含句子次元化、采样和张量生成的流水线中处理任务的 examples。
+用户也可以直接通过 `load_dataset` 获得数据，即可以从互联网上直接下载或从本地磁盘上加载。
+对不同的任务，用户应该定义一个任务特定的数据整理器（data collator），其目的是将原始实例（examples）转化为模型输入张量 features（特征）。
 
 ### 应用（Applications）
 
-应用为用户提供了丰富的模块，通过在模型和处理器的一系列设置中进行选择，建立现实世界的应用和产品。
+我们为用户提供了丰富的模块，通过在模型和处理器的一系列设置中进行选择，建立现实世界的应用和产品。
 
 # 核心功能
 
-我们提供一些核心能力来支持NLP的下游应用。
+我们提供了一些核心能力来支持NLP的下游应用。
 
 ### 知识增强的预训练语言模型
 
@@ -76,16 +76,16 @@ HugNLP框架概览如下：
 
 ### 基于提示的微调
 
-基于提示的微调旨在重用预训练目标任务（如掩码语言建模、因果语言建模），并利用设计好的template和verbalizer进行预测，这在低资源环境下颇有成效。
-我们也将一些新方法整合到HugNLP中，如PET、P-Tuning等。
+基于提示的微调旨在复用预训练目标任务（如掩码语言建模、因果语言建模），并利用设计好的 template 和verbalizer 进行预测，这在低资源环境下颇有成效。
+我们也将一些新方法整合到 HugNLP 中，如 PET、P-Tuning 等。
 
 ### 指令调优和情景学习
 
-指令调优和情景学习可以在不更新参数的情况下进行小样本和零样本学习，其目的是将任务相关的指令或演示示例串联起来，促使GPT-style PLM产生可靠的反应。
-因此，所有的NLP任务都可以被统一到相同的格式中，并大幅提高模型的泛化能力。
+指令调优和情景学习可以在不更新参数的情况下进行小样本和零样本学习，其目的是将任务相关的指令或演示示例串联起来，促使 GPT-style PLM 产生可靠的反应。
+因此，所有的 NLP 任务都可以被统一到相同的格式中，并大幅提高模型的泛化能力。
 在该想法的启发下，我们把它扩展到其他几个范式：
 
-1.抽取式范式：我们将各种NLP任务统一为词元抽取，这与抽取式问题回答相同。
+1.抽取式范式：我们将各种 NLP 任务统一为词元抽取，这与抽取式问题回答相同。
 2.推理式范式：所有的任务都可以被视为自然语言推理，以匹配输入和输出之间的关系。
 3.生成式范式：我们将所有的任务统一为自然语言推理（NLI），并基于指令调优、情景学习或思维链来训练因果模型。
 
