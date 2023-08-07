@@ -24,6 +24,7 @@ HugNLP is a novel development and application library based on [Hugging Face](ht
 
 ## **News & Highlights
 
+- 🆕 [23-08-06]: Our HugNLP paper has been accepted by **CIKM 2023** (Demo Track)!
 - 🆕 [23-05-05]: HugNLP is released at @HugAILab !
 - 🆕 [23-04-06]: Develop a small ChatGPT-like assistance, naming HugChat! You can chat with HugNLP! [[see doc](./documents/instruction_prompting/generative_instruction_tuning.md)]
 - 🆕 [23-04-02]: Add GPT-style instruction-tuning. You can continual train a small-scale ChatGPT! [[see doc](./documents/instruction_prompting/generative_instruction_tuning.md)]
