@@ -404,3 +404,7 @@ If you find this repository helpful, feel free to cite our paper:
 # Acknowledgement
 
 We thank to the Platform of AI (PAI) in Alibaba Group and Ant Group to support our work. The friend framework is [EasyNLP](https://github.com/alibaba/EasyNLP). We also thank all the developers that contribute to our work!
+
+# Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=HugAILab/HugNLP&type=Date)](https://star-history.com/#HugAILab/HugNLP&Date)
