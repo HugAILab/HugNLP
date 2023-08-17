@@ -13,6 +13,7 @@ from processors.benchmark.clue.data_processor import CLUEProcessor, TnewsEFLProc
 from processors.benchmark.cluener.data_processor import CLUENERProcessor
 from processors.benchmark.fewclue.data_processor import InstructionMRCForFewCLUEProcessor
 from processors.benchmark.glue.data_processor import GLUEProcessor, GLUEForInContextProcessor
+from processors.benchmark.codexglue.data_processor import CodeXGLUEProcessor
 # pre-training language model
 from processors.pretraining.mlm.data_processor import MLMTextLineProcessor
 # from processor.pretraining.mlm.data_processor import MLMGroupProcessor, MLMFromDisk, MLMLineByLineProcessor, WWMFromDisk
@@ -32,6 +33,8 @@ from processors.default_task_processors.data_processor import (
     DefaultSequenceClassificationProcessor,
     DefaultSequenceLabelingProcessor
 )
+# reinforcement learning
+from processors.reinforcement_learning.data_processor import PairwiseRewardProcessor
 
 # Pre-training Tasks
 PRETRAINING_PROCESSORS = {
@@ -68,6 +71,7 @@ BENCHMARKS_PROCESSORS = {
     "fewclue_instruction": InstructionMRCForFewCLUEProcessor,
     "glue": GLUEProcessor,  # glue
     "glue_instruction": GLUEForInContextProcessor, # instruction-tuning for glue
+    "codexglue": CodeXGLUEProcessor, # code baseline codexglue
 }
 
 # Instruction / Prompting / In-context / Chain-of-Thought
@@ -80,13 +84,16 @@ INSTRUCTION_PROCESSORS = {
 }
 
 
-
 CODE_PROCESSORS = {
     "code_clone": CodeCloneProcessor,
     "code_defect": CodeDefectProcessor,
     "code_refine": None,
     "code_translation": None,
     "code_summarization": None,
+}
+
+REINFORCEMENT_PROCESSORS = {
+    "pairwise_reward": PairwiseRewardProcessor,
 }
 
 OTHER_PROCESSORS = {
@@ -111,6 +118,7 @@ PROCESSORS_LIST = [
     INSTRUCTION_PROCESSORS,
     BENCHMARKS_PROCESSORS,
     CODE_PROCESSORS,
+    REINFORCEMENT_PROCESSORS,
     OTHER_PROCESSORS,
 ]
 

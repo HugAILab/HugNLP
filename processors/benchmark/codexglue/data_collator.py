@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 Author: nchen909 NuoChen
 Date: 2023-05-06 16:11:10
-FilePath: /HugNLP/processors/code/code_defect/data_collator.py
+FilePath: /HugNLP/processors/benchmark/codexglue/data_collator.py
 '''
 import torch
 from dataclasses import dataclass
@@ -11,7 +11,7 @@ from transformers import PreTrainedTokenizerBase
 
 
 @dataclass
-class DataCollatorForDefectClassification:
+class DataCollatorForCodeXGLUE:
     tokenizer: PreTrainedTokenizerBase
     max_length: Optional[int] = 512
     pad_to_multiple_of: Optional[int] = None
@@ -45,7 +45,7 @@ class DataCollatorForDefectClassification:
         # add position_ids
 
         # add labels
-        batch["labels"] = torch.Tensor([f["label"] for f in features]).long()
+        batch["labels"] = torch.Tensor([int(f["label"]) for f in features]).long()
         # add mask_pos (when using prompt-tuning, need to record the masked position for each input_ids)
 
         if "mask_pos" in features[0].keys():

@@ -5,4 +5,4 @@ logs/
 outputs/
 **/__pycache__/
 .history
-.DS_Store
+nohup.out

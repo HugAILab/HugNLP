@@ -30,7 +30,22 @@
 
 #### 外源数据集
 
-你也可以从[CodeXGLUE](https://github.com/microsoft/CodeXGLUE)等外源数据集中自行导入数据，并将数据按说明转换为默认格式。
+你也可以从[CodeXGLUE](https://github.com/microsoft/CodeXGLUE)等外源数据集中自行导入数据，并将数据按说明转换为默认格式。或者，使用以下代码下载到/data/to/codexglue：
+
+```bash
+cd /data/to/codexglue
+pip install gdown
+gdown https://drive.google.com/uc?export=download&id=1BBeHFlKoyanbxaqFJ6RRWlqpiokhDhY7
+unzip data.zip
+rm data.zip
+```
+
+并在application中指定data_path。
+
+```bash
+#### task data path (use should change this path)
+data_path=/data/to/codexglue
+```
 
 ### 二、Models（模型）
 

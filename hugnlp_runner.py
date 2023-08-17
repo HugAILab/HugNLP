@@ -50,7 +50,7 @@ def main():
     model_args, data_args, training_args, semi_training_args = parser.parse_args_into_dataclasses()
 
     # Print hello world
-    if training_args.local_rank == 0:
+    if training_args.local_rank <= 0 or os.environ['LOCAL_RANK'] == "0":
         print_hello()
 
     training_args.output_dir = os.path.join(training_args.output_dir, list(filter(None, model_args.model_name_or_path.split("/")))[-1])

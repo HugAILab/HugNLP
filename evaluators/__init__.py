@@ -8,6 +8,7 @@ from evaluators.sequence_classification_evaluator import SequenceClassificationE
 from evaluators.token_classification_evaluator import TokenClassificationEvaluator
 from evaluators.span_extraction_evaluator import SpanExtractionEvaluator
 from evaluators.multi_choice_evaluator import MultiChoiceEvaluator
+from evaluators.reinforcement_learning_evaluator import PairwiseRewardEvaluator
 
 # Models for pre-training
 PRETRAIN_EVALUATOR_CLASSES = {
@@ -57,6 +58,11 @@ CODE_EVALUATOR_CLASSES = {
     "code_generation": None,
 }
 
+REINFORCEMENT_MODEL_CLASSES = {
+    "causal_actor": None,
+    "auto_critic": None, 
+    "rl_reward": PairwiseRewardEvaluator,
+}
 
 # task_type 负责对应model类型
 OTHER_EVALUATOR_CLASSES = {
@@ -101,6 +107,7 @@ EVALUATORS_LIST = [
     SPAN_EXTRACTION_EVALUATOR_CLASSES,
     FEWSHOT_EVALUATOR_CLASSES,
     CODE_EVALUATOR_CLASSES,
+    REINFORCEMENT_MODEL_CLASSES,
     OTHER_EVALUATOR_CLASSES
 ]
 
