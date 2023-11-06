@@ -378,12 +378,17 @@ or you can contact the author [`Jianing Wang`](https://wjn1996.github.io).
 If you find this repository helpful, feel free to cite our paper:
 
 ```latex
-@misc{wang2023hugnlp,
-  doi       = {10.48550/ARXIV.2302.14286},
-  url       = {https://arxiv.org/abs/2302.14286},
-  author    = {Jianing Wang, Nuo Chen, Qiushi Sun, Wenkang Huang, Chengyu Wang, Ming Gao},
-  title     = {HugNLP: A Unified and Comprehensive Library for Natural Language Processing},
-  year      = {2023}
+@inproceedings{wang2023hugnlp,
+    author    = {Jianing Wang and Nuo Chen and Qiushi Sun and Wenkang Huang and Chengyu Wang and Ming Gao},
+    title     = {Hug{NLP}: A Unified and Comprehensive Library for Natural Language Processing},
+    year      = {2023},
+    booktitle = {Proceedings of the 32nd ACM International Conference on Information and Knowledge Management},
+    publisher = {Association for Computing Machinery},
+    location  = {Birmingham, United Kingdom},
+    url       = {https://arxiv.org/abs/2302.14286},
+    location  = {Birmingham, United Kingdom},
+    series    = {Demo Papers},
+    doi       = {10.1145/3583780.3614742}
 }
 ```
 
@@ -400,3 +405,7 @@ If you find this repository helpful, feel free to cite our paper:
 # Acknowledgement
 
 We thank to the Platform of AI (PAI) in Alibaba Group and Ant Group to support our work. The friend framework is [EasyNLP](https://github.com/alibaba/EasyNLP). We also thank all the developers that contribute to our work!
+
+# Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=HugAILab/HugNLP&type=Date)](https://star-history.com/#HugAILab/HugNLP&Date)
